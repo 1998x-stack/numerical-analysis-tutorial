@@ -1,0 +1,23 @@
+{
+  "chapter": 11,
+  "sources": [
+    {
+      "url": "https://dlmf.nist.gov/3.5",
+      "claims": [
+        "Composite trapezoid error expansion in even powers under smoothness",
+        "Romberg extrapolation cancels successive even-power error terms"
+      ]
+    },
+    {
+      "url": "https://lemesurierb.people.charleston.edu/numerical-methods-and-analysis-python/main/integrals-4-romberg-integration.html",
+      "claims": [
+        "Recursive midpoint reuse in trapezoid refinement",
+        "Romberg triangular recurrence"
+      ]
+    }
+  ],
+  "checks": [
+    "Romberg exp integral on [0,1] against expm1(1)",
+    "Richardson first diagonal improves trapezoid approximation"
+  ]
+}

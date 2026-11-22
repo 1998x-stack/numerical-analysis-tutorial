@@ -1,160 +1,26 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第12章 Gauss求积公式</title>
-    <link rel="stylesheet" href="theme.css">
-</head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>📐 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 数值分析概述</a></li>
-            <li><a href="02.html">第2章 误差分析与数值稳定性</a></li>
-            <li><a href="03.html">第3章 插值法基础</a></li>
-            <li><a href="04.html">第4章 Newton插值与均差</a></li>
-            <li><a href="05.html">第5章 Hermite插值与分段插值</a></li>
-            <li><a href="06.html">第6章 三次样条插值</a></li>
-            <li><a href="07.html">第7章 函数逼近基本理论</a></li>
-            <li><a href="08.html">第8章 最佳平方逼近</a></li>
-            <li><a href="09.html">第9章 最小二乘曲线拟合</a></li>
-            <li><a href="10.html">第10章 数值积分基础</a></li>
-            <li><a href="11.html">第11章 复合求积与Romberg外推</a></li>
-            <li><a href="12.html" class="active">第12章 Gauss求积公式</a></li>
-            <li><a href="13.html">第13章 数值微分</a></li>
-            <li><a href="14.html">第14章 正交多项式与数值积分</a></li>
-            <li><a href="15.html">第15章 Gauss消去法与LU分解</a></li>
-            <li><a href="16.html">第16章 Cholesky分解与追赶法</a></li>
-            <li><a href="17.html">第17章 向量/矩阵范数与条件数</a></li>
-            <li><a href="18.html">第18章 经典迭代法</a></li>
-            <li><a href="19.html">第19章 Krylov子空间与共轭梯度法</a></li>
-            <li><a href="20.html">第20章 非线性方程求根(一)</a></li>
-            <li><a href="21.html">第21章 非线性方程求根(二)</a></li>
-            <li><a href="22.html">第22章 非线性方程组Newton法</a></li>
-            <li><a href="23.html">第23章 矩阵特征值计算</a></li>
-            <li><a href="24.html">第24章 QR方法与特征值</a></li>
-            <li><a href="25.html">第25章 常微分方程数值解(一)</a></li>
-            <li><a href="26.html">第26章 常微分方程数值解(二)</a></li>
-            <li><a href="27.html">第27章 刚性方程与线性多步法</a></li>
-            <li><a href="28.html">第28章 综合实战：从算法到代码</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <h1>第12章 Gauss 求积公式</h1>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="为什么 n 个自由节点和权重能让积分对 2n−1 次多项式精确？从多项式除法证明到 Gauss–Legendre 节点、权重、区间映射与误差边界。"><title>第 12 章 · Gauss 求积：用正交多项式选择最有效的节点 | 数值分析</title><link rel="stylesheet" href="../assets/css/article.css"><script src="../assets/js/chapter-labs.js" defer></script></head><body><a class="skip" href="#content">跳转正文</a><header class="site-header"><div class="topbar"><a class="brand" href="../index.html"><span>∑</span> NUMERICAL <b>ANALYSIS</b></a><nav aria-label="课程导航"><a href="../index.html#catalog">全部章节</a><a href="https://github.com/1998x-stack/numerical-analysis-tutorial">源码与勘误</a></nav></div></header><main class="article-shell" id="content"><aside class="article-toc"><nav aria-label="本章目录"><small>ON THIS PAGE · CH 12</small><ol><li><a href="#paradox">01 · 同样三次精度，为什么有时两个节点胜过三个？</a></li><li><a href="#definition">02 · n 点 Gauss 规则的定义与最高代数精度</a></li><li><a href="#legendre">03 · Gauss–Legendre：从标准区间映射到任意区间</a></li><li><a href="#compare">04 · 与 Newton–Cotes 比较：看代数精度，不只看阶数</a></li><li><a href="#error">05 · 余项与权函数：高精度并不意味着万能</a></li><li><a href="#implementation">06 · 可复现实验：二点与三点规则的多项式精确度</a></li><li><a href="#references">原始资料</a></li></ol></nav></aside><article class="article-body"><nav class="chapter-navline" aria-label="章节导览"><a href="11.html">← 前一章</a><a href="13.html">下一章 →</a></nav><p class="chapter-kicker">CHAPTER 12 · NUMERICAL ANALYSIS</p><h1>Gauss 求积：用正交多项式选择最有效的节点</h1><p class="lead">为什么 n 个自由节点和权重能让积分对 2n−1 次多项式精确？从多项式除法证明到 Gauss–Legendre 节点、权重、区间映射与误差边界。</p><section id="paradox" aria-labelledby="paradox-heading"><h2 id="paradox-heading">01 · 同样三次精度，为什么有时两个节点胜过三个？</h2><p>在 <code>[−1,1]</code> 上，三点 Simpson 规则对三次多项式精确，需要评价两个端点和中点。两点 Gauss–Legendre 规则只评价 <code>−1/√3</code> 与 <code>+1/√3</code>，却也对所有三次多项式精确。差异不在权重“更聪明”这么简单：Gauss 规则同时选择<strong>节点位置与权重</strong>，而等距 Newton–Cotes 规则把节点位置固定住了。</p><figure><img src="../assets/svg/12-gauss-vs-newton.svg" alt="Simpson 使用负一、零、正一三个等距节点，二点 Gauss 使用正负一除以根号三两个内部节点" loading="lazy"><figcaption>图 1 · 两点 Gauss 通过移动采样点获得与三点 Simpson 相同的三次代数精度；节点不是端点，也不是等距。</figcaption></figure></section><section id="definition" aria-labelledby="definition-heading"><h2 id="definition-heading">02 · n 点 Gauss 规则的定义与最高代数精度</h2><p>考虑正权函数 <code>w(x)&gt;0</code> 的积分。n 点求积由 n 个节点和 n 个权重构成。对于任意给定节点的插值型公式，n 个权重可以保证至少对次数不超过 <code>n−1</code> 的多项式精确；Gauss 规则进一步选择节点，使代数精度达到理论上限 <code>2n−1</code>。</p><div class="math-equation" role="group" aria-label="公式 12.1"><div class="math-scroll" role="region" tabindex="0" aria-label="带权 n 点求积公式由 n 个节点和 n 个权重构成，公式可横向滚动"><math display="block" aria-label="带权 n 点求积公式由 n 个节点和 n 个权重构成"><msubsup><mo>∫</mo><mi>a</mi><mi>b</mi></msubsup><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>w</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>d</mi><mi>x</mi><mo>≈</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>ω</mi><mi>i</mi></msub><mi>f</mi><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo></math></div><div class="equation-tag">(12.1)</div></div><p>证明最高精度的关键是选取与权函数正交的 n 次多项式 <code>pₙ</code> 的全部零点作为节点。任意次数不超过 <code>2n−1</code> 的多项式可以除以 <code>pₙ</code>，写成 <code>f=q pₙ+r</code>，其中 <code>deg(q),deg(r)≤n−1</code>。积分中的 <code>q pₙ</code> 项由正交性变成零；在求积节点上 <code>pₙ(xᵢ)=0</code>，采样值也只剩 <code>r(xᵢ)</code>。而插值型 n 点规则对次数不超过 n−1 的 <code>r</code> 精确，于是积分和求积两边相等。</p><div class="math-equation" role="group" aria-label="公式 12.2"><div class="math-scroll" role="region" tabindex="0" aria-label="n 点 Gauss 规则选择正交多项式的 n 个零点，因而精确到 2n 减 1 次，公式可横向滚动"><math display="block" aria-label="n 点 Gauss 规则选择正交多项式的 n 个零点，因而精确到 2n 减 1 次"><msub><mi>p</mi><mi>n</mi></msub><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo><mo>=</mo><mn>0</mn><mspace width=".7em"/><mo>⇒</mo><mspace width=".7em"/><msubsup><mo>∫</mo><mi>a</mi><mi>b</mi></msubsup><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>w</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>d</mi><mi>x</mi><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>ω</mi><mi>i</mi></msub><mi>f</mi><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo><mo>,</mo><mspace width=".4em"/><mi>deg</mi><mo>(</mo><mi>f</mi><mo>)</mo><mo>≤</mo><mn>2</mn><mi>n</mi><mo>−</mo><mn>1</mn></math></div><div class="equation-tag">(12.2)</div></div><p>这个上限对正权 n 点公式是最优的：若要对次数更高的所有多项式都精确，节点和权重的自由度不足。NIST DLMF 对一般正权 Gauss–Christoffel 规则给出了节点零点、正权重和余项的统一表达。</p></section><section id="legendre" aria-labelledby="legendre-heading"><h2 id="legendre-heading">03 · Gauss–Legendre：从标准区间映射到任意区间</h2><p>最常见的 Gauss–Legendre 规则取 <code>w(x)=1</code>、区间 <code>[−1,1]</code>，节点是 Legendre 多项式 <code>Pₙ</code> 的 n 个根。对应权重可由节点处的导数计算，所有权重为正，且权重和等于区间测度 2。</p><div class="math-equation" role="group" aria-label="公式 12.3"><div class="math-scroll" role="region" tabindex="0" aria-label="Gauss Legendre 权重由 Legendre 多项式导数和节点位置决定，公式可横向滚动"><math display="block" aria-label="Gauss Legendre 权重由 Legendre 多项式导数和节点位置决定"><msub><mi>ω</mi><mi>i</mi></msub><mo>=</mo><mfrac><mn>2</mn><mrow><mo>(</mo><mn>1</mn><mo>−</mo><msubsup><mi>x</mi><mi>i</mi><mn>2</mn></msubsup><mo>)</mo><msup><mrow><mo>[</mo><msubsup><mi>P</mi><mi>n</mi><mo>′</mo></msubsup><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo><mo>]</mo></mrow><mn>2</mn></msup></mrow></mfrac></math></div><div class="equation-tag">(12.3)</div></div><p>对任意有限区间，使用仿射变换 <code>x=(a+b)/2+(b−a)t/2</code>，同时把积分微元变成 <code>dx=(b−a)dt/2</code>。如果忘记这个 Jacobian 因子，节点即使正确，最终积分也会整体缩放错误。</p><div class="math-equation" role="group" aria-label="公式 12.4"><div class="math-scroll" role="region" tabindex="0" aria-label="标准区间到一般区间的仿射映射和积分缩放因子，公式可横向滚动"><math display="block" aria-label="标准区间到一般区间的仿射映射和积分缩放因子"><mi>x</mi><mo>=</mo><mfrac><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow><mn>2</mn></mfrac><mo>+</mo><mfrac><mrow><mi>b</mi><mo>−</mo><mi>a</mi></mrow><mn>2</mn></mfrac><mi>t</mi><mo>,</mo><mspace width=".6em"/><mi>d</mi><mi>x</mi><mo>=</mo><mfrac><mrow><mi>b</mi><mo>−</mo><mi>a</mi></mrow><mn>2</mn></mfrac><mi>d</mi><mi>t</mi></math></div><div class="equation-tag">(12.4)</div></div><p>两点 Gauss–Legendre 公式尤其适合手算核对：节点为 <code>±1/√3</code>，权重都为 1。它对常数、一次、二次、三次多项式都精确；对四次多项式则不再精确。</p><div class="math-equation" role="group" aria-label="公式 12.5"><div class="math-scroll" role="region" tabindex="0" aria-label="两点 Gauss Legendre 规则在标准区间上的显式公式，公式可横向滚动"><math display="block" aria-label="两点 Gauss Legendre 规则在标准区间上的显式公式"><msubsup><mo>∫</mo><mrow><mo>−</mo><mn>1</mn></mrow><mn>1</mn></msubsup><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>d</mi><mi>x</mi><mo>≈</mo><mi>f</mi><mo>(</mo><mo>−</mo><mfrac><mn>1</mn><msqrt><mn>3</mn></msqrt></mfrac><mo>)</mo><mo>+</mo><mi>f</mi><mo>(</mo><mfrac><mn>1</mn><msqrt><mn>3</mn></msqrt></mfrac><mo>)</mo></math></div><div class="equation-tag">(12.5)</div></div><figure><img src="../assets/svg/12-mapping.svg" alt="标准区间上的 Gauss 节点经过仿射映射到实际积分区间，并且权重同时乘以半区间长度" loading="lazy"><figcaption>图 2 · 节点位置与求积权重都必须做映射；只映射节点会漏掉 Jacobian。</figcaption></figure></section><section id="compare" aria-labelledby="compare-heading"><h2 id="compare-heading">04 · 与 Newton–Cotes 比较：看代数精度，不只看阶数</h2><p>两点 Gauss 在 <code>[−1,1]</code> 上对 <code>x³</code> 精确；三点 Simpson 也对 <code>x³</code> 精确，但用了三个函数值。对 <code>x⁴</code>，两点 Gauss 给出 <code>2/9</code>，真实积分为 <code>2/5</code>，误差为 <code>8/45</code>；三点 Gauss 则因精度达到五次而精确。这里“两个节点更高效”只针对固定的多项式精确度和单次光滑积分，不代表所有积分都能减少相同数量的求值。</p><figure><img src="../assets/svg/12-polynomial-exactness.svg" alt="二点 Gauss 节点对三次以下多项式精确，但四次多项式的积分不再精确" loading="lazy"><figcaption>图 3 · 代数精度是规则对整个多项式空间的保证，不是只对某个示例函数碰巧算对。</figcaption></figure><div class="demo" data-lab="gauss"><label for="gauss-mode">对 x⁴ 积分，切换二点与三点 Gauss–Legendre</label><select id="gauss-mode" data-input><option value="2">n = 2：两个节点</option><option value="3">n = 3：三个节点</option></select><output data-output aria-live="polite">精确值为 0.4。</output></div></section><section id="error" aria-labelledby="error-heading"><h2 id="error-heading">05 · 余项与权函数：高精度并不意味着万能</h2><p>在标准 Gauss–Legendre 规则下，如果 <code>f</code> 有连续的 <code>2n</code> 阶导数，误差余项可写成该阶导数在某个区间点的值乘以正的常数。这个表达式解释了为何规则对低次多项式精确，也说明光滑性是经典余项公式的重要假设。</p><div class="math-equation" role="group" aria-label="公式 12.6"><div class="math-scroll" role="region" tabindex="0" aria-label="n 点 Gauss Legendre 误差由 2n 阶导数控制，公式可横向滚动"><math display="block" aria-label="n 点 Gauss Legendre 误差由 2n 阶导数控制"><mi>I</mi><mo>(</mo><mi>f</mi><mo>)</mo><mo>−</mo><msub><mi>Q</mi><mi>n</mi></msub><mo>(</mo><mi>f</mi><mo>)</mo><mo>=</mo><mfrac><mrow><msup><mn>2</mn><mrow><mn>2</mn><mi>n</mi><mo>+</mo><mn>1</mn></mrow></msup><msup><mrow><mo>(</mo><mi>n</mi><mo>!</mo><mo>)</mo></mrow><mn>4</mn></msup><msup><mi>f</mi><mrow><mo>(</mo><mn>2</mn><mi>n</mi><mo>)</mo></mrow></msup><mo>(</mo><mi>ξ</mi><mo>)</mo></mrow><mrow><mo>(</mo><mn>2</mn><mi>n</mi><mo>+</mo><mn>1</mn><mo>)</mo><msup><mrow><mo>[</mo><mo>(</mo><mn>2</mn><mi>n</mi><mo>)</mo><mo>!</mo><mo>]</mo></mrow><mn>3</mn></msup></mrow></mfrac><mspace width=".4em"/><mi>ξ</mi><mo>∈</mo><mo>(</mo><mo>−</mo><mn>1</mn><mo>,</mo><mn>1</mn><mo>)</mo></math></div><div class="equation-tag">(12.6)</div></div><p>Gauss–Legendre 是 <code>w=1</code> 的一种选择。若被积函数在端点附近具有可预测的权重行为，可以改用 Gauss–Jacobi、Gauss–Laguerre 或 Gauss–Hermite，让权函数吸收端点或无穷远处的主要变化。选择权函数时，必须确保剩余被积函数适合该区间和权重；不要把不同 Gauss 家族的节点、区间和权重混用。</p><p>对间断、尖峰或局部快速变化，单一全局高阶规则未必合适。分段 Gauss 或自适应 Gauss–Kronrod 通过比较嵌套规则估计局部误差，通常更适合有局部结构的函数。Gauss 节点和权重也不是随意的等距采样；它们应由稳定的专用实现生成，而不是高次数时直接解一个矩条件 Vandermonde 系统。</p></section><section id="implementation" aria-labelledby="implementation-heading"><h2 id="implementation-heading">06 · 可复现实验：二点与三点规则的多项式精确度</h2><pre><code>import math
 
-        <p>大家好，我是你们的讲师。前面几章我们讨论的求积公式都有一个共同特点：节点是预先固定的（等距或指定位置），我们只优化权重。但如果我们能同时优化节点位置和权重呢？想象一下，如果 $n+1$ 个节点可以在区间内自由移动，那我们就有了 $2(n+1)$ 个自由度。用这些自由度，理论上我们可以让公式对 $2n+1$ 次多项式精确成立！这就是 Gauss 求积公式的核心思想——它是数值积分的"天花板"。</p>
+def gauss2(f):
+    r = 1.0 / math.sqrt(3.0)
+    return f(-r) + f(r)
 
-        <p>我第一次接触 Gauss 求积时大为震撼——$n=3$ 的 Gauss 公式只需要 3 次函数求值就能精确积分 5 次多项式，而梯形公式（2 次求值）只能精确积分线性函数。这效率差距简直是指数级的！后来我做有限元分析，单元刚度矩阵的数值积分全部用 Gauss 求积，因为每减少一次函数求值，整个仿真就能快不少。在工程计算中，函数求值往往是最耗时的环节，Gauss 求积的价值就在这里。</p>
+def gauss3(f):
+    r = math.sqrt(3.0 / 5.0)
+    return (5.0/9.0)*f(-r) + (8.0/9.0)*f(0.0) + (5.0/9.0)*f(r)
 
-        <h2>12.1 Gauss 求积的核心思想</h2>
+for degree in range(6):
+    f = lambda x, d=degree: x**d
+    exact = 0.0 if degree % 2 else 2.0/(degree+1)
+    q2, q3 = gauss2(f), gauss3(f)
+    if degree &lt;= 3:
+        assert abs(q2-exact) &lt; 1e-12
+    if degree &lt;= 5:
+        assert abs(q3-exact) &lt; 1e-12
+    print(degree, exact, q2, q3)
 
-        <p>考虑带有权函数 $w(x) \ge 0$ 的一般求积公式：</p>
-
-        <pre><code>∫_a^b f(x) w(x) dx ≈ Σ_{i=0}^n w_i f(x_i)</code></pre>
-
-        <p>在 Newton-Cotes 公式中，节点 $x_i$ 是固定等距的，我们只确定权重 $w_i$。这给了 $n+1$ 个自由度，所以代数精度最多为 $n$（或 $n+1$，某些对称情况）。</p>
-
-        <p>而 Gauss 求积将节点 $x_i$ 也视为自由参数，总共有 $2(n+1)$ 个自由度。高斯证明：通过适当选择节点和权重，可以使公式达到 $2n+1$ 次代数精度。这是求积公式的"理论上界"——不可能用 $n+1$ 个节点达到更高的代数精度。</p>
-
-        <p>那么，最优节点是什么？答案是：以权函数 $w(x)$ 正交的 $n+1$ 次正交多项式的零点。</p>
-
-        <div class="highlight">
-            <p><strong>重大 insight：</strong>Gauss 求积将两个看似无关的问题——数值积分和正交多项式——巧妙地联系了起来。正交多项式的零点不仅是多项式根，更是最优求积节点。这体现了数学中"不同领域的深层结构相互联系"的美妙之处。</p>
-        </div>
-
-        <h2>12.2 Gauss-Legendre 求积</h2>
-
-        <p>最常用的 Gauss 求积是 Gauss-Legendre 求积——区间 $[-1,1]$，权函数 $w(x)=1$。节点是 Legendre 多项式 $P_{n+1}(x)$ 的零点。</p>
-
-        <table>
-            <tr><th>$n$</th><th>节点 $x_i$</th><th>权重 $w_i$</th><th>代数精度</th></tr>
-            <tr><td>1</td><td>$0$</td><td>$2$</td><td>1</td></tr>
-            <tr><td>2</td><td>$\pm 1/\sqrt{3} \approx \pm 0.57735$</td><td>$1$ (每个)</td><td>3</td></tr>
-            <tr><td>3</td><td>$0$, $\pm \sqrt{3/5} \approx \pm 0.77460$</td><td>$8/9$, $5/9$ (每个)</td><td>5</td></tr>
-            <tr><td>4</td><td>$\pm 0.33998$, $\pm 0.86114$</td><td>$0.65215$, $0.34785$</td><td>7</td></tr>
-        </table>
-
-        <p>Python 中计算 Gauss-Legendre 节点和权重非常方便：</p>
-
-        <pre><code>import numpy as np
-from numpy.polynomial.legendre import leggauss
-
-# 计算 n 点 Gauss-Legendre 的节点和权重
-n = 5  # 5 个节点，代数精度 = 2*5 - 1 = 9
-x, w = leggauss(n)
-print("节点:", x)
-print("权重:", w)
-
-# 在 [a, b] 上应用 Gauss-Legendre 公式
-def gauss_legendre_quad(f, a, b, n):
-    """n 点 Gauss-Legendre 求积"""
-    # 节点和权重在 [-1, 1] 上
-    x_ref, w_ref = leggauss(n)
-    # 映射到 [a, b]
-    half = (b - a) / 2
-    mid = (a + b) / 2
-    x_mapped = half * x_ref + mid
-    # 积分变换 ∫_a^b f(x) dx = (b-a)/2 ∫_{-1}^1 f((b-a)/2 * t + (a+b)/2) dt
-    result = half * np.sum(w_ref * f(x_mapped))
-    return result
-
-# 测试 f(x) = e^x 在 [0, 1] 上
-f = np.exp
-exact = np.exp(1) - 1
-for n in [1, 2, 3, 4, 5]:
-    approx = gauss_legendre_quad(f, 0, 1, n)
-    print(f"n={n}: {approx:.12f}, 误差={abs(approx-exact):.2e}")</code></pre>
-
-        <div class="tip">
-            <p><strong>惊人的效率：</strong>用 $n=5$ 的 Gauss-Legendre 求积（仅 5 次函数求值）计算 $\int_0^1 e^x dx$，误差已经可以达到 $10^{-12}$ 量级。而复合梯形公式要达到相同精度大约需要 $10^6$ 次函数求值！这就是 Gauss 求积的效率优势。</p>
-        </div>
-
-        <h2>12.3 其他 Gauss 型求积</h2>
-
-        <p>不同区间和权函数的组合对应不同的正交多项式族，从而得到不同形式的 Gauss 求积公式：</p>
-
-        <table>
-            <tr><th>名称</th><th>区间</th><th>权函数 $w(x)$</th><th>正交多项式</th><th>典型应用</th></tr>
-            <tr><td>Gauss-Legendre</td><td>$[-1, 1]$</td><td>$1$</td><td>Legendre $P_n(x)$</td><td>一般数值积分</td></tr>
-            <tr><td>Gauss-Chebyshev</td><td>$[-1, 1]$</td><td>$1/\sqrt{1-x^2}$</td><td>Chebyshev $T_n(x)$</td><td>端点奇异的积分</td></tr>
-            <tr><td>Gauss-Laguerre</td><td>$[0, \infty)$</td><td>$e^{-x}$</td><td>Laguerre $L_n(x)$</td><td>半无限区间积分</td></tr>
-            <tr><td>Gauss-Hermite</td><td>$(-\infty, \infty)$</td><td>$e^{-x^2}$</td><td>Hermite $H_n(x)$</td><td>概率论、量子力学</td></tr>
-        </table>
-
-        <div class="highlight">
-            <p><strong>选择指南：</strong>如果你的被积函数包含 $e^{-x}$ 因子（比如原子物理中的波函数重叠积分），用 Gauss-Laguerre 求积可以把指数因子吸收到权函数中，剩下的部分用多项式很好地逼近。类似地，如果被积函数在端点有 $1/\sqrt{1-x^2}$ 型的奇异性，Gauss-Chebyshev 可以让这部分的奇异性被权函数"吃掉"，数值计算变得非常稳定。</p>
-        </div>
-
-        <h2>12.4 Gauss vs Newton-Cotes</h2>
-
-        <p>最后我们来做一个全面的对比：</p>
-
-        <table>
-            <tr><th>对比维度</th><th>Gauss 求积</th><th>Newton-Cotes 求积</th></tr>
-            <tr><td>节点选择</td><td>自由（正交多项式零点）</td><td>固定（等距）</td></tr>
-            <tr><td>$n+1$ 个节点的代数精度</td><td>$2n+1$</td><td>$n$（或 $n+1$）</td></tr>
-            <tr><td>精度效率</td><td>极高（相同节点数最优）</td><td>较低</td></tr>
-            <tr><td>嵌套性</td><td>不可嵌套（节点不重合）</td><td>部分可嵌套（如 Romberg）</td></tr>
-            <tr><td>实现复杂度</td><td>中等（需查节点和权重）</td><td>简单</td></tr>
-            <tr><td>适用场景</td><td>高精度、函数求值昂贵</td><td>快速估算、教学演示</td></tr>
-        </table>
-
-        <div class="warning">
-            <p><strong>踩坑提醒——嵌套性问题：</strong>Gauss 求积的一个"缺点"是节点不能嵌套。当你用 $n$ 点 Gauss 公式算完发现精度不够，想用 $n+1$ 点 Gauss 公式再算时，之前 $n$ 个节点的函数值全部浪费了——新的节点位置完全不同。而 Newton-Cotes 的复合梯形公式可以通过递推公式 $T_{2n} = T_n/2 + h\sum f_{\text{new}}$ 利用之前的计算结果。所以如果精度要求不高但需要灵活控制，复合梯形 + Richardson 外推（Romberg）可能更实用。</p>
-        </div>
-
-        <p>本章我们学习了数值积分的"天花板"——Gauss 求积公式。通过同时优化节点和权重，用最少的函数求值次数达到了最高的代数精度。Gauss 求积与正交多项式紧密关联，这为我们下一章的学习埋下了伏笔。下一章我们将暂时离开积分，转向数值微分——用离散数据近似计算导数。这看起来像是"反问题"，但有趣的是，Richardson 外推在数值微分中同样大有用武之地！</p>
-
-        <div class="footer-nav">
-            <a href="11.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="13.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
-</body>
-</html>
+# Affine map: x = (a+b)/2 + (b-a)t/2
+def mapped_gauss2(f, a, b):
+    mid, half = (a+b)/2, (b-a)/2
+    r = 1/math.sqrt(3)
+    return half*(f(mid-half*r)+f(mid+half*r))
+assert abs(mapped_gauss2(lambda x:x**3, 2, 5) - (5**4-2**4)/4) &lt; 1e-11</code></pre><p>NumPy 的 <code>leggauss(n)</code> 和 SciPy 的 <code>roots_legendre(n)</code> 都提供标准区间的节点与权重。生产计算中应优先使用经过测试的实现；NumPy 文档也明确说明其高阶节点权重的测试范围有限，不应将接口存在误读成任意高阶都已验证。</p><aside class="callout"><p><strong>核心边界：</strong>n 点 Gauss 规则的 <code>2n−1</code> 精确性针对指定权函数下的多项式。它不直接给出任意非光滑函数的固定误差百分比，也不能免除区间变换、权函数匹配和数值稳定性检查。</p></aside></section><section id="references" aria-labelledby="references-heading"><h2 id="references-heading">原始资料与延伸阅读</h2><p>理论结论按原始数学资料与维护方文档交叉核对；本页图解、数值表和代码是独立构造的教学示例。</p><ol class="sources"><li><a href="https://dlmf.nist.gov/3.5">NIST DLMF §3.5 · Quadrature</a>：复合梯形、Simpson、Romberg、Gauss 求积与误差展开。</li><li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.roots_legendre.html">SciPy · roots_legendre</a>：Gauss–Legendre 节点为 Legendre 多项式零点，n 点规则对 2n−1 次及以下多项式精确。</li><li><a href="https://numpy.org/doc/stable/reference/generated/numpy.polynomial.legendre.leggauss.html">NumPy · leggauss</a>：Legendre Gauss 求积节点与权重的接口及适用范围说明。</li></ol></section><nav class="chapter-bottom" aria-label="前后章节"><a href="11.html">← 前一章</a><a href="13.html">下一章 →</a></nav></article></main><footer><span>NUMERICAL ANALYSIS · 一份可独立阅读的计算笔记</span><a href="../index.html">返回课程首页</a></footer></body></html>

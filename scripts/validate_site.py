@@ -29,7 +29,7 @@ def run():
     for page in pages:
         if not page.exists():errs.append(f"missing {page}");continue
         s=Scan();s.feed(page.read_text(encoding="utf-8"))
-        is_new=page.name in {f"{i:02}.html" for i in range(1,11)}
+        is_new=page.name in {f"{i:02}.html" for i in range(1,16)}
         if (page.name=="index.html" or is_new) and s.h1!=1:errs.append(f"{page}: must have exactly 1 h1, got {s.h1}")
         if is_new and (s.fig<2 or s.math<2 or "references" not in s.ids):errs.append(f"{page}: need figures, MathML and sources")
         if s.svgmath:errs.append(f"{page}: nested SVG MathML")
@@ -39,7 +39,7 @@ def run():
             if path and not (page.parent/path).exists():errs.append(f"{page}: broken {attr}={ref}")
             if ref.startswith("#") and ref[1:] and ref[1:] not in s.ids:errs.append(f"{page}: broken anchor {ref}")
     svgfiles=list((ROOT/"assets/svg").glob("*.svg"))
-    if len(svgfiles)<26:errs.append(f"expected 26 SVG diagrams, found {len(svgfiles)}")
+    if len(svgfiles)<41:errs.append(f"expected 41 SVG diagrams, found {len(svgfiles)}")
     for p in svgfiles:
         try:
             r=ET.parse(p).getroot();children={c.tag.rsplit("}",1)[-1] for c in r}
@@ -48,7 +48,7 @@ def run():
 
     # New publication gate: parse *actual* MathML fragments as XML and verify operator arity.
     import re
-    for number in range(6,11):
+    for number in range(6,16):
         p=ROOT/f"chapters/{number:02}.html"
         html=p.read_text(encoding="utf-8")
         fragments=re.findall(r"<math\b[^>]*>[\s\S]*?</math>",html)
@@ -65,6 +65,18 @@ def run():
                         errs.append(f"{p}: invalid <{tag}> with {len(element)} children in formula #{i}")
             except ET.ParseError as exc:
                 errs.append(f"{p}: MathML formula #{i} malformed: {exc}")
+    # Refined status and per-chapter evidence ledgers are publication requirements.
+    for c in chapters:
+        number=int(c["num"])
+        if number<=15 and c.get("status")!="refined":errs.append(f"chapter {number:02}: expected refined status")
+    for number in range(11,16):
+        evidence=ROOT/f"evidence/{number:02}.json"
+        if not evidence.exists():errs.append(f"missing evidence ledger {evidence}")
+        else:
+            try:
+                record=json.loads(evidence.read_text(encoding="utf-8"))
+                if not record.get("sources") or not record.get("checks"):errs.append(f"{evidence}: sources/checks required")
+            except json.JSONDecodeError as exc:errs.append(f"{evidence}: {exc}")
     if errs:
         print("\n".join("ERROR: "+x for x in errs));sys.exit(1)
     print(f"OK: {len(pages)} canonical HTML pages; {len(svgfiles)} standalone SVGs; relative links and anchors")

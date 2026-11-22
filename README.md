@@ -5,8 +5,8 @@
 **首页目标地址**：https://1998x-stack.github.io/numerical-analysis-tutorial/ （实际访问取决于 Pages 设置和部署结果）
 
 ## 内容状态
-- **01–10**：两批独立深度重构，包含数学推导、26 幅原创 SVG、交互与可复现实验。
-- **11–28**：原文保留在 `chapters/`，尚未逐章技术复审。
+- **01–15**：三批独立深度重构，包含完整数学推导、41 幅原创 SVG、交互与可复现实验。
+- **16–28**：原文保留在 `chapters/`，尚未逐章技术复审。
 - 根目录 `01.html` 等历史入口仅作跳转，保证旧链接兼容。
 
 ## 七条学习路线
@@ -42,7 +42,7 @@ python -m http.server 8000
 python scripts/validate_site.py
 python examples/reproduce.py
 # 可选浏览器验收（需先 pip install playwright 并安装 chromium）
-python scripts/browser_check.py  # 11 页 × 4 视口 = 44 次浏览器检查
+python scripts/browser_check.py  # 16 页 × 4 视口 = 64 次浏览器检查
 ```
 
 ## GitHub Pages

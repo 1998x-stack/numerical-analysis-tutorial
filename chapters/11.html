@@ -1,195 +1,28 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第11章 复合求积与Romberg外推</title>
-    <link rel="stylesheet" href="theme.css">
-</head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>📐 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 数值分析概述</a></li>
-            <li><a href="02.html">第2章 误差分析与数值稳定性</a></li>
-            <li><a href="03.html">第3章 插值法基础</a></li>
-            <li><a href="04.html">第4章 Newton插值与均差</a></li>
-            <li><a href="05.html">第5章 Hermite插值与分段插值</a></li>
-            <li><a href="06.html">第6章 三次样条插值</a></li>
-            <li><a href="07.html">第7章 函数逼近基本理论</a></li>
-            <li><a href="08.html">第8章 最佳平方逼近</a></li>
-            <li><a href="09.html">第9章 最小二乘曲线拟合</a></li>
-            <li><a href="10.html">第10章 数值积分基础</a></li>
-            <li><a href="11.html" class="active">第11章 复合求积与Romberg外推</a></li>
-            <li><a href="12.html">第12章 Gauss求积公式</a></li>
-            <li><a href="13.html">第13章 数值微分</a></li>
-            <li><a href="14.html">第14章 正交多项式与数值积分</a></li>
-            <li><a href="15.html">第15章 Gauss消去法与LU分解</a></li>
-            <li><a href="16.html">第16章 Cholesky分解与追赶法</a></li>
-            <li><a href="17.html">第17章 向量/矩阵范数与条件数</a></li>
-            <li><a href="18.html">第18章 经典迭代法</a></li>
-            <li><a href="19.html">第19章 Krylov子空间与共轭梯度法</a></li>
-            <li><a href="20.html">第20章 非线性方程求根(一)</a></li>
-            <li><a href="21.html">第21章 非线性方程求根(二)</a></li>
-            <li><a href="22.html">第22章 非线性方程组Newton法</a></li>
-            <li><a href="23.html">第23章 矩阵特征值计算</a></li>
-            <li><a href="24.html">第24章 QR方法与特征值</a></li>
-            <li><a href="25.html">第25章 常微分方程数值解(一)</a></li>
-            <li><a href="26.html">第26章 常微分方程数值解(二)</a></li>
-            <li><a href="27.html">第27章 刚性方程与线性多步法</a></li>
-            <li><a href="28.html">第28章 综合实战：从算法到代码</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <h1>第11章 复合求积与 Romberg 外推</h1>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="复合梯形如何复用采样点？Richardson 外推怎样消去主导误差？从全局误差阶、Romberg 三角表到收敛失效边界，完整建立可复现的积分算法。"><title>第 11 章 · 复合求积与 Romberg：从步长收敛到外推表 | 数值分析</title><link rel="stylesheet" href="../assets/css/article.css"><script src="../assets/js/chapter-labs.js" defer></script></head><body><a class="skip" href="#content">跳转正文</a><header class="site-header"><div class="topbar"><a class="brand" href="../index.html"><span>∑</span> NUMERICAL <b>ANALYSIS</b></a><nav aria-label="课程导航"><a href="../index.html#catalog">全部章节</a><a href="https://github.com/1998x-stack/numerical-analysis-tutorial">源码与勘误</a></nav></div></header><main class="article-shell" id="content"><aside class="article-toc"><nav aria-label="本章目录"><small>ON THIS PAGE · CH 11</small><ol><li><a href="#paradox">01 · 步长减半，为什么误差不是每次都恰好缩小四倍？</a></li><li><a href="#composite">02 · 复合梯形：局部面积相加与全局误差</a></li><li><a href="#richardson">03 · Richardson 外推：用两次近似消去一个误差项</a></li><li><a href="#romberg">04 · Romberg 三角表：每一列再提高一个误差阶</a></li><li><a href="#experiment">05 · 可复现实现：新网格只评价新增中点</a></li><li><a href="#limits">06 · 何时停止：误差阶不是永远有效的承诺</a></li><li><a href="#references">原始资料</a></li></ol></nav></aside><article class="article-body"><nav class="chapter-navline" aria-label="章节导览"><a href="10.html">← 前一章</a><a href="12.html">下一章 →</a></nav><p class="chapter-kicker">CHAPTER 11 · NUMERICAL ANALYSIS</p><h1>复合求积与 Romberg：从步长收敛到外推表</h1><p class="lead">复合梯形如何复用采样点？Richardson 外推怎样消去主导误差？从全局误差阶、Romberg 三角表到收敛失效边界，完整建立可复现的积分算法。</p><section id="paradox" aria-labelledby="paradox-heading"><h2 id="paradox-heading">01 · 步长减半，为什么误差不是每次都恰好缩小四倍？</h2><p>把 <code>f(x)=x⁴</code> 在 <code>[0,1]</code> 上积分，精确值是 <code>1/5</code>。单段梯形给出 <code>1/2</code>；把区间二等分，复合梯形变成 <code>9/32=0.28125</code>。误差明显下降，但并没有“自动变成精确值”。继续细分时，误差在渐近区间里大致按四倍缩小；再细到浮点误差或函数噪声主导时，这个比例就会失效。</p><p>本章解决两个不同的问题：<strong>复合求积</strong>通过局部近似控制每段误差；<strong>Romberg 外推</strong>利用误差随步长变化的规律，组合多个近似以消去主导误差项。它不是把任意函数的积分神奇地变成精确值，而是对一类平滑函数的渐近误差展开进行代数消元。</p><figure><img src="../assets/svg/11-panel-refine.svg" alt="同一区间从一个大梯形细分为两个、四个小梯形，并在每轮只补入新的中点函数值" loading="lazy"><figcaption>图 1 · 细分改变的是局部近似的尺度；相邻网格共享旧节点，计算新一层梯形时不必重算全部函数值。</figcaption></figure></section><section id="composite" aria-labelledby="composite-heading"><h2 id="composite-heading">02 · 复合梯形：局部面积相加与全局误差</h2><p>将区间均匀分成 <code>n</code> 段，步长 <code>h=(b−a)/n</code>，节点 <code>xᵢ=a+ih</code>。每段用端点连线替代曲线，再把梯形面积求和。对 <code>f∈C²[a,b]</code>，全局误差为二阶量；注意这是固定区间、等距细分和足够光滑前提下的结果。</p><div class="math-equation" role="group" aria-label="公式 11.1"><div class="math-scroll" role="region" tabindex="0" aria-label="复合梯形公式是两端半权重和内部节点全权重的采样和，公式可横向滚动"><math display="block" aria-label="复合梯形公式是两端半权重和内部节点全权重的采样和"><msubsup><mo>∫</mo><mi>a</mi><mi>b</mi></msubsup><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>d</mi><mi>x</mi><mo>≈</mo><mi>h</mi><mo>(</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mi>f</mi><mo>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo><mo>+</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></munderover><mi>f</mi><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo><mo>+</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mi>f</mi><mo>(</mo><msub><mi>x</mi><mi>n</mi></msub><mo>)</mo><mo>)</mo></math></div><div class="equation-tag">(11.1)</div></div><p>如果 <code>|f″(x)|≤M₂</code>，则常用的全局误差上界为 <code>|I−Tₙ|≤(b−a)M₂h²/12</code>。这个界依赖二阶导数有界，通常偏保守；它不是每个具体函数的实际误差公式。对光滑函数，Euler–Maclaurin 展开还能给出更细的偶次幂误差结构，这正是 Romberg 能工作的前提。</p><div class="math-equation" role="group" aria-label="公式 11.2"><div class="math-scroll" role="region" tabindex="0" aria-label="复合梯形的误差展开只含偶次步长幂，首项为二阶项，公式可横向滚动"><math display="block" aria-label="复合梯形的误差展开只含偶次步长幂，首项为二阶项"><mi>I</mi><mo>=</mo><mi>T</mi><mo>(</mo><mi>h</mi><mo>)</mo><mo>+</mo><msub><mi>c</mi><mn>1</mn></msub><msup><mi>h</mi><mn>2</mn></msup><mo>+</mo><msub><mi>c</mi><mn>2</mn></msub><msup><mi>h</mi><mn>4</mn></msup><mo>+</mo><msub><mi>c</mi><mn>3</mn></msub><msup><mi>h</mi><mn>6</mn></msup><mo>+</mo><mi>O</mi><mo>(</mo><msup><mi>h</mi><mn>8</mn></msup><mo>)</mo></math></div><div class="equation-tag">(11.2)</div></div><p>从工程角度看，复合梯形的价值不仅在于误差阶：当网格每次二分时，旧节点全部保留，新增点恰好是旧网格每个小区间的中点。这样就可以递推更新积分近似，避免重复函数求值。</p><div class="math-equation" role="group" aria-label="公式 11.3"><div class="math-scroll" role="region" tabindex="0" aria-label="网格二分时新一层梯形只需增加旧单元中点的函数值，公式可横向滚动"><math display="block" aria-label="网格二分时新一层梯形只需增加旧单元中点的函数值"><msub><mi>T</mi><mrow><mn>2</mn><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><msub><mi>T</mi><mi>n</mi></msub><mo>+</mo><mfrac><mi>h</mi><mn>2</mn></mfrac><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></munderover><mi>f</mi><mo>(</mo><mi>a</mi><mo>+</mo><mo>(</mo><mi>k</mi><mo>+</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>)</mo><mi>h</mi><mo>)</mo></math></div><div class="equation-tag">(11.3)</div></div><aside class="callout"><p><strong>实现约定：</strong>式 (11.3) 中的 <code>h</code> 是旧网格步长。求和的每一个点都是旧单元的中点；新网格步长为 <code>h/2</code>。不要把旧、新网格的步长符号混用。</p></aside></section><section id="richardson" aria-labelledby="richardson-heading"><h2 id="richardson-heading">03 · Richardson 外推：用两次近似消去一个误差项</h2><p>假设粗网格和细网格的梯形近似共享同一积分值，且误差首项确实服从 <code>c₁h²</code>。那么将 <code>h</code> 换成 <code>h/2</code> 后，该项缩小到原来的四分之一。对两个方程做线性组合即可消去未知常数 <code>c₁</code>，不需要先知道函数的二阶导数。</p><div class="math-equation" role="group" aria-label="公式 11.4"><div class="math-scroll" role="region" tabindex="0" aria-label="Richardson 一阶外推将四倍细网格梯形减去粗网格梯形再除以三，公式可横向滚动"><math display="block" aria-label="Richardson 一阶外推将四倍细网格梯形减去粗网格梯形再除以三"><msub><mi>R</mi><mn>1</mn></msub><mo>=</mo><mfrac><mrow><mn>4</mn><mi>T</mi><mo>(</mo><mi>h</mi><mo>/</mo><mn>2</mn><mo>)</mo><mo>−</mo><mi>T</mi><mo>(</mo><mi>h</mi><mo>)</mo></mrow><mn>3</mn></mfrac><mo>=</mo><mi>I</mi><mo>+</mo><mi>O</mi><mo>(</mo><msup><mi>h</mi><mn>4</mn></msup><mo>)</mo></math></div><div class="equation-tag">(11.4)</div></div><p>第一层外推恰好等价于相应网格上的复合 Simpson 公式；但从第二层开始，Romberg 不再只是重复套用固定 Newton–Cotes 权重，而是在外推表中逐次消除 <code>h⁴,h⁶,…</code> 项。第 <code>j</code> 层使用比例 <code>2^{2j}</code>，因为前一层的主导误差阶已提高到 <code>2j</code>。</p><figure><img src="../assets/svg/11-error-cancel.svg" alt="粗细两层梯形近似的误差主项相差四倍，通过线性组合抵消二阶误差" loading="lazy"><figcaption>图 2 · 外推消去的是渐近误差展开中的首项，而不是所有误差来源；剩余项由更高阶幂控制。</figcaption></figure></section><section id="romberg" aria-labelledby="romberg-heading"><h2 id="romberg-heading">04 · Romberg 三角表：每一列再提高一个误差阶</h2><p>令 <code>Rₖ,₀</code> 表示使用 <code>2ᵏ</code> 个小区间的复合梯形结果。列号 <code>j</code> 表示已经完成 <code>j</code> 次外推。行列关系为：左侧第一列由网格二分生成，右侧每个格子由其左上和上方的两个近似组合。</p><div class="math-equation" role="group" aria-label="公式 11.5"><div class="math-scroll" role="region" tabindex="0" aria-label="Romberg 三角表递推关系，公式可横向滚动"><math display="block" aria-label="Romberg 三角表递推关系"><msub><mi>R</mi><mrow><mi>k</mi><mo>,</mo><mi>j</mi></mrow></msub><mo>=</mo><mfrac><mrow><msup><mn>4</mn><mi>j</mi></msup><msub><mi>R</mi><mrow><mi>k</mi><mo>,</mo><mi>j</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>−</mo><msub><mi>R</mi><mrow><mi>k</mi><mo>−</mo><mn>1</mn><mo>,</mo><mi>j</mi><mo>−</mo><mn>1</mn></mrow></msub></mrow><mrow><msup><mn>4</mn><mi>j</mi></msup><mo>−</mo><mn>1</mn></mrow></mfrac><mo>,</mo><mspace width=".4em"/><mn>1</mn><mo>≤</mo><mi>j</mi><mo>≤</mo><mi>k</mi></math></div><div class="equation-tag">(11.5)</div></div><figure><img src="../assets/svg/11-romberg-table.svg" alt="Romberg 数值表以梯形近似为第一列，向右逐次外推形成上三角表" loading="lazy"><figcaption>图 3 · 每次外推使用同一行的左侧结果和上一行对应列的结果；右下角对角线通常是高精度候选。</figcaption></figure><p>第一列可以通过式 (11.3) 增量计算。实际程序通常保存前一行和当前行即可，不必保留完整二维表；但教学表格保留所有项有助于观察收敛趋势。常见误差指示量是相邻对角线差值 <code>|Rₖ,ₖ−Rₖ₋₁,ₖ₋₁|</code>，它只有在渐近区间内才具有可靠的误差估计意义，不是对所有积分都成立的严格上界。</p><div class="demo" data-lab="romberg"><label for="romberg-mode">切换被积函数，观察 Romberg 对角线收敛</label><select id="romberg-mode" data-input><option value="exp">f(x)=eˣ，精确积分 e−1</option><option value="poly">f(x)=x⁴，精确积分 1/5</option></select><output data-output aria-live="polite">将逐层比较复合梯形与 Romberg 对角线。</output></div></section><section id="experiment" aria-labelledby="experiment-heading"><h2 id="experiment-heading">05 · 可复现实现：新网格只评价新增中点</h2><pre><code>import math
 
-        <p>大家好，我是你们的讲师。上一章我们学了梯形公式和 Simpson 公式。大家可能会想：这两个公式的误差项里都有 $(b-a)$ 的高次幂，如果区间很大，误差岂不是很大？确实如此。那怎么办呢？答案很朴素——<strong>分而治之</strong>。把大区间切成很多小区间，在每个小区间上用简单公式，这就是复合求积的思想。</p>
-
-        <p>说到这个我想起一个有趣的类比。你去测量一段弯曲山路的总长度，如果用一把直尺一次性量整个路段，误差会大得离谱。但如果你把路分成很多小段，每段用直尺量，把结果加起来，精度就高多了。这就是复合求积的直觉。有趣的是，我们还可以"精确估计"直尺测量产生的误差模式，然后通过外推计算出更准确的结果——这就是 Romberg 方法的核心。</p>
-
-        <h2>11.1 复合求积公式</h2>
-
-        <p>将区间 $[a,b]$ 均匀分为 $n$ 个子区间，步长 $h = (b-a)/n$，节点 $x_i = a + ih$，$i = 0,1,\dots,n$。</p>
-
-        <p><strong>复合梯形公式：</strong>在每个子区间 $[x_i, x_{i+1}]$ 上应用梯形公式后求和：</p>
-
-        <pre><code>T_n = h · [½ f(x_0) + f(x_1) + f(x_2) + ... + f(x_{n-1}) + ½ f(x_n)]</code></pre>
-
-        <p>误差为 $O(h^2)$，即 $O(1/n^2)$。这意味着子区间数翻倍时，误差大约缩小为原来的 1/4。</p>
-
-        <p><strong>复合 Simpson 公式：</strong>在每个子区间 $[x_i, x_{i+1}]$ 上应用 Simpson 公式（需要 $n$ 为偶数）：</p>
-
-        <pre><code>S_n = h/3 · [f(x_0) + 4f(x_1) + 2f(x_2) + 4f(x_3) + ... + 2f(x_{n-2}) + 4f(x_{n-1}) + f(x_n)]</code></pre>
-
-        <p>误差为 $O(h^4)$，即 $O(1/n^4)$。这是复合梯形的大幅改进。</p>
-
-        <table>
-            <tr><th>方法</th><th>步长 $h$</th><th>误差阶</th><th>每减半步长误差缩小</th><th>适用场景</th></tr>
-            <tr><td>复合梯形</td><td>$O(1/n)$</td><td>$O(h^2)$</td><td>$\times 1/4$</td><td>低精度要求、光滑性一般的函数</td></tr>
-            <tr><td>复合 Simpson</td><td>$O(1/n)$</td><td>$O(h^4)$</td><td>$\times 1/16$</td><td>中等精度、被积函数光滑</td></tr>
-            <tr><td>复合 Boole</td><td>$O(1/n)$</td><td>$O(h^6)$</td><td>$\times 1/64$</td><td>高精度、被积函数非常光滑</td></tr>
-        </table>
-
-        <h2>11.2 步长选择与自适应策略</h2>
-
-        <p>在实践中我们面临一个问题：$n$ 应该取多大？如果 $n$ 太小精度不够，$n$ 太大会浪费计算资源。</p>
-
-        <p>一个实用的方法是<strong>误差的事后估计</strong>：分别用 $n$ 和 $2n$ 个子区间计算积分值，比较二者的差异。如果差异小于设定容差，就认为结果收敛了。</p>
-
-        <pre><code>def adaptive_trapezoidal(f, a, b, tol=1e-6, max_n=1_000_000):
-    """自适应步长复合梯形公式"""
-    n = 1
-    T_old = (b - a) * (f(a) + f(b)) / 2
-
-    for k in range(1, 30):  # 最多迭代 30 次
-        n = 2 * n
-        h = (b - a) / n
-
-        # 只计算新增节点（之前奇偶位置的节点已经算过了）
-        x = a + h
-        sum_new = 0.0
-        for i in range(1, n, 2):
-            sum_new += f(a + i * h)
-
-        T_new = T_old / 2 + h * sum_new
-
-        if abs(T_new - T_old) < tol:
-            print(f"收敛: n={n}, 积分值={T_new:.10f}")
-            return T_new
-        T_old = T_new
-
-    print("警告：未收敛到指定容差")
-    return T_old</code></pre>
-
-        <div class="tip">
-            <p><strong>自适应求积：</strong>上面的方法是对整个区间统一加密。更高效的做法是<strong>自适应求积</strong>——仅在误差大的区域加密。方法是：在每个子区间上分别用简单 Simpson 和复合 Simpson 计算，如果二者差异大，则递归地对半细分该子区间。这样在函数变化平缓的地方少算点，变化剧烈的地方多算点。Python 的 <code>scipy.integrate.quad</code> 就采用了类似的自适应策略。</p>
-        </div>
-
-        <h2>11.3 Richardson 外推</h2>
-
-        <p>Richardson 外推是数值分析中一个非常优雅的想法。它的核心观察是：对于复合梯形公式，误差具有 Euler-Maclaurin 展开形式：</p>
-
-        <pre><code>T(h) = I + c₁h² + c₂h⁴ + c₃h⁶ + ...</code></pre>
-
-        <p>注意！展开中只有 $h$ 的偶次幂，没有奇次幂。这意味着如果我们用步长 $h$ 和 $h/2$ 分别计算，然后做一个线性组合消去 $h^2$ 项，就可以得到 $O(h^4)$ 的精度：</p>
-
-        <pre><code>T_new = (4 · T(h/2) - T(h)) / 3</code></pre>
-
-        <p>这个组合恰好就是复合 Simpson 公式！也就是说，Simpson 公式可以理解为梯形公式的 Richardson 外推。</p>
-
-        <div class="highlight">
-            <p><strong>Euler-Maclaurin 展开的威力：</strong>对于周期函数在完整周期上的积分，Euler-Maclaurin 展开中的所有项都消失（因为端点处的导数相等），梯形公式的误差衰减比任何幂次都快——这就是为什么对于周期函数，最简单的复合梯形公式反而是最好的选择！这个结论在计算物理中有着重要的应用。</p>
-        </div>
-
-        <h2>11.4 Romberg 算法</h2>
-
-        <p>Richardson 外推可以重复进行。如果我们消去了 $h^2$ 项，剩下的展开以 $h^4$ 开头，我们可以再外推一次消去 $h^4$ 项，得到 $O(h^6)$ 的精度。依此类推——这就是 Romberg 算法。</p>
-
-        <p>Romberg 算法建立一个三角表格 $R_{k,j}$：</p>
-
-        <pre><code>R_{k,0} = T_{2^k} (复合梯形，步长 h = (b-a)/2^k)
-R_{k,j} = (4^j · R_{k,j-1} - R_{k-1,j-1}) / (4^j - 1),  j ≥ 1</code></pre>
-
-        <p>Python 实现：</p>
-
-        <pre><code>import numpy as np
-
-def romberg(f, a, b, max_k=10):
-    """Romberg 积分"""
-    R = np.zeros((max_k + 1, max_k + 1))
-
-    # 第 0 列：复合梯形序列
-    R[0, 0] = (b - a) * (f(a) + f(b)) / 2
-
-    for k in range(1, max_k + 1):
-        n = 2 ** k
-        h = (b - a) / n
-
-        # 复合梯形递推（只需计算新增节点）
-        sum_new = 0.0
-        for i in range(1, n, 2):
-            sum_new += f(a + i * h)
-        R[k, 0] = 0.5 * R[k-1, 0] + h * sum_new
-
-        # Richardson 外推
+def romberg(f, a, b, levels=6):
+    h = b - a
+    row = [0.5 * h * (f(a) + f(b))]
+    table = [row[:]]
+    for k in range(1, levels):
+        n = 2 ** (k - 1)
+        midpoint_sum = sum(
+            f(a + (j + 0.5) * h) for j in range(n)
+        )
+        h *= 0.5
+        t_new = 0.5 * row[0] + h * midpoint_sum
+        # Equivalent: T( h_old/2 ) = T(h_old)/2 + h_old/2 * sum(midpoints)
+        new = [t_new]
         for j in range(1, k + 1):
-            factor = 4 ** j
-            R[k, j] = (factor * R[k, j-1] - R[k-1, j-1]) / (factor - 1)
+            new.append(
+                (4**j * new[j-1] - row[j-1]) / (4**j - 1)
+            )
+        row = new
+        table.append(row[:])
+    return table
 
-    return R
-
-# 测试：∫_0^π sin(x) dx = 2.0
-f = np.sin
-R = romberg(f, 0, np.pi, max_k=6)
-
-# 打印 Romberg 表格
-print("Romberg 积分表 (∫_0^π sin(x) dx = 2.0):")
-print(f"{'k':>3} {'h':>10} {'R(k,0)':>14} {'R(k,1)':>14} {'R(k,2)':>14} {'R(k,3)':>14}")
-for k in range(7):
-    h = np.pi / (2**k)
-    row = [f"{k:3d}", f"{h:.6f}"]
-    for j in range(k+1):
-        row.append(f"{R[k,j]:.12f}")
-    print(" ".join(row))
-
-print(f"\n最佳估计 (R(6,6)): {R[6,6]:.15f}")
-print(f"真实误差: {abs(R[6,6] - 2.0):.2e}")</code></pre>
-
-        <div class="warning">
-            <p><strong>Romberg 的局限：</strong>Romberg 方法要求被积函数足够光滑，这样 Euler-Maclaurin 展开才有效。如果被积函数有奇点或不连续，外推可能失效甚至使结果更差。我见过一位同学用 Romberg 积分计算 $\int_0^1 \sqrt{x} \, dx$——$f(x) = \sqrt{x}$ 在 $x=0$ 处的导数无穷大，Euler-Maclaurin 展开不成立，Romberg 表格的对角线根本不收敛！遇到这种情况，需要先做变量替换消除奇点，或者使用专门处理奇点的求积方法。</p>
-        </div>
-
-        <p>本章我们学习了复合求积这个"分而治之"的思想，以及如何通过 Richardson 外推从低精度公式构造高精度公式。Romberg 算法将这两者结合，自动生成了一个精度递升的求积序列。下一章我们将学习数值积分中的"天花板"——Gauss 求积公式，它将节点和权重都作为自由变量来选择，实现了用最少的函数求值次数达到最高的代数精度。敬请期待！</p>
-
-        <div class="footer-nav">
-            <a href="10.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="12.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
-</body>
-</html>
+table = romberg(math.exp, 0.0, 1.0, levels=6)
+exact = math.e - 1.0
+assert abs(table[-1][-1] - exact) &lt; 1e-13
+assert abs(table[1][1] - exact) &lt; abs(table[1][0] - exact)
+print(&quot;R[5,5] =&quot;, table[-1][-1], &quot;error =&quot;, abs(table[-1][-1]-exact))</code></pre><p>这段实现故意只返回三角表，不把“对角线差”包装成严格误差界。每次细分会评价 <code>2ᵏ⁻¹</code> 个新中点；从而总函数评价数与最终最细网格节点数同阶，而不是每层都从头计算全部节点。</p><aside class="callout"><p><strong>数值检查：</strong>若 <code>f</code> 不够光滑、端点存在奇异性、被积函数带噪声，或外推阶数高到舍入误差主导，Romberg 表可能不再单调收敛。遇到局部尖峰或间断，分段/自适应求积通常比盲目加深外推表更可靠。</p></aside></section><section id="limits" aria-labelledby="limits-heading"><h2 id="limits-heading">06 · 何时停止：误差阶不是永远有效的承诺</h2><p>复合梯形与 Romberg 的误差分析依赖网格逐次细化以及足够的光滑性。若积分区间内有跳跃间断，误差展开通常不再是整齐的偶次幂序列；若端点有代数奇异性，误差阶也可能改变。此时外推仍可能给出一个数字，但不能只看它稳定到多少位就断言结果可信。</p><p>实用的停止条件应同时考虑：对角线变化量是否低于绝对/相对容差；函数评价预算是否用尽；外推表是否出现停滞或误差反弹；输入函数是否具有足够光滑性。对局部难点，可先分段积分，再对各段分别使用 Romberg，或选择带局部误差估计的自适应 Gauss–Kronrod 方法。</p><p>本章与下一章的连接是：Romberg 改善的是<strong>固定网格梯形公式的误差展开</strong>；Gauss 求积则改变节点和权重，让有限个采样值对更高次数多项式精确。两者优化的自由度不同，不能只用“阶数更高”作简单排名。</p></section><section id="references" aria-labelledby="references-heading"><h2 id="references-heading">原始资料与延伸阅读</h2><p>理论结论按原始数学资料与维护方文档交叉核对；本页图解、数值表和代码是独立构造的教学示例。</p><ol class="sources"><li><a href="https://dlmf.nist.gov/3.5">NIST DLMF §3.5 · Quadrature</a>：复合梯形、Simpson、Romberg、Gauss 求积与误差展开。</li><li><a href="https://lemesurierb.people.charleston.edu/numerical-methods-and-analysis-python/main/integrals-4-romberg-integration.html">LeMesurier · Romberg Integration</a>：梯形细分复用、Romberg 三角表与 Richardson 外推递推。</li></ol></section><nav class="chapter-bottom" aria-label="前后章节"><a href="10.html">← 前一章</a><a href="12.html">下一章 →</a></nav></article></main><footer><span>NUMERICAL ANALYSIS · 一份可独立阅读的计算笔记</span><a href="../index.html">返回课程首页</a></footer></body></html>
