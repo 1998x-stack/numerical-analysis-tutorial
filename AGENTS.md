@@ -24,3 +24,11 @@
 7. 验证 1440 / 768 / 390 / 360 px、打印、弱网、键盘焦点、公式排版、SVG 独立打开。
 8. 发布之前运行 `python scripts/validate_site.py` 与 `python examples/reproduce.py`；未运行的浏览器检查必须写“未验证”。
 9. 参考 Goldberg 的浮点算术论述、Higham 的数值稳定性理论、Berrut–Trefethen 的重心插值及 SciPy PCHIP 文档；区分来源结论和教学演示。
+
+## Chapter 06–10 review invariants
+- Spline: do not conflate natural S″ boundary with clamped S′ boundary; validate tridiagonal moment equations and example M=[0,-4,4,0].
+- Chebyshev: weight 1/sqrt(1-x²) is integrable yet undefined at ±1; use θ transform, not endpoint evaluation.
+- Continuous projection: distinguish L² and L∞ optimality and exact Gram integration from discrete least squares.
+- Least squares: explain rank and κ₂(AᵀA)=κ₂(A)² only for full column rank; use QR/SVD for reliable implementations.
+- Quadrature: Simpson 1:4:1 is for three equally spaced points; classic composite Simpson requires an even number of subintervals.
+- Browser QA now covers chapters 01–10; new figures must be individually legible and have source-grounded captions.

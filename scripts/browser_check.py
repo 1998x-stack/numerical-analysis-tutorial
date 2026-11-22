@@ -8,7 +8,7 @@ import sys
 
 ROOT=Path(__file__).resolve().parents[1]
 OUTPUT=ROOT/"qa"/"screenshots"
-PAGES=["index.html"]+[f"chapters/{n:02d}.html" for n in range(1,6)]
+PAGES=["index.html"]+[f"chapters/{n:02d}.html" for n in range(1,11)]
 SIZES=[(1440,900),(768,1024),(390,844),(360,800)]
 
 def run():
@@ -23,7 +23,9 @@ def run():
                 errors=[]
                 page.on("pageerror",lambda exc:errors.append(str(exc)))
                 page.goto((ROOT/path).as_uri(),wait_until="load")
-                page.wait_for_timeout(120)
+                # Lazy figures below the fold are not broken; request their loading first.
+                page.locator("figure img").evaluate_all("(imgs) => imgs.forEach(img => img.loading = 'eager')")
+                page.wait_for_function("() => [...document.querySelectorAll('figure img')].every(img => img.complete)", timeout=15000)
                 info=page.evaluate("""() => ({
                     width: document.documentElement.scrollWidth,
                     viewport: window.innerWidth,

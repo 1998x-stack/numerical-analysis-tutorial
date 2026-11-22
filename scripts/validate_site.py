@@ -29,7 +29,7 @@ def run():
     for page in pages:
         if not page.exists():errs.append(f"missing {page}");continue
         s=Scan();s.feed(page.read_text(encoding="utf-8"))
-        is_new=page.name in {f"{i:02}.html" for i in range(1,6)}
+        is_new=page.name in {f"{i:02}.html" for i in range(1,11)}
         if (page.name=="index.html" or is_new) and s.h1!=1:errs.append(f"{page}: must have exactly 1 h1, got {s.h1}")
         if is_new and (s.fig<2 or s.math<2 or "references" not in s.ids):errs.append(f"{page}: need figures, MathML and sources")
         if s.svgmath:errs.append(f"{page}: nested SVG MathML")
@@ -39,12 +39,32 @@ def run():
             if path and not (page.parent/path).exists():errs.append(f"{page}: broken {attr}={ref}")
             if ref.startswith("#") and ref[1:] and ref[1:] not in s.ids:errs.append(f"{page}: broken anchor {ref}")
     svgfiles=list((ROOT/"assets/svg").glob("*.svg"))
-    if len(svgfiles)<11:errs.append(f"expected 11 SVG diagrams, found {len(svgfiles)}")
+    if len(svgfiles)<26:errs.append(f"expected 26 SVG diagrams, found {len(svgfiles)}")
     for p in svgfiles:
         try:
             r=ET.parse(p).getroot();children={c.tag.rsplit("}",1)[-1] for c in r}
             if not r.get("viewBox") or not {"title","desc"}.issubset(children):errs.append(f"{p}: accessibility metadata missing")
         except ET.ParseError as exc:errs.append(f"{p}: {exc}")
+
+    # New publication gate: parse *actual* MathML fragments as XML and verify operator arity.
+    import re
+    for number in range(6,11):
+        p=ROOT/f"chapters/{number:02}.html"
+        html=p.read_text(encoding="utf-8")
+        fragments=re.findall(r"<math\b[^>]*>[\s\S]*?</math>",html)
+        if len(fragments)<2:
+            errs.append(f"{p}: expected at least 2 MathML display formulas")
+        for i,fragment in enumerate(fragments):
+            try:
+                formula=ET.fromstring(fragment)
+                if not formula.get("aria-label"):errs.append(f"{p}: MathML #{i} missing accessible label")
+                arity={"mfrac":2,"msub":2,"msup":2,"munder":2,"msubsup":3,"munderover":3}
+                for element in formula.iter():
+                    tag=element.tag.rsplit("}",1)[-1]
+                    if tag in arity and len(element)!=arity[tag]:
+                        errs.append(f"{p}: invalid <{tag}> with {len(element)} children in formula #{i}")
+            except ET.ParseError as exc:
+                errs.append(f"{p}: MathML formula #{i} malformed: {exc}")
     if errs:
         print("\n".join("ERROR: "+x for x in errs));sys.exit(1)
     print(f"OK: {len(pages)} canonical HTML pages; {len(svgfiles)} standalone SVGs; relative links and anchors")
