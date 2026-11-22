@@ -10,7 +10,7 @@
 - `index.html` + `assets/css/site.css`：全站入口，七条路径。
 - `courses.json`：课程唯一章节清单，包含 status: refined / legacy；同步维护链接。
 - `chapters/NN.html`：正式章节稳定路径；根目录 NN.html 为历史重定向。
-- `assets/css/article.css`：新版正文；`legacy.css`：过渡使用，06–28 不得误报已经精修。
+- `assets/css/article.css`：新版正文；`legacy.css`：过渡使用；当前 01–10 为 refined，11–28 为 legacy。必须以 `courses.json` 的 status 字段为准，不得将迁移等同于精修。
 - `assets/svg/NN-*.svg`：独立 SVG，viewBox、title、desc、清晰的尺寸与数学语义。
 - `examples/reproduce.py`：无需网络的确定性数值断言。
 
