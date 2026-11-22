@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t17b t17b-d" width="720" height="340" viewBox="0 0 720 340">
+<title id="t17b">解的相对误差放大倍数等于条件数</title>
+<desc id="t17b-d">对一族二乘二矩阵，实测倍率（红点）落在 y 等于 x 的参考线上，说明放大倍数受条件数控制。</desc>
+<rect width="720" height="340" rx="12" fill="#fffdf9"/>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<text x="34" y="42" font-size="20" font-weight="600" fill="#24424a">放大倍数 ≈ 条件数</text>
+<text x="34" y="68" font-size="13" fill="#607477">横轴 cond₂，纵轴解的相对误差 / 右端相对扰动（双对数）。</text>
+<rect x="150" y="80" width="490" height="220" fill="#fff" stroke="#e3e9e7"/>
+<path d="M150.0 300.0 L640.0 80.0" stroke="#147f80" stroke-width="2" stroke-dasharray="6 5"/>
+<circle cx="176.9" cy="287.9" r="6" fill="#c0392b" stroke="#fff" stroke-width="1.4"/>
+<circle cx="265.9" cy="248.0" r="6" fill="#c0392b" stroke="#fff" stroke-width="1.4"/>
+<circle cx="355.0" cy="208.0" r="6" fill="#c0392b" stroke="#fff" stroke-width="1.4"/>
+<circle cx="444.1" cy="168.0" r="6" fill="#c0392b" stroke="#fff" stroke-width="1.4"/>
+<circle cx="533.2" cy="128.0" r="6" fill="#c0392b" stroke="#fff" stroke-width="1.4"/>
+<circle cx="622.3" cy="88.0" r="6" fill="#c0392b" stroke="#fff" stroke-width="1.4"/>
+<text x="150.0" y="320" font-size="12" fill="#607477" text-anchor="middle">10^2</text>
+<text x="142" y="304.0" font-size="12" fill="#607477" text-anchor="end">10^2</text>
+<text x="283.6" y="320" font-size="12" fill="#607477" text-anchor="middle">10^5</text>
+<text x="142" y="244.0" font-size="12" fill="#607477" text-anchor="end">10^5</text>
+<text x="417.3" y="320" font-size="12" fill="#607477" text-anchor="middle">10^8</text>
+<text x="142" y="184.0" font-size="12" fill="#607477" text-anchor="end">10^8</text>
+<text x="550.9" y="320" font-size="12" fill="#607477" text-anchor="middle">10^11</text>
+<text x="142" y="124.0" font-size="12" fill="#607477" text-anchor="end">10^11</text>
+<text x="640.0" y="320" font-size="12" fill="#607477" text-anchor="middle">10^13</text>
+<text x="142" y="84.0" font-size="12" fill="#607477" text-anchor="end">10^13</text>
+<text x="200" y="330" font-size="13" font-weight="600" fill="#147f80">— 参考线 放大=cond</text>
+<text x="470" y="330" font-size="13" font-weight="600" fill="#c0392b">● 实测（二乘二族）</text>
+</g></svg>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t17a t17a-d" width="720" height="300" viewBox="0 0 720 300">
+<title id="t17a">l1、l2、l∞ 单位球的形状</title>
+<desc id="t17a-d">三种向量范数的单位球分别是菱形、圆与正方形，但都以原点为中心且包含彼此。</desc>
+<rect width="720" height="300" rx="12" fill="#fffdf9"/>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<text x="34" y="40" font-size="20" font-weight="600" fill="#24424a">三种向量范数的“单位球”</text>
+<text x="34" y="66" font-size="13" fill="#607477">‖x‖=1 的集合：l₁ 菱形、l₂ 圆、l∞ 正方形；有限维下它们互相等价。</text>
+<path d="M210 160 H510" stroke="#c9d5d1"/>
+<path d="M360 30 V290" stroke="#c9d5d1"/>
+<path d="M360 50 L470 160 L360 270 L250 160 Z" fill="#147f80" fill-opacity="0.14" stroke="#147f80" stroke-width="2"/>
+<circle cx="360" cy="160" r="110" fill="#ce7152" fill-opacity="0.12" stroke="#ce7152" stroke-width="2"/>
+<rect x="250" y="50" width="220" height="220" fill="#7563ab" fill-opacity="0.10" stroke="#7563ab" stroke-width="2"/>
+<text x="546" y="190" font-size="14" font-weight="600" fill="#7563ab">‖x‖∞ = 1</text>
+<text x="180" y="44" font-size="14" font-weight="600" fill="#147f80">‖x‖₁ = 1</text>
+<text x="428.2" y="83.8" font-size="14" font-weight="600" fill="#ce7152">‖x‖₂ = 1</text>
+</g></svg>
