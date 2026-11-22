@@ -1,0 +1,18 @@
+{
+  "chapter": "04",
+  "title": "Newton divided differences",
+  "claims": [
+    [
+      "Newton polynomial and O(n²) coefficient preparation",
+      "standard divided difference recurrence"
+    ],
+    [
+      "O(n) append only when old nodes and coefficients are retained",
+      "algebraic identity; numerical caveats included"
+    ]
+  ],
+  "urls": [
+    "https://epubs.siam.org/doi/10.1137/S0036144502417715",
+    "https://nhigham.com/accuracy-and-stability-of-numerical-algorithms/"
+  ]
+}

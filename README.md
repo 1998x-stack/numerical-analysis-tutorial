@@ -41,9 +41,11 @@ python -m http.server 8000
 # http://localhost:8000/
 python scripts/validate_site.py
 python examples/reproduce.py
+# 可选浏览器验收（需先 pip install playwright 并安装 chromium）
+python scripts/browser_check.py
 ```
 
 ## GitHub Pages
-该仓库预置 Pages Actions 工作流。请在 **Settings → Pages → Source** 选择 **GitHub Actions**。在工作流成功及公网 URL 可访问之前，不将站点标为已上线。
+本仓库历史记录已存在 GitHub 自动生成的 **pages build and deployment** 成功运行。为避免与现有 Pages 来源相冲突，本仓库自定义 Actions 仅负责静态、数值与浏览器验收；站点继续由现有 Pages 来源设置发布。若新仓库未启用，请在 **Settings → Pages → Build and deployment** 选择 **Deploy from a branch → main / (root)**。合入主分支后仍须核对 Pages 的最新构建和网站可访问性。
 
 具体写作、可视化、校验标准见 [AGENTS.md](AGENTS.md)。叙事灵感来自 [Olah-style-posts](https://github.com/1998x-stack/Olah-style-posts)，所有技术图解独立绘制。

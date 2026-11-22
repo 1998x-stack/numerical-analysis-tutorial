@@ -1,4 +1,4 @@
-name: Validate and publish Pages
+name: Validate numerical analysis site
 on:
   push:
     branches: [main]
@@ -6,11 +6,6 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-  pages: write
-  id-token: write
-concurrency:
-  group: pages
-  cancel-in-progress: true
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -18,21 +13,26 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
-      - name: Check pages, links, SVG, MathML
+      - name: Validate links, SVG and math presence
         run: python scripts/validate_site.py
       - name: Check deterministic numerical experiments
         run: python examples/reproduce.py
-  deploy:
-    if: github.event_name != 'pull_request'
+  browser:
     needs: validate
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with: { path: '.' }
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Install Chromium browser audit
+        run: |
+          python -m pip install playwright==1.56.0
+          python -m playwright install --with-deps chromium
+      - name: Inspect desktop/mobile pages, equations, demos
+        run: python scripts/browser_check.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-screenshots
+          path: qa/screenshots/
+          if-no-files-found: ignore

@@ -1,0 +1,17 @@
+{
+  "chapter": "03",
+  "title": "Lagrange interpolation and Runge phenomenon",
+  "claims": [
+    [
+      "Polynomial interpolation basis and node effects",
+      "Berrut & Trefethen 2004"
+    ],
+    [
+      "Runge example with equispaced versus Chebyshev-Lobatto nodes",
+      "independently generated numerical figure"
+    ]
+  ],
+  "urls": [
+    "https://epubs.siam.org/doi/10.1137/S0036144502417715"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "chapter": "01",
+  "title": "Error measures and finite precision",
+  "claims": [
+    [
+      "absolute vs relative error; near-zero limitation",
+      "Higham 2002"
+    ],
+    [
+      "IEEE binary64 53 bits; rounding model",
+      "Goldberg 1991"
+    ]
+  ],
+  "urls": [
+    "https://nhigham.com/accuracy-and-stability-of-numerical-algorithms/",
+    "https://docs.oracle.com/cd/E19422-01/819-3693/ncg_goldberg.html"
+  ]
+}
