@@ -17,7 +17,7 @@
         rhs[i]-=k*rhs[i-1]
     M=[0.0]*n
     for i in range(n-1,-1,-1):
-        M[i]=(rhs[i]-up[i]*M[i+1])/diag[i]
+        M[i]=(rhs[i]-up[i]*(M[i+1] if i+1<n else 0.0))/diag[i]
     return M
 
 M=natural_second_derivatives([0,1,2,3],[0,1,0,1])
