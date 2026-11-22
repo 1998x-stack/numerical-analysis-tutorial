@@ -97,7 +97,7 @@ def second_derivatives(xs,ys,clamped=False):
         rhs[i]-=factor*rhs[i-1]
     M=[0.0]*n
     for i in range(n-1,-1,-1):
-        M[i]=(rhs[i]-upper[i]*M[i+1])/diag[i]
+        M[i]=(rhs[i]-upper[i]*(M[i+1] if i+1<n else 0.0))/diag[i]
     return M
 
 def natural_value_half(xs,ys,M):
