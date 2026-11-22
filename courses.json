@@ -74,7 +74,7 @@
         "追赶法求解"
       ],
       "file": "chapters/06.html",
-      "status": "legacy"
+      "status": "refined"
     },
     {
       "num": "07",
@@ -86,7 +86,7 @@
         "Chebyshev多项式"
       ],
       "file": "chapters/07.html",
-      "status": "legacy"
+      "status": "refined"
     },
     {
       "num": "08",
@@ -98,7 +98,7 @@
         "Fourier级数联系"
       ],
       "file": "chapters/08.html",
-      "status": "legacy"
+      "status": "refined"
     },
     {
       "num": "09",
@@ -110,7 +110,7 @@
         "非线性最小二乘"
       ],
       "file": "chapters/09.html",
-      "status": "legacy"
+      "status": "refined"
     },
     {
       "num": "10",
@@ -122,7 +122,7 @@
         "梯形与Simpson公式"
       ],
       "file": "chapters/10.html",
-      "status": "legacy"
+      "status": "refined"
     },
     {
       "num": "11",

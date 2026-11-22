@@ -5,8 +5,8 @@
 **首页目标地址**：https://1998x-stack.github.io/numerical-analysis-tutorial/ （实际访问取决于 Pages 设置和部署结果）
 
 ## 内容状态
-- **01–05**：第一批独立深度重构，包含数学推导、原创 SVG、反例和实验。
-- **06–28**：原文无损迁移到 `chapters/`，尚未逐章技术复审，保留继续改进空间。
+- **01–10**：两批独立深度重构，包含数学推导、26 幅原创 SVG、交互与可复现实验。
+- **11–28**：原文保留在 `chapters/`，尚未逐章技术复审。
 - 根目录 `01.html` 等历史入口仅作跳转，保证旧链接兼容。
 
 ## 七条学习路线
@@ -42,10 +42,10 @@ python -m http.server 8000
 python scripts/validate_site.py
 python examples/reproduce.py
 # 可选浏览器验收（需先 pip install playwright 并安装 chromium）
-python scripts/browser_check.py
+python scripts/browser_check.py  # 11 页 × 4 视口 = 44 次浏览器检查
 ```
 
 ## GitHub Pages
-本仓库历史记录已存在 GitHub 自动生成的 **pages build and deployment** 成功运行。为避免与现有 Pages 来源相冲突，本仓库自定义 Actions 仅负责静态、数值与浏览器验收；站点继续由现有 Pages 来源设置发布。若新仓库未启用，请在 **Settings → Pages → Build and deployment** 选择 **Deploy from a branch → main / (root)**。合入主分支后仍须核对 Pages 的最新构建和网站可访问性。
+2026-11-22 已完成第一批主分支 Pages 部署，后续仍逐次核查部署状态。本仓库历史记录已存在 GitHub 自动生成的 **pages build and deployment** 成功运行。为避免与现有 Pages 来源相冲突，本仓库自定义 Actions 仅负责静态、数值与浏览器验收；站点继续由现有 Pages 来源设置发布。若新仓库未启用，请在 **Settings → Pages → Build and deployment** 选择 **Deploy from a branch → main / (root)**。合入主分支后仍须核对 Pages 的最新构建和网站可访问性。
 
 具体写作、可视化、校验标准见 [AGENTS.md](AGENTS.md)。叙事灵感来自 [Olah-style-posts](https://github.com/1998x-stack/Olah-style-posts)，所有技术图解独立绘制。

@@ -1,0 +1,22 @@
+{
+  "chapter": "10",
+  "sources": [
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.simpson.html",
+      "claims": [
+        "Equidistant odd-count samples degree-3 exactness"
+      ]
+    },
+    {
+      "url": "https://dlmf.nist.gov/3.5",
+      "claims": [
+        "Interpolatory quadrature and degree of exactness"
+      ]
+    }
+  ],
+  "checks": [
+    "trapezoid x^0,x^1 exact",
+    "Simpson x^0..x^3 exact",
+    "x^4 Simpson error +1/120 on [0,1]"
+  ]
+}

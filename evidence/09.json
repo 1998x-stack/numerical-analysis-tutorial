@@ -1,0 +1,22 @@
+{
+  "chapter": "09",
+  "sources": [
+    {
+      "url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.lstsq.html",
+      "claims": [
+        "Minimum-norm solution and singular-value rank diagnostics"
+      ]
+    },
+    {
+      "url": "https://www.netlib.org/lapack/explore-html/d6/d4b/dgelsy_8f_source.html",
+      "claims": [
+        "Pivoted QR for least squares"
+      ]
+    }
+  ],
+  "checks": [
+    "Full-column-rank κ₂(AᵀA)=κ₂(A)²",
+    "three-point line fit intercept 1 slope 0.5 SSE 1.5",
+    "residual orthogonal to constant/x columns"
+  ]
+}

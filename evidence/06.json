@@ -1,0 +1,18 @@
+{
+  "chapter": "06",
+  "sources": [
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.CubicSpline.html",
+      "claims": [
+        "Natural: endpoint second derivatives zero",
+        "clamped string: endpoint first derivatives zero",
+        "nonzero endpoint derivatives supplied as tuple"
+      ]
+    }
+  ],
+  "checks": [
+    "natural example nodes 0,1,2,3: M=[0,-4,4,0]",
+    "zero-clamped example: M=[6,-6,6,-6]",
+    "S(0.5)=0.75"
+  ]
+}
