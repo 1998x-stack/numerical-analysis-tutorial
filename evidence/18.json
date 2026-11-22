@@ -1,0 +1,30 @@
+{
+  "chapter": "18",
+  "sources": [
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html",
+      "claims": [
+        "Sparse iterative solvers and preconditioners (CG, GMRES)"
+      ]
+    },
+    {
+      "url": "https://www.netlib.org/linalg/html_templates/Templates.html",
+      "claims": [
+        "Unified matrix-splitting framework and convergence criterion rho(G) < 1"
+      ]
+    },
+    {
+      "url": "https://nhigham.com/accuracy-and-stability-of-numerical-algorithms/",
+      "claims": [
+        "Matrix splittings, diagonal dominance, and iterative convergence"
+      ]
+    }
+  ],
+  "checks": [
+    "1D Poisson tridiag(-1,2,-1), n=10: rho_J = cos(pi/11) = 0.9595",
+    "rho_GS = rho_J^2 = 0.9206 (matches theory, < 1e-3)",
+    "rho_J > rho_GS > rho_SOR: 0.9595 > 0.9206 > 0.5604 (optimal SOR)",
+    "iterations to 1e-6: Jacobi 335, Gauss-Seidel 168, SOR 24",
+    "error decay ~ rho^k; rho<1 required for convergence"
+  ]
+}
