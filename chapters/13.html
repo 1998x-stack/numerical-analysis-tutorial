@@ -1,214 +1,104 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第13章 数值微分</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="数值积分平滑噪声，数值微分放大噪声。本文比较前向、后向、中心差分的误差阶，推导截断与舍入之间的最优步长，并说明复数步长法如何消除相消性损失。">
+<title>第 13 章 · 数值微分：最优步长不是越小越好 | 数值分析</title>
+<link rel="stylesheet" href="../assets/css/article.css">
+<script src="../assets/js/chapter-labs.js" defer></script>
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>📐 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 数值分析概述</a></li>
-            <li><a href="02.html">第2章 误差分析与数值稳定性</a></li>
-            <li><a href="03.html">第3章 插值法基础</a></li>
-            <li><a href="04.html">第4章 Newton插值与均差</a></li>
-            <li><a href="05.html">第5章 Hermite插值与分段插值</a></li>
-            <li><a href="06.html">第6章 三次样条插值</a></li>
-            <li><a href="07.html">第7章 函数逼近基本理论</a></li>
-            <li><a href="08.html">第8章 最佳平方逼近</a></li>
-            <li><a href="09.html">第9章 最小二乘曲线拟合</a></li>
-            <li><a href="10.html">第10章 数值积分基础</a></li>
-            <li><a href="11.html">第11章 复合求积与Romberg外推</a></li>
-            <li><a href="12.html">第12章 Gauss求积公式</a></li>
-            <li><a href="13.html" class="active">第13章 数值微分</a></li>
-            <li><a href="14.html">第14章 正交多项式与数值积分</a></li>
-            <li><a href="15.html">第15章 Gauss消去法与LU分解</a></li>
-            <li><a href="16.html">第16章 Cholesky分解与追赶法</a></li>
-            <li><a href="17.html">第17章 向量/矩阵范数与条件数</a></li>
-            <li><a href="18.html">第18章 经典迭代法</a></li>
-            <li><a href="19.html">第19章 Krylov子空间与共轭梯度法</a></li>
-            <li><a href="20.html">第20章 非线性方程求根(一)</a></li>
-            <li><a href="21.html">第21章 非线性方程求根(二)</a></li>
-            <li><a href="22.html">第22章 非线性方程组Newton法</a></li>
-            <li><a href="23.html">第23章 矩阵特征值计算</a></li>
-            <li><a href="24.html">第24章 QR方法与特征值</a></li>
-            <li><a href="25.html">第25章 常微分方程数值解(一)</a></li>
-            <li><a href="26.html">第26章 常微分方程数值解(二)</a></li>
-            <li><a href="27.html">第27章 刚性方程与线性多步法</a></li>
-            <li><a href="28.html">第28章 综合实战：从算法到代码</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <h1>第13章 数值微分</h1>
-
-        <p>大家好，我是你们的讲师。今天我们来聊一个表面上看起来很简单、但实际陷阱非常多的话题——数值微分。如果说数值积分是"用离散和近似积分"的稳健过程，那么数值微分就是"用离散差近似导数"的不稳定过程。"积分平滑噪声，微分放大噪声"——这是数值分析中一条非常重要的经验法则。</p>
-
-        <p>我想起一个亲身经历的故事。有个师兄做控制系统设计，传感器的输出信号有轻微的噪声。他直接用差分法计算信号的导数来做反馈控制，结果控制系统剧烈振荡。检查了很久才发现问题不在控制器，而在数值微分——差分运算把传感器的高频噪声放大了几十万倍。后来他加了一个低通滤波器再微分，系统就稳定了。这个教训在工程实践中太常见了，所以今天我们要重点讨论<strong>步长选择</strong>和<strong>误差平衡</strong>的问题。</p>
-
-        <h2>13.1 差商逼近的基本方法</h2>
-
-        <p>数值微分的起点是 Taylor 展开。给定 $f \in C^3$，在 $x$ 处展开：</p>
-
-        <pre><code>f(x+h) = f(x) + h f'(x) + h²/2 f''(x) + h³/6 f'''(ξ₁)
-f(x-h) = f(x) - h f'(x) + h²/2 f''(x) - h³/6 f'''(ξ₂)</code></pre>
-
-        <p>由第一个式子得到<strong>前向差分</strong>（forward difference）：</p>
-
-        <pre><code>f'(x) ≈ (f(x+h) - f(x)) / h + O(h)</code></pre>
-
-        <p>由第二个式子得到<strong>后向差分</strong>（backward difference）：</p>
-
-        <pre><code>f'(x) ≈ (f(x) - f(x-h)) / h + O(h)</code></pre>
-
-        <p>将两个式子相减得到<strong>中心差分</strong>（central difference）：</p>
-
-        <pre><code>f'(x) ≈ (f(x+h) - f(x-h)) / (2h) + O(h²)</code></pre>
-
-        <p>中心差分的误差阶是 $O(h^2)$，比前向/后向差分高一阶——这是对称性的回报。</p>
-
-        <div class="tip">
-            <p><strong>什么时候用哪种？</strong>在区间内部，优先用中心差分，精度高一阶。在区间端点（没有 $f(x-h)$ 可用时），用前向或后向差分。如果你需要二阶导数，中心差分为：$f''(x) \approx (f(x+h) - 2f(x) + f(x-h)) / h² + O(h²)$。</p>
-        </div>
-
-        <h2>13.2 步长选择的误差平衡</h2>
-
-        <p>这是数值微分中最关键也最容易被忽视的问题。总误差由两部分组成：</p>
-
-        <pre><code>总误差 = 截断误差（truncation error）+ 舍入误差（roundoff error）</code></pre>
-
-        <p>以中心差分为例：</p>
-        <ul>
-            <li><strong>截断误差</strong>：$\approx M h^2 / 6$，其中 $M = \max|f'''(\xi)|$。$h$ 越小，截断误差越小。</li>
-            <li><strong>舍入误差</strong>：$\approx \varepsilon / h$，其中 $\varepsilon$ 是机器精度（float64 约 $2\times10^{-16}$）。$h$ 越小，舍入误差越大！</li>
-        </ul>
-
-        <p>为什么会这样？因为当 $h$ 非常小时，$f(x+h)$ 和 $f(x-h)$ 几乎相等，两者的差包含大量的<strong>相消性损失</strong>（catastrophic cancellation）——有效数字位数急剧减少。</p>
-
-        <p>优化 $h$：使总误差最小，求导得最优步长 $h_{\text{opt}} \approx \sqrt[3]{3\varepsilon / M}$。对于 float64，大约在 $h \approx 10^{-5}$ 量级。</p>
-
-        <pre><code>import numpy as np
-
-def f(x):
-    return np.sin(x)
-
-def f_prime_exact(x):
-    return np.cos(x)
+<a class="skip" href="#content">跳转正文</a>
+<header class="site-header"><div class="topbar"><a class="brand" href="../index.html"><span>∑</span> NUMERICAL <b>ANALYSIS</b></a><nav aria-label="课程导航"><a href="../index.html#catalog">全部章节</a><a href="https://github.com/1998x-stack/numerical-analysis-tutorial">源码与勘误</a></nav></div></header>
+<main class="article-shell" id="content">
+<aside class="article-toc"><nav aria-label="本章目录"><small>ON THIS PAGE · CH 13</small><ol>
+<li><a href="#amplify">01 · 为什么微分放大噪声</a></li>
+<li><a href="#stencils">02 · 差商格式与误差阶</a></li>
+<li><a href="#optimum">03 · 截断与舍入的平衡：最优步长</a></li>
+<li><a href="#complex">04 · 复数步长法：绕开相消</a></li>
+<li><a href="#experiment">05 · 实验：U 形误差曲线</a></li>
+<li><a href="#limits">06 · 失败边界</a></li>
+<li><a href="#references">原始资料</a></li>
+</ol></nav></aside>
+<article class="article-body">
+<nav class="chapter-navline" aria-label="章节导览"><a href="12.html">← 前一章</a><a href="14.html">下一章 →</a></nav>
+<p class="chapter-kicker">CHAPTER 13 · NUMERICAL ANALYSIS</p>
+<h1>数值微分：最优步长不是越小越好</h1>
+<p class="lead">前几章我们一直在“用离散逼近连续算子”，大多越细越准。数值微分却相反：缩小步长会同时放大舍入误差，因此存在一个非零的最优步长。本章把这条权衡讲清楚，并给出绕开它的复数步长法。</p>
+<section id="amplify" aria-labelledby="amplify-heading">
+<h2 id="amplify-heading">01 · 为什么微分放大噪声</h2>
+<p>求积分是“平均”：输入上的扰动在有界区间上被积分平均掉，结果误差量级为 <code>δ·(b−a)</code>。求导是“求极限”：差商要除以步长 <code>h</code>，而分子里两个几乎相等的量相减，会把测量噪声放到分子上再除以一个很小的 <code>h</code>。</p>
+<p>设真实信号为 <code>f</code>，测量为 <code>f+η</code>，且 <code>|η|≤δ</code>。中心差分的噪声部分满足</p>
+<div class="math-equation" role="group" aria-label="公式 13.1"><div class="math-scroll" role="region" tabindex="0" aria-label="差分算子作用在噪声上的绝对值不超过两倍噪声幅度除以步长，必要时可横向滚动"><math display="block" aria-label="差分算子作用在噪声上的绝对值不超过两倍噪声幅度除以步长"><mo>|</mo><msub><mi>D</mi><mi>h</mi></msub><mi>η</mi><mo>|</mo><mo>≤</mo><mfrac><mrow><mn>2</mn><mi>δ</mi></mrow><mi>h</mi></mfrac></math></div><div class="equation-tag">(13.1)</div></div>
+<p><code>h</code> 越小，噪声被放大得越厉害。这就是数值微分与数值积分在定性上的区别：前者对高频扰动极其敏感，本质上是一个<strong>不适定</strong>问题——微小的输入扰动可以造成任意大的输出扰动。因此实际使用中要么先滤波，要么改用第 04 节的复数步长法。</p>
+</section>
+<section id="stencils" aria-labelledby="stencils-heading">
+<h2 id="stencils-heading">02 · 差商格式与误差阶</h2>
+<p>差商格式都来自 Taylor 展开。将 <code>f(x+h)</code> 与 <code>f(x−h)</code> 在 <code>x</code> 处展开、再做加减，就能得到不同误差阶的公式。前向差分只保留线性项：</p>
+<div class="math-equation" role="group" aria-label="公式 13.2"><div class="math-scroll" role="region" tabindex="0" aria-label="前向差分用点右函数值减本点值再除以步长，误差一阶，必要时可横向滚动"><math display="block" aria-label="前向差分用点右函数值减本点值再除以步长，误差一阶"><msup><mi>f</mi><mo>′</mo></msup><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mfrac><mrow><mi>f</mi><mo>(</mo><mi>x</mi><mo>+</mo><mi>h</mi><mo>)</mo><mo>−</mo><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mi>h</mi></mfrac><mo>+</mo><mi>O</mi><mo>(</mo><mi>h</mi><mo>)</mo></math></div><div class="equation-tag">(13.2)</div></div>
+<p>后向差分同理。把两式相减，<code>h</code> 的奇次项相消，得到中心差分，误差降为二阶：</p>
+<div class="math-equation" role="group" aria-label="公式 13.3"><div class="math-scroll" role="region" tabindex="0" aria-label="中心差分用点右函数值减点左函数值再除以两倍步长，误差二阶，必要时可横向滚动"><math display="block" aria-label="中心差分用点右函数值减点左函数值再除以两倍步长，误差二阶"><msup><mi>f</mi><mo>′</mo></msup><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mfrac><mrow><mi>f</mi><mo>(</mo><mi>x</mi><mo>+</mo><mi>h</mi><mo>)</mo><mo>−</mo><mi>f</mi><mo>(</mo><mi>x</mi><mo>−</mo><mi>h</mi><mo>)</mo></mrow><mrow><mn>2</mn><mi>h</mi></mrow></mfrac><mo>+</mo><mi>O</mi><mo>(</mo><msup><mi>h</mi><mn>2</mn></msup><mo>)</mo></math></div><div class="equation-tag">(13.3)</div></div>
+<figure><img src="../assets/svg/13-difference-stencils.svg" alt="在正弦曲线上，前向、后向差分的单侧弦与中心差分的对称弦对比真实切线" loading="lazy"><figcaption>图 1 · 三种差商用不同的弦斜率近似切线：前向与后向是单侧弦（一阶），中心是跨过 <code>x</code> 的对称弦（二阶），更贴紧真实切线。</figcaption></figure>
+<p>类似地，二阶中心差分 <code>f″(x)≈(f(x+h)−2f(x)+f(x−h))/h²</code> 也是 <code>O(h²)</code>。提高阶数可用更宽的模板，例如四阶中心差分用五个点。</p>
+</section>
+<section id="optimum" aria-labelledby="optimum-heading">
+<h2 id="optimum-heading">03 · 截断与舍入的平衡：最优步长</h2>
+<p>中心差分的总误差是两股力量的叠合。截断误差随 <code>h</code> 下降，舍入误差却随 <code>h</code> 上升，因为分子上相减的两个量越来越接近，相对舍入被放大。记机器精度 <code>ε</code>、<code>M=sup|f‴|</code>，则误差的量级为</p>
+<div class="math-equation" role="group" aria-label="公式 13.4"><div class="math-scroll" role="region" tabindex="0" aria-label="总误差约为六分之M乘步长平方加上机器精度乘函数值绝对值除以步长，必要时可横向滚动"><math display="block" aria-label="总误差约等于六分之M乘步长平方加机器精度乘函数值除以步长"><mi>E</mi><mo>(</mo><mi>h</mi><mo>)</mo><mo>≈</mo><mfrac><mrow><mi>M</mi><msup><mi>h</mi><mn>2</mn></msup></mrow><mn>6</mn></mfrac><mo>+</mo><mfrac><mrow><mi>ε</mi><mo>|</mo><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>|</mo></mrow><mi>h</mi></mfrac></math></div><div class="equation-tag">(13.4)</div></div>
+<p>对 <code>h</code> 求极值，得最优步长</p>
+<div class="math-equation" role="group" aria-label="公式 13.5"><div class="math-scroll" role="region" tabindex="0" aria-label="最优步长等于三倍机器精度乘函数值除以M的三次根，必要时可横向滚动"><math display="block" aria-label="最优步长等于三倍机器精度乘函数值除以M的三次根"><msub><mi>h</mi><mrow><mtext>opt</mtext></mrow></msub><mo>≈</mo><msup><mrow><mo>(</mo><mfrac><mrow><mn>3</mn><mi>ε</mi><mo>|</mo><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>|</mo></mrow><mi>M</mi></mfrac><mo>)</mo></mrow><mrow><mn>1</mn><mo>/</mo><mn>3</mn></mrow></msup></math></div><div class="equation-tag">(13.5)</div></div>
+<p>当 <code>|f|</code> 与 <code>M</code> 均为 <code>O(1)</code>、<code>ε≈2.2×10⁻¹⁶</code> 时，<code>h_opt≈6×10⁻⁶</code>，对应最小误差约 <code>10⁻¹¹</code> 量级。要点是：<strong>最优步长不为零</strong>，把 <code>h</code> 取到 <code>10⁻¹⁶</code> 会得到完全失真的结果。图 2 给出实测的 U 形曲线。</p>
+<figure><img src="../assets/svg/13-step-size-tradeoff.svg" alt="中心差分误差关于步长的U形曲线，左侧截断项斜率为二，右侧舍入项斜率为负一" loading="lazy"><figcaption>图 2 · 中心差分实测误差（实线）与两股误差的预期斜率：<code>h</code> 偏大时截断项 <code>∝h²</code> 占主导（橙虚线），<code>h</code> 偏小时舍入项 <code>∝1/h</code> 占主导（紫虚线）。最优点约在 <code>h≈10⁻⁵</code>。（教学示意，数值由双精度 <code>math.sin</code> 扫描得到。）</figcaption></figure>
+</section>
+<section id="complex" aria-labelledby="complex-heading">
+<h2 id="complex-heading">04 · 复数步长法：绕开相消</h2>
+<p>把步长取成纯虚数 <code>ih</code>，泰勒展开变为</p>
+<div class="math-equation" role="group" aria-label="公式 13.6"><div class="math-scroll" role="region" tabindex="0" aria-label="复数步长的导数为虚部除以步长加二阶余项，必要时可横向滚动"><math display="block" aria-label="复数步长的导数为虚部除以步长加二阶余项"><msup><mi>f</mi><mo>′</mo></msup><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mfrac><mrow><mo>Im</mo><mo>(</mo><mi>f</mi><mo>(</mo><mi>x</mi><mo>+</mo><mi>i</mi><mi>h</mi><mo>)</mo><mo>)</mo></mrow><mi>h</mi></mfrac><mo>+</mo><mi>O</mi><mo>(</mo><msup><mi>h</mi><mn>2</mn></msup><mo>)</mo></math></div><div class="equation-tag">(13.6)</div></div>
+<p>关键在“虚部”二字：导数直接来自 <code>f(x+ih)</code> 的虚部除以 <code>h</code>，<strong>不需要两个大数相减</strong>。既然没有相消性损失，<code>h</code> 可以取到 <code>10⁻²⁰</code> 甚至更小，截断误差 <code>O(h²)</code> 随之趋近于零。代价是：函数必须在路径上解析（全纯），且代码需支持复数运算；含 <code>abs</code>、<code>max</code>、分支判断的函数不能直接使用。</p>
+<p>该方法由 Martins 等人在 2003 年系统提出并用于飞行器气动导数计算，之后进入工程与优化库的标准工具箱。</p>
+</section>
+<section id="experiment" aria-labelledby="experiment-heading">
+<h2 id="experiment-heading">05 · 实验：U 形误差曲线</h2>
+<p>对 <code>f(x)=sin x</code> 在 <code>x=1</code> 处扫描步长。预期是：中心差分误差先随 <code>h</code> 减小而下降，在 <code>h≈10⁻⁵</code> 附近触底，然后因舍入反而上升；复数步长法没有相消项，把 <code>h</code> 继续减小时仍能降到机器精度附近。</p>
+<div class="demo" data-lab="diff-step"><label for="diff-step-mode">选择步长指数 k（h = 10⁻ᵏ），对比两种方法</label><select id="diff-step-mode" data-input><option value="4">h = 10⁻⁴</option><option value="5">h = 10⁻⁵（接近最优）</option><option value="8">h = 10⁻⁸</option><option value="12">h = 10⁻¹²</option></select><output data-output aria-live="polite">中心差分与复数步长的值与误差将在此显示。</output></div>
+<pre><code>import cmath, math
 
 x = 1.0
-exact = f_prime_exact(x)
+exact = math.cos(x)
 
-print("步长扫描 — 中心差分逼近 f'(x) = cos(x) 在 x=1:")
-print(f"{'h':>12} {'approx':>20} {'error':>15}")
-print("-" * 50)
+def central(f, x, h):
+    return (f(x + h) - f(x - h)) / (2 * h)
 
-for k in range(-1, -17, -1):
-    h = 10.0 ** k
-    approx = (f(x + h) - f(x - h)) / (2 * h)
-    error = abs(approx - exact)
-    print(f"{h:.0e} {approx:20.14f} {error:15.10e}")
+def complex_step(f, x, h):        # f(x+ih) 的虚部除以 h
+    return f(x + 1j * h).imag / h
 
-# 找到最优 h
-hs = 10.0 ** np.arange(-1, -17, -1, dtype=float)
-errors = np.abs((f(x + hs) - f(x - hs)) / (2 * hs) - exact)
-best_h = hs[np.argmin(errors)]
-print(f"\n最优步长: h = {best_h:.0e}, 最小误差: {np.min(errors):.2e}")</code></pre>
-
-        <div class="warning">
-            <p><strong>血的教训：</strong>我当年教数值分析课时布置了一个作业——用数值微分计算 $f(x) = e^x$ 在 $x=1$ 处的导数。有学生取了 $h=10^{-16}$，心想"步长越小越精确"。结果误差大到 0.5！为什么？因为 $e^{1+10^{-16}}$ 和 $e^{1-10^{-16}}$ 在 float64 下几乎无法区分，它们的差几乎全是噪声。记住：<strong>数值微分中最优 $h$ 不是 0，大约是 $\sqrt[3]{\varepsilon_{\text{mach}}} \approx 6 \times 10^{-6}$</strong>。小于这个值，误差不降反升。</p>
-        </div>
-
-        <table>
-            <tr><th>差分格式</th><th>公式</th><th>截断误差</th><th>舍入误差</th><th>最优 $h$</th></tr>
-            <tr><td>前向差分</td><td>$(f(x+h)-f(x))/h$</td><td>$O(h)$</td><td>$O(\varepsilon/h)$</td><td>$\sim \sqrt{\varepsilon}$</td></tr>
-            <tr><td>中心差分</td><td>$(f(x+h)-f(x-h))/(2h)$</td><td>$O(h^2)$</td><td>$O(\varepsilon/h)$</td><td>$\sim \sqrt[3]{\varepsilon}$</td></tr>
-            <tr><td>四阶中心差分</td><td>$\frac{-f(x+2h)+8f(x+h)-8f(x-h)+f(x-2h)}{12h}$</td><td>$O(h^4)$</td><td>$O(\varepsilon/h)$</td><td>$\sim \sqrt[5]{\varepsilon}$</td></tr>
-        </table>
-
-        <h2>13.3 复数步长法</h2>
-
-        <p>有没有办法彻底避免相消性损失？有一个非常巧妙的技巧——<strong>复数步长法</strong>（complex step differentiation）。</p>
-
-        <p>不是取实数的 $x+h$，而是取 $x + ih$（纯虚数步长），然后利用 Cauchy-Riemann 方程：</p>
-
-        <pre><code>f'(x) ≈ Im[f(x + i h)] / h + O(h²)</code></pre>
-
-        <p>这里的关键是：我们计算 $f(x+ih)$ 和 $f(x)$ 的差时，用的是虚部，而虚部本身不涉及两个大数相减！因此没有相消性损失，$h$ 可以取到非常小（比如 $10^{-100}$），截断误差趋近于零。</p>
-
-        <div class="tip">
-            <p><strong>NASA 的真实案例：</strong>NASA 在计算飞行器气动导数时广泛使用复数步长法。传统方法需要手动推导几十页的导数公式，而复数步长法只需要在代码中用复数类型，零阶和一阶导数一次性得到。对于复杂的 CFD 代码，这大幅减少了人工推导的工作量和出错概率。注意：你的函数必须支持复数运算（即满足解析性）。Python 的 <code>numpy</code> 函数大多天然支持复数输入。</p>
-        </div>
-
-        <pre><code>import numpy as np
-
-def complex_step_derivative(f, x, h=1e-100):
-    """复数步长法计算导数"""
-    return np.imag(f(x + 1j * h)) / h
-
-# 测试
-f = np.exp
-x = 1.0
-print(f"精确值:   {np.exp(1):.15f}")
-print(f"复数步长: {complex_step_derivative(f, x):.15f}")
-print(f"误差:     {abs(complex_step_derivative(f, x) - np.exp(1)):.2e}")
-# 试试 h=1e-100 仍然精确！</code></pre>
-
-        <h2>13.4 Richardson 外推于数值微分</h2>
-
-        <p>就像在 Romberg 积分中那样，Richardson 外推同样适用于数值微分。中心差分 $D(h)$ 的误差展开也只包含 $h$ 的偶次幂：</p>
-
-        <pre><code>D(h) = f'(x) + c₁h² + c₂h⁴ + c₃h⁶ + ...</code></pre>
-
-        <p>用步长 $h$ 和 $h/2$ 做外推，得到 $O(h^4)$ 的精度：</p>
-
-        <pre><code>D_new = (4 · D(h/2) - D(h)) / 3</code></pre>
-
-        <p>重复这个过程可以得到任意高阶的导数逼近公式——本质上就是构造不同系数的有限差分模板。</p>
-
-        <pre><code>def richardson_diff(f, x, h=0.1, k=3):
-    """用 Richardson 外推提高数值微分的精度"""
-    # D[j] = 中心差分 with h/2^j
-    D = np.zeros(k + 1)
-    for j in range(k + 1):
-        h_j = h / (2 ** j)
-        D[j] = (f(x + h_j) - f(x - h_j)) / (2 * h_j)
-
-    # Richardson 外推表
-    R = np.zeros((k + 1, k + 1))
-    R[:, 0] = D
-
-    for j in range(1, k + 1):
-        for i in range(j, k + 1):
-            factor = 4 ** j
-            R[i, j] = (factor * R[i, j-1] - R[i-1, j-1]) / (factor - 1)
-
-    return R
-
-# 测试
-f = np.sin
-x = 1.0
-exact = np.cos(x)
-R = richardson_diff(f, x, h=0.1, k=4)
-print(f"精确导数: {exact:.12f}")
-for j in range(5):
-    print(f"R(4,{j}) = {R[4,j]:.12f}, 误差 = {abs(R[4,j]-exact):.2e}")</code></pre>
-
-        <div class="highlight">
-            <p><strong>通用思想：</strong>Richardson 外推不仅可以用于数值积分和数值微分，它实际上是一个通用的"从低阶方法构造高阶方法"的框架。只要你有一个逼近方法其误差具有已知的渐近展开形式，就可以用 Richardson 外推消除前几项误差。这个思想在数值分析中无处不在。</p>
-        </div>
-
-        <p>本章我们学习了数值微分的基本方法、步长选择的折衷、复数步长法这个巧妙技巧，以及 Richardson 外推的应用。数值微分是一个看起来简单但实践起来到处都是陷阱的技术——"微分放大噪声"这条法则值得永远记住。下一章我们将回到积分的主题，深入探讨正交多项式的理论及其在数值积分中的应用。这是理解 Gauss 求积为什么能取得最优效果的理论基础。</p>
-
-        <div class="footer-nav">
-            <a href="12.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="14.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
+e5  = abs(central(math.sin, x, 1e-5) - exact)    # 接近最优步长
+e12 = abs(central(math.sin, x, 1e-12) - exact)  # 远小于最优，误差反弹
+assert e5 &lt; 1e-10                 # 最优点附近误差约 1e-11
+assert e12 &gt; 1e-6 and e12 &gt; e5     # 更小的 h 反而更差，非单调
+assert abs(complex_step(cmath.sin, x, 1e-100) - exact) &lt; 1e-15  # 无相消
+print(e5, e12)</code></pre>
+<p>断言把“最优步长非零”从一条经验规则变成可检验的事实：存在 <code>h</code> 使误差取最小，且在它的两侧误差都变大。</p>
+</section>
+<section id="limits" aria-labelledby="limits-heading">
+<h2 id="limits-heading">06 · 失败边界</h2>
+<p><strong>带噪声数据。</strong>(13.1) 说明直接对含噪信号做差商必然放大噪声。此时需要先平滑（如局部拟合 / Savitzky–Golay 类滤波）或正则化，而不能靠减小 <code>h</code> 求精度。</p>
+<p><strong>复数步长法的前提。</strong>它要求 <code>f</code> 在路径上解析，且代码全程支持复数。含绝对值、分支判断、截断函数的代码会破坏解析性，此时应改回实步长差分并做滤波。</p>
+<p><strong>端点与高阶导数。</strong>区间端点上没有双侧样本，只能用单侧格式，阶数相应降低；求二阶及以上导数会继续放大误差，精度通常明显低于一阶导数。</p>
+<aside class="callout"><p><strong>选型判断：</strong>无噪声、可解析、求值昂贵时用复数步长法；无噪声但只需低阶精度时用中心差分并取 <code>h≈ε^{1/3}</code>；含噪声时先滤波再做差分。</p></aside>
+</section>
+<section id="references" aria-labelledby="references-heading">
+<h2 id="references-heading">原始资料与延伸阅读</h2>
+<p>本章将文献中的方法与本文独立构造的数值示例严格区分；图示与实验为教学演示。</p>
+<ol class="sources">
+<li><a href="https://dlmf.nist.gov/3.4">NIST DLMF §3.4 · Differentiation</a>：有限差分模板、误差阶与最优步长的基本结果。</li>
+<li><a href="https://doi.org/10.1145/838250.838251">J. R. R. A. Martins, P. Sturdza, J. J. Alonso, <em>The complex-step derivative approximation</em></a>。ACM TOMS 29(3), 2003；复数步长法及其无相消说明。</li>
+</ol>
+</section>
+<nav class="chapter-bottom" aria-label="前后章节"><a href="12.html">← 前一章</a><a href="14.html">下一章 →</a></nav>
+</article>
+</main>
+<footer><span>NUMERICAL ANALYSIS · 一份可独立阅读的计算笔记</span><a href="../index.html">返回课程首页</a></footer>
 </body>
 </html>

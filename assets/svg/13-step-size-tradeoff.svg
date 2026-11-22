@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t13b t13b-d" width="720" height="360" viewBox="0 0 720 360">
+<title id="t13b">中心差分误差随步长的 U 形曲线</title>
+<desc id="t13b-d">步长过大时截断误差占主导，过小时舍入误差占主导，总误差在两步长之间取最小值。</desc>
+<rect width="720" height="360" rx="12" fill="#fffdf9"/>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<text x="34" y="42" font-size="20" font-weight="600" fill="#24424a">误差—步长曲线：最优步长不是 0</text>
+<text x="34" y="68" font-size="13" fill="#607477">横轴 log₁₀h，纵轴 log₁₀|误差|；两条虚线是截断项与舍入项的预期斜率。</text>
+<rect x="110" y="70" width="530" height="230" fill="#fff" stroke="#e3e9e7"/>
+<path d="M110.0 654.7 L640.0 123.9" stroke="#ce7152" stroke-width="1.8" stroke-dasharray="6 5"/>
+<path d="M110.0 65.2 L640.0 330.6" stroke="#7563ab" stroke-width="1.8" stroke-dasharray="6 5"/>
+<path d="M640.0 123.9 L604.7 159.3 L569.3 194.7 L534.0 230.0 L498.7 263.8 L463.3 256.8 L428.0 241.8 L392.7 220.9 L357.3 220.9 L322.0 198.0 L286.7 175.0 L251.3 156.9 L216.0 136.3 L180.7 113.0 L145.3 102.4 L110.0 102.4" fill="none" stroke="#147f80" stroke-width="3"/>
+<circle cx="640.0" cy="123.9" r="3.4" fill="#147f80"/>
+<circle cx="604.7" cy="159.3" r="3.4" fill="#147f80"/>
+<circle cx="569.3" cy="194.7" r="3.4" fill="#147f80"/>
+<circle cx="534.0" cy="230.0" r="3.4" fill="#147f80"/>
+<circle cx="498.7" cy="263.8" r="3.4" fill="#147f80"/>
+<circle cx="463.3" cy="256.8" r="3.4" fill="#147f80"/>
+<circle cx="428.0" cy="241.8" r="3.4" fill="#147f80"/>
+<circle cx="392.7" cy="220.9" r="3.4" fill="#147f80"/>
+<circle cx="357.3" cy="220.9" r="3.4" fill="#147f80"/>
+<circle cx="322.0" cy="198.0" r="3.4" fill="#147f80"/>
+<circle cx="286.7" cy="175.0" r="3.4" fill="#147f80"/>
+<circle cx="251.3" cy="156.9" r="3.4" fill="#147f80"/>
+<circle cx="216.0" cy="136.3" r="3.4" fill="#147f80"/>
+<circle cx="180.7" cy="113.0" r="3.4" fill="#147f80"/>
+<circle cx="145.3" cy="102.4" r="3.4" fill="#147f80"/>
+<circle cx="110.0" cy="102.4" r="3.4" fill="#147f80"/>
+<circle cx="498.7" cy="263.8" r="6" fill="none" stroke="#c0392b" stroke-width="2.4"/>
+<text x="498.7" y="251.8" font-size="13" font-weight="600" fill="#c0392b" text-anchor="middle">h≈10⁻⁵</text>
+<text x="640.0" y="320" font-size="12" fill="#607477" text-anchor="middle">10⁻1</text>
+<text x="534.0" y="320" font-size="12" fill="#607477" text-anchor="middle">10⁻4</text>
+<text x="392.7" y="320" font-size="12" fill="#607477" text-anchor="middle">10⁻8</text>
+<text x="251.3" y="320" font-size="12" fill="#607477" text-anchor="middle">10⁻12</text>
+<text x="110.0" y="320" font-size="12" fill="#607477" text-anchor="middle">10⁻16</text>
+<text x="102" y="74.0" font-size="12" fill="#607477" text-anchor="end">10^0</text>
+<text x="102" y="127.1" font-size="12" fill="#607477" text-anchor="end">10^-3</text>
+<text x="102" y="180.2" font-size="12" fill="#607477" text-anchor="end">10^-6</text>
+<text x="102" y="233.2" font-size="12" fill="#607477" text-anchor="end">10^-9</text>
+<text x="102" y="286.3" font-size="12" fill="#607477" text-anchor="end">10^-12</text>
+<text x="200" y="340" font-size="13" font-weight="600" fill="#ce7152">截断误差 ∝ h²</text>
+<text x="450" y="340" font-size="13" font-weight="600" fill="#7563ab">舍入误差 ∝ 1/h</text>
+</g></svg>
