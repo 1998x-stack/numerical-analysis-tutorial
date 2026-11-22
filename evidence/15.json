@@ -1,0 +1,30 @@
+{
+  "chapter": 15,
+  "sources": [
+    {
+      "url": "https://www.netlib.org/lapack/explore-html/db/d04/group__getrf_gaea332d65e208d833716b405ea2a1ab69.html",
+      "claims": [
+        "DGETRF computes LU with partial pivoting and row interchanges",
+        "Pivot indices and exact zero-pivot status"
+      ]
+    },
+    {
+      "url": "https://netlib.org/lapack/explore-html/d8/da6/group__gesv_ga831ce6a40e7fd16295752d18aed2d541.html",
+      "claims": [
+        "DGESV solves systems through partial-pivot LU"
+      ]
+    },
+    {
+      "url": "https://epubs.siam.org/doi/book/10.1137/1.9780898718027",
+      "claims": [
+        "Partial pivoting bounds multipliers by one",
+        "Conditioning and algorithmic stability are distinct"
+      ]
+    }
+  ],
+  "checks": [
+    "PA=LU reconstruction on small-pivot matrix",
+    "Partial-pivot multiplier magnitude <=1",
+    "Singular pivot detection"
+  ]
+}

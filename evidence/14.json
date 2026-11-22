@@ -1,0 +1,28 @@
+{
+  "chapter": 14,
+  "sources": [
+    {
+      "url": "https://dlmf.nist.gov/18.3",
+      "claims": [
+        "Classical polynomial families and their weight functions"
+      ]
+    },
+    {
+      "url": "https://dlmf.nist.gov/3.5#vi",
+      "claims": [
+        "Three-term recurrence, Jacobi matrix eigenvalues, quadrature weights"
+      ]
+    },
+    {
+      "url": "https://doi.org/10.1090/S0025-5718-69-99647-1",
+      "claims": [
+        "Golub-Welsch eigenvalue/eigenvector construction"
+      ]
+    }
+  ],
+  "checks": [
+    "Legendre P3 recurrence and roots",
+    "3x3 Jacobi eigenvalues equal 0 and ±sqrt(3/5)",
+    "Three-point Legendre weights sum to 2 and exactness through degree 5"
+  ]
+}

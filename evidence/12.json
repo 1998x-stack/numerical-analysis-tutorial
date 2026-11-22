@@ -1,0 +1,24 @@
+{
+  "chapter": 12,
+  "sources": [
+    {
+      "url": "https://dlmf.nist.gov/3.5",
+      "claims": [
+        "Gauss nodes are zeros of degree n orthogonal polynomial",
+        "Positive weights and degree 2n−1 exactness"
+      ]
+    },
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.roots_legendre.html",
+      "claims": [
+        "Gauss-Legendre sample points and weights on [-1,1]",
+        "Polynomial exactness through 2n−1"
+      ]
+    }
+  ],
+  "checks": [
+    "2-point Gauss exact through degree 3",
+    "3-point Gauss exact through degree 5",
+    "Affine interval mapping includes (b-a)/2 Jacobian"
+  ]
+}

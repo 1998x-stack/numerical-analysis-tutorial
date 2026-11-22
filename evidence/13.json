@@ -1,0 +1,28 @@
+{
+  "chapter": 13,
+  "sources": [
+    {
+      "url": "https://epubs.siam.org/doi/10.1137/S003614459631241X",
+      "claims": [
+        "Complex-step differentiation avoids subtractive cancellation for analytic functions"
+      ]
+    },
+    {
+      "url": "https://aalexan3.math.ncsu.edu/articles/num_diff.pdf",
+      "claims": [
+        "Truncation and roundoff error balance determines a scale-dependent optimal finite-difference step"
+      ]
+    },
+    {
+      "url": "https://numpy.org/doc/stable/reference/generated/numpy.gradient.html",
+      "claims": [
+        "Central differences in the interior and one-sided boundary formulas; nonuniform coordinate support"
+      ]
+    }
+  ],
+  "checks": [
+    "Central difference and Richardson derivative of sin at x=0.7",
+    "Complex-step derivative with cmath.sin and h=1e-20",
+    "Five-point central stencil with fourth-order truncation"
+  ]
+}

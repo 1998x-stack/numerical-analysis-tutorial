@@ -8,7 +8,7 @@ import sys
 
 ROOT=Path(__file__).resolve().parents[1]
 OUTPUT=ROOT/"qa"/"screenshots"
-PAGES=["index.html"]+[f"chapters/{n:02d}.html" for n in range(1,11)]
+PAGES=["index.html"]+[f"chapters/{n:02d}.html" for n in range(1,16)]
 SIZES=[(1440,900),(768,1024),(390,844),(360,800)]
 
 def run():
