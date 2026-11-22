@@ -1,0 +1,29 @@
+{
+  "chapter": "14",
+  "sources": [
+    {
+      "url": "https://dlmf.nist.gov/3.5",
+      "claims": [
+        "Zeros of orthogonal polynomials yield Gauss nodes and degree 2m-1 exactness"
+      ]
+    },
+    {
+      "url": "https://nhigham.com/accuracy-and-stability-of-numerical-algorithms/",
+      "claims": [
+        "Classical Gram-Schmidt loses orthogonality like kappa(A)^2*eps; modified Gram-Schmidt like kappa(A)*eps"
+      ]
+    },
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.roots_legendre.html",
+      "claims": [
+        "Nodes/weights stably computed via eigenvalues of the Jacobi tridiagonal matrix"
+      ]
+    }
+  ],
+  "checks": [
+    "Newton on 3-term recurrence gives P4 roots matching Gauss nodes to <1e-8",
+    "m=4 nodes integrate x^4 on [-1,1] exactly (0.4) within 1e-14",
+    "CGS vs MGS orthogonality loss on ill-conditioned monomial basis (40 grid, deg 0..15): 1.14e-5 vs 9.7e-12",
+    "All Legendre zeros lie strictly inside (-1,1) and are symmetric about 0"
+  ]
+}

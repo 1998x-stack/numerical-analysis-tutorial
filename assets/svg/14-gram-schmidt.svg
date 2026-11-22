@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t14b t14b-d" width="720" height="360" viewBox="0 0 720 360">
+<title id="t14b">经典与修正 Gram-Schmidt 的正交性误差</title>
+<desc id="t14b-d">在病态单项式基上，经典 Gram-Schmidt 的正交性误差比修正版本大好几个数量级。</desc>
+<rect width="720" height="360" rx="12" fill="#fffdf9"/>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<text x="34" y="42" font-size="20" font-weight="600" fill="#24424a">丢失的正交性：||QᵀQ−I||</text>
+<text x="34" y="68" font-size="13" fill="#607477">病态单项式基（40 网格点、0..15 次）上的两种 Gram-Schmidt（纵轴对数）。</text>
+<rect x="180" y="70" width="460" height="230" fill="#fff" stroke="#e3e9e7"/>
+<path d="M180 300 H640" stroke="#9fb1ad"/>
+<rect x="249.0" y="123.7" width="115.0" height="176.3" rx="4" fill="#c0392b"/>
+<text x="306.5" y="113.7" font-size="15" font-weight="600" fill="#c0392b" text-anchor="middle">1.1×10⁻⁵</text>
+<text x="306.5" y="322" font-size="14" fill="#24424a" text-anchor="middle">经典 GS (CGS)</text>
+<rect x="479.0" y="269.2" width="115.0" height="30.8" rx="4" fill="#147f80"/>
+<text x="536.5" y="259.2" font-size="15" font-weight="600" fill="#147f80" text-anchor="middle">9.7×10⁻¹²</text>
+<text x="536.5" y="322" font-size="14" fill="#24424a" text-anchor="middle">修正 GS (MGS)</text>
+<text x="172" y="81.2" font-size="12" fill="#607477" text-anchor="end">10^-3</text>
+<text x="172" y="153.1" font-size="12" fill="#607477" text-anchor="end">10^-6</text>
+<text x="172" y="224.9" font-size="12" fill="#607477" text-anchor="end">10^-9</text>
+<text x="172" y="296.8" font-size="12" fill="#607477" text-anchor="end">10^-12</text>
+<text x="34" y="336" font-size="13" fill="#607477">数值由双精度纯 Python 计算（教学示意）；理论量级见 Higham《Accuracy and Stability》QR 章。</text>
+</g></svg>

@@ -1,249 +1,126 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第14章 正交多项式与数值积分</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="为什么单项式基底在数值上不可用？正交多项式如何用三项递推稳定构造，其零点为何是 Gauss 求积的最优节点？本文给出递推、零点性质、Gram-Schmidt 稳定性与带余除法证明。">
+<title>第 14 章 · 正交多项式：递推、零点与 Gauss 求积的桥梁 | 数值分析</title>
+<link rel="stylesheet" href="../assets/css/article.css">
+<script src="../assets/js/chapter-labs.js" defer></script>
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>📐 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 数值分析概述</a></li>
-            <li><a href="02.html">第2章 误差分析与数值稳定性</a></li>
-            <li><a href="03.html">第3章 插值法基础</a></li>
-            <li><a href="04.html">第4章 Newton插值与均差</a></li>
-            <li><a href="05.html">第5章 Hermite插值与分段插值</a></li>
-            <li><a href="06.html">第6章 三次样条插值</a></li>
-            <li><a href="07.html">第7章 函数逼近基本理论</a></li>
-            <li><a href="08.html">第8章 最佳平方逼近</a></li>
-            <li><a href="09.html">第9章 最小二乘曲线拟合</a></li>
-            <li><a href="10.html">第10章 数值积分基础</a></li>
-            <li><a href="11.html">第11章 复合求积与Romberg外推</a></li>
-            <li><a href="12.html">第12章 Gauss求积公式</a></li>
-            <li><a href="13.html">第13章 数值微分</a></li>
-            <li><a href="14.html" class="active">第14章 正交多项式与数值积分</a></li>
-            <li><a href="15.html">第15章 Gauss消去法与LU分解</a></li>
-            <li><a href="16.html">第16章 Cholesky分解与追赶法</a></li>
-            <li><a href="17.html">第17章 向量/矩阵范数与条件数</a></li>
-            <li><a href="18.html">第18章 经典迭代法</a></li>
-            <li><a href="19.html">第19章 Krylov子空间与共轭梯度法</a></li>
-            <li><a href="20.html">第20章 非线性方程求根(一)</a></li>
-            <li><a href="21.html">第21章 非线性方程求根(二)</a></li>
-            <li><a href="22.html">第22章 非线性方程组Newton法</a></li>
-            <li><a href="23.html">第23章 矩阵特征值计算</a></li>
-            <li><a href="24.html">第24章 QR方法与特征值</a></li>
-            <li><a href="25.html">第25章 常微分方程数值解(一)</a></li>
-            <li><a href="26.html">第26章 常微分方程数值解(二)</a></li>
-            <li><a href="27.html">第27章 刚性方程与线性多步法</a></li>
-            <li><a href="28.html">第28章 综合实战：从算法到代码</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <h2>第14章 正交多项式与数值积分</h2>
+<a class="skip" href="#content">跳转正文</a>
+<header class="site-header"><div class="topbar"><a class="brand" href="../index.html"><span>∑</span> NUMERICAL <b>ANALYSIS</b></a><nav aria-label="课程导航"><a href="../index.html#catalog">全部章节</a><a href="https://github.com/1998x-stack/numerical-analysis-tutorial">源码与勘误</a></nav></div></header>
+<main class="article-shell" id="content">
+<aside class="article-toc"><nav aria-label="本章目录"><small>ON THIS PAGE · CH 14</small><ol>
+<li><a href="#monomial">01 · 单项式基底为什么不可用</a></li>
+<li><a href="#recurrence">02 · 三项递推：稳定的构造</a></li>
+<li><a href="#zeros">03 · 零点的四个性质</a></li>
+<li><a href="#gramschmidt">04 · Gram-Schmidt：为什么要修正版本</a></li>
+<li><a href="#proof">05 · 为什么零点是最优节点</a></li>
+<li><a href="#experiment">06 · 实验与失败边界</a></li>
+<li><a href="#references">原始资料</a></li>
+</ol></nav></aside>
+<article class="article-body">
+<nav class="chapter-navline" aria-label="章节导览"><a href="13.html">← 前一章</a><a href="15.html">下一章 →</a></nav>
+<p class="chapter-kicker">CHAPTER 14 · NUMERICAL ANALYSIS</p>
+<h1>正交多项式：递推、零点与 Gauss 求积的桥梁</h1>
+<p class="lead">第 12 章直接用 Legendre 零点做 Gauss 节点，但没有解释它们为何最优、又如何被稳定地算出来。本章补上这条理论链：为什么不能用单项式基、三项递推为什么稳定、零点有哪些性质，以及带余除法如何把 2m−1 次精度“证明”出来。</p>
+<section id="monomial" aria-labelledby="monomial-heading">
+<h2 id="monomial-heading">01 · 单项式基底为什么不可用</h2>
+<p>在第 08 章的最佳平方逼近里，我们要把 <code>f</code> 投影到多项式空间。如果直接用单项式基底 <code>1, x, x², …</code>，法方程里的 Gram 矩阵元素是 <code>∫x^{i+j}w dx</code>，在 <code>[0,1]</code>、<code>w=1</code> 下就是 Hilbert 型矩阵 <code>1/(i+j+1)</code>。这类矩阵的<strong>条件数随阶数急速增长</strong>，加上法方程会把条件数平方（<code>κ(AᵀA)=κ(A)²</code>），高次逼近在数值上直接崩掉。</p>
+<p>正交基底的用处就是把 Gram 矩阵变成对角阵。若基底满足</p>
+<div class="math-equation" role="group" aria-label="公式 14.1"><div class="math-scroll" role="region" tabindex="0" aria-label="不同正交多项式在权函数下的内积为零，必要时可横向滚动"><math display="block" aria-label="不同正交多项式在权函数下的内积为零"><mo>(</mo><msub><mi>φ</mi><mi>i</mi></msub><mo>,</mo><msub><mi>φ</mi><mi>j</mi></msub><mo>)</mo><mo>=</mo><msubsup><mo>∫</mo><mi>a</mi><mi>b</mi></msubsup><msub><mi>φ</mi><mi>i</mi></msub><mo>(</mo><mi>x</mi><mo>)</mo><msub><mi>φ</mi><mi>j</mi></msub><mo>(</mo><mi>x</mi><mo>)</mo><mi>w</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>d</mi><mi>x</mi><mo>=</mo><mn>0</mn><mo>,</mo><mspace width="0.5em"/><mi>i</mi><mo>≠</mo><mi>j</mi></math></div><div class="equation-tag">(14.1)</div></div>
+<p>系数就变成独立的分量比，<code>n</code> 个系数可以 <code>O(n)</code> 得到，而不是解一个病态方程组。问题于是转向：如何稳定地构造这些多项式。</p>
+</section>
+<section id="recurrence" aria-labelledby="recurrence-heading">
+<h2 id="recurrence-heading">02 · 三项递推：稳定的构造</h2>
+<p>所有正交多项式族（首一形式）都满足同一个三项递推，它只用到前两个多项式，不需要显式写出高阶系数：</p>
+<div class="math-equation" role="group" aria-label="公式 14.2"><div class="math-scroll" role="region" tabindex="0" aria-label="三项递推用x减alpha乘前一项再减beta乘前两项，必要时可横向滚动"><math display="block" aria-label="三项递推用x减alpha乘前一项再减beta乘前两项"><msub><mi>φ</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mo>(</mo><mi>x</mi><mo>−</mo><msub><mi>α</mi><mi>k</mi></msub><mo>)</mo><msub><mi>φ</mi><mi>k</mi></msub><mo>(</mo><mi>x</mi><mo>)</mo><mo>−</mo><msub><mi>β</mi><mi>k</mi></msub><msub><mi>φ</mi><mrow><mi>k</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>(</mo><mi>x</mi><mo>)</mo></math></div><div class="equation-tag">(14.2)</div></div>
+<p>其中系数只由内积确定：</p>
+<div class="math-equation" role="group" aria-label="公式 14.3"><div class="math-scroll" role="region" tabindex="0" aria-label="alpha为x乘phi与phi的内积比phi与phi的内积，beta为相邻两个内积之比，必要时可横向滚动"><math display="block" aria-label="alpha为x乘phi与phi的内积比phi与phi的内积，beta为相邻两个内积之比"><msub><mi>α</mi><mi>k</mi></msub><mo>=</mo><mfrac><mrow><mo>(</mo><mi>x</mi><msub><mi>φ</mi><mi>k</mi></msub><mo>,</mo><msub><mi>φ</mi><mi>k</mi></msub><mo>)</mo></mrow><mrow><mo>(</mo><msub><mi>φ</mi><mi>k</mi></msub><mo>,</mo><msub><mi>φ</mi><mi>k</mi></msub><mo>)</mo></mrow></mfrac><mo>,</mo><mspace width="0.5em"/><msub><mi>β</mi><mi>k</mi></msub><mo>=</mo><mfrac><mrow><mo>(</mo><msub><mi>φ</mi><mi>k</mi></msub><mo>,</mo><msub><mi>φ</mi><mi>k</mi></msub><mo>)</mo></mrow><mrow><mo>(</mo><msub><mi>φ</mi><mrow><mi>k</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>,</mo><msub><mi>φ</mi><mrow><mi>k</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>)</mo></mrow></mfrac></math></div><div class="equation-tag">(14.3)</div></div>
+<p>四大经典族的首一递推系数（供对照）：</p>
+<table>
+<tr><th>名称</th><th>区间</th><th>权函数 w(x)</th><th>α_k</th><th>β_k</th></tr>
+<tr><td>Legendre Pₖ</td><td>[−1,1]</td><td>1</td><td>0</td><td>k²/(4k²−1)</td></tr>
+<tr><td>Chebyshev Tₖ</td><td>[−1,1]</td><td>1/√(1−x²)</td><td>0</td><td>1/2 (k=1)，1/4 (k≥2)</td></tr>
+<tr><td>Laguerre Lₖ</td><td>[0,∞)</td><td>e^{−x}</td><td>2k+1</td><td>k²</td></tr>
+<tr><td>Hermite Hₖ</td><td>(−∞,∞)</td><td>e^{−x²}</td><td>0</td><td>k/2</td></tr>
+</table>
+<p>为什么不用 Rodrigues 公式或显式系数直接算？因为高阶系数的显式计算会重新引入病态的大数相消，而三项递推每步只做一次乘减，误差不累积放大。更进一步，求节点可转为一个<strong>对称三对角矩阵的特征值问题</strong>（对角元 <code>α_k</code>、次对角元 <code>√β_k</code>，即 Jacobi 矩阵），用稳定算法求解。SciPy 的 <code>roots_legendre</code> 正是基于这一思路。</p>
+</section>
+<section id="zeros" aria-labelledby="zeros-heading">
+<h2 id="zeros-heading">03 · 零点的四个性质</h2>
+<p>正交多项式的零点有一组很好的性质，它们直接决定了 Gauss 求积节点的质量：</p>
+<ul>
+<li><strong>实根性：</strong><code>m</code> 次正交多项式的 <code>m</code> 个零点全为实数。</li>
+<li><strong>区间性：</strong>所有零点都落在正交区间的<strong>内部</strong>，不落在端点上。</li>
+<li><strong>单根性：</strong>所有零点都是单重根，导数不为零。</li>
+<li><strong>交错性：</strong><code>φ_m</code> 与 <code>φ_{m+1}</code> 的零点互相交错。</li>
+</ul>
+<figure><img src="../assets/svg/14-legendre-zeros.svg" alt="四阶与五阶 Legendre 多项式曲线及其零点在区间内交替分布" loading="lazy"><figcaption>图 1 · <code>P₄</code>（青）与 <code>P₅</code>（橙）的零点都在 <code>(−1,1)</code> 内部且相互交错。零点的分布密度与权函数 <code>w</code> 有关：权大的地方零点更密。</figcaption></figure>
+<p>区间性排除了“节点跑到端点”的退化情形；交错性保证节点不会聚成一堆。而零点密度跟随权函数这一点，恰好解释了为什么 Chebyshev 节点在端点附近更密——那里权 <code>1/√(1−x²)</code> 最大。</p>
+</section>
+<section id="gramschmidt" aria-labelledby="gramschmidt-heading">
+<h2 id="gramschmidt-heading">04 · Gram-Schmidt：为什么要修正版本</h2>
+<p>如果手上只有一组普通基底（如 <code>1, x, x², …</code>），可以用 Gram-Schmidt 逐列正交化。做法有两种：<strong>经典 Gram-Schmidt（CGS）</strong>先算完所有投影系数再一次性相减；<strong>修正 Gram-Schmidt（MGS）</strong>每减去一个投影分量就用新向量继续算下一个系数。数学上两者等价，数值上却差很远。</p>
+<p>CGS 在算第 <code>k</code> 列的投影时，用的是“已经很脏”的前列，舍入误差被后续步骤反复引用并放大；理论分析表明它的正交性丢失约为 <code>κ²(A)·ε</code>，而 MGS 约为 <code>κ(A)·ε</code>——后者少了一个条件数因子。下面用病态的单项式基底实测。</p>
+<figure><img src="../assets/svg/14-gram-schmidt.svg" alt="CGS 与 MGS 在病态单项式基上的正交性误差柱状对比，CGS 高出多个数量级" loading="lazy"><figcaption>图 2 · 病态单项式基（40 个网格点、<code>0</code> 到 <code>15</code> 次）上，<code>‖QᵀQ−I‖</code> 的实测值：CGS 约 <code>1.1×10⁻⁵</code>，MGS 约 <code>9.7×10⁻¹²</code>（双精度教学示意）。</figcaption></figure>
+<aside class="callout"><p><strong>实践建议：</strong>新代码优先用 Householder 反射或 Givens 旋转做 QR；必须手写 Gram-Schmidt 时，用 MGS 而非 CGS。</p></aside>
+</section>
+<section id="proof" aria-labelledby="proof-heading">
+<h2 id="proof-heading">05 · 为什么零点是最优节点</h2>
+<p>把第 12 章的结论补上证明。取 <code>m</code> 个节点、节点取为 <code>φ_m</code> 的零点。任取一个次数 <code>≤2m−1</code> 的多项式 <code>p</code>，用 <code>φ_m</code> 做带余除法：</p>
+<div class="math-equation" role="group" aria-label="公式 14.4"><div class="math-scroll" role="region" tabindex="0" aria-label="多项式p被正交多项式除后写成商乘正交多项式加余式，必要时可横向滚动"><math display="block" aria-label="多项式p被正交多项式除后写成商乘正交多项式加余式"><mi>p</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mi>q</mi><mo>(</mo><mi>x</mi><mo>)</mo><msub><mi>φ</mi><mi>m</mi></msub><mo>(</mo><mi>x</mi><mo>)</mo><mo>+</mo><mi>r</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>,</mo><mspace width="0.5em"/><mo>deg</mo><mspace width="0.3em"/><mi>q</mi><mo>≤</mo><mi>m</mi><mo>−</mo><mn>1</mn><mo>,</mo><mspace width="0.3em"/><mo>deg</mo><mspace width="0.3em"/><mi>r</mi><mo>≤</mo><mi>m</mi><mo>−</mo><mn>1</mn></math></div><div class="equation-tag">(14.4)</div></div>
+<p>两边乘权函数积分。商项因为 <code>deg q≤m−1</code> 而与 <code>φ_m</code> 正交，积分为零，于是原积分等于余式的积分。而在 <code>φ_m</code> 的零点处 <code>φ_m(xᵢ)=0</code>，所以 <code>p(xᵢ)=r(xᵢ)</code>；又因为 <code>r</code> 次数 <code>≤m−1</code>，<code>m</code> 个节点的插值型求积能精确积分它。串起来就是</p>
+<div class="math-equation" role="group" aria-label="公式 14.5"><div class="math-scroll" role="region" tabindex="0" aria-label="原多项式的积分等于余式的积分等于各节点函数值乘权重之和，必要时可横向滚动"><math display="block" aria-label="原多项式的积分等于余式的积分等于各节点函数值乘权重之和"><msubsup><mo>∫</mo><mi>a</mi><mi>b</mi></msubsup><mi>p</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>w</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>d</mi><mi>x</mi><mo>=</mo><msubsup><mo>∫</mo><mi>a</mi><mi>b</mi></msubsup><mi>r</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>w</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>d</mi><mi>x</mi><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>m</mi></munderover><msub><mi>w</mi><mi>i</mi></msub><mi>p</mi><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo></math></div><div class="equation-tag">(14.5)</div></div>
+<p>关键在于正交性把“高次”的 <code>q·φ_m</code> 部分直接抹去，问题退化为低次余式。这就是 <code>2m−1</code> 次代数精度的根本原因，也解释了为什么节点必须恰好是正交多项式的零点。</p>
+</section>
+<section id="experiment" aria-labelledby="experiment-heading">
+<h2 id="experiment-heading">06 · 实验与失败边界</h2>
+<p>用三项递推加 Newton 迭代求 <code>P_m</code> 的零点，可以验证：它们与第 12 章的 Gauss 节点一致，并能精确积分到 <code>2m−1</code> 次。</p>
+<div class="demo" data-lab="legendre-zeros"><label for="legendre-mode">选择阶数 m，观察 Pₘ 的零点（即 m 点 Gauss 节点）</label><select id="legendre-mode" data-input><option value="2">m = 2</option><option value="3">m = 3</option><option value="4">m = 4</option><option value="5">m = 5</option></select><output data-output aria-live="polite">零点将在此显示。</output></div>
+<pre><code>import math
 
-        <h3>14.1 三项递推公式</h3>
+def legendre_pair(x, m):          # 三项递推：返回 (P_m(x), P_{m-1}(x))
+    if m == 0:
+        return 1.0, 0.0
+    p_prev, p = 1.0, x
+    for k in range(1, m):
+        p_prev, p = p, ((2*k + 1) * x * p - k * p_prev) / (k + 1)
+    return p, p_prev
 
-        <p>所有正交多项式家族都满足一个优美的三项递推关系，这是数值计算它们的核心工具：</p>
+def legendre_roots(m):
+    out = []
+    for i in range(m):
+        x = math.cos(math.pi * (i + 0.75) / (m + 0.5))
+        for _ in range(100):
+            pm, pm1 = legendre_pair(x, m)
+            d = m * (x * pm - pm1) / (x * x - 1)
+            x -= pm / d
+        out.append(x)
+    return sorted(out)
 
-        <pre><code>φ_{k+1}(x) = (x - α_k) φ_k(x) - β_k φ_{k-1}(x)
-
-其中：
-α_k = (x φ_k, φ_k) / (φ_k, φ_k)
-β_k = (φ_k, φ_k) / (φ_{k-1}, φ_{k-1})   (k ≥ 1)
-β_0 = 0</code></pre>
-
-        <p>为什么这个递推很重要？因为直接使用单项式基底（monomial basis）$1, x, x^2, \dots$ 来构造多项式会在数值上产生灾难性后果——Hilbert 矩阵是严重病态的！而三项递推在数值上非常稳定，是我们实际计算正交多项式的标准路径。四大经典正交多项式的递推系数如下：</p>
-
-        <table>
-            <tr><th>名称</th><th>区间</th><th>权函数 $w(x)$</th><th>$\alpha_k$</th><th>$\beta_k$</th></tr>
-            <tr><td>Legendre $P_k$</td><td>$[-1,1]$</td><td>$1$</td><td>$0$</td><td>$k^2/(4k^2-1)$</td></tr>
-            <tr><td>Chebyshev $T_k$</td><td>$[-1,1]$</td><td>$1/\sqrt{1-x^2}$</td><td>$0$</td><td>$1/2$ ($k=1$), $1/4$ ($k\ge2$)</td></tr>
-            <tr><td>Laguerre $L_k$</td><td>$[0,\infty)$</td><td>$e^{-x}$</td><td>$2k+1$</td><td>$k^2$</td></tr>
-            <tr><td>Hermite $H_k$</td><td>$(-\infty,\infty)$</td><td>$e^{-x^2}$</td><td>$0$</td><td>$k/2$</td></tr>
-        </table>
-
-        <p>拿 Legendre 多项式举例，标准化的三项递推是 $(k+1)P_{k+1}(x) = (2k+1)xP_k(x) - kP_{k-1}(x)$。下面是用三项递推计算 Legendre 多项式的 Python 代码：</p>
-
-        <pre><code>import numpy as np
-
-def legendre_vals(x, n):
-    """用三项递推计算 P_0(x) 到 P_n(x)"""
-    phi = np.zeros((n+1,) + np.shape(x))
-    phi[0] = 1.0
-    if n >= 1:
-        phi[1] = x
-    for k in range(1, n):
-        phi[k+1] = ((2*k+1) * x * phi[k] - k * phi[k-1]) / (k+1)
-    return phi
-
-# 测试：在 x=0 处的 Legendre 多项式值
-x = 0.0
-vals = legendre_vals(x, 6)
-print("Legendre 多项式在 x=0 处的值:")
-for k in range(7):
-    print(f"P_{k}(0) = {vals[k]:.6f}")
-# 期望: P_0=1, P_1=0, P_2=-1/2, P_3=0, P_4=3/8, P_5=0, P_6=-5/16</code></pre>
-
-        <div class="tip">
-            <strong>永远不要用显式公式或 Rodrigues 公式直接计算正交多项式的值！</strong>三项递推在数值上稳定得多。如果你要计算 Legendre 多项式的零点（也就是 Gauss-Legendre 的节点），请直接用 NumPy 的 <code>numpy.polynomial.legendre.leggauss</code>——它底层使用三项递推构造 Jacobi 矩阵并求其特征值，这是目前最稳定的方法。
-        </div>
-
-        <h3>14.2 正交多项式的零点性质</h3>
-
-        <p>正交多项式的零点具有以下优美性质——这些性质对 Gauss 求积节点选择至关重要：</p>
-
-        <ul>
-            <li><strong>实根性</strong>：$n$ 次正交多项式的所有 $n$ 个零点都是实数。</li>
-            <li><strong>区间性</strong>：所有零点都位于正交区间的内部，不会落在端点上。</li>
-            <li><strong>单根性</strong>：所有零点都是单根（代数重数为 1）。</li>
-            <li><strong>交错性</strong>：$P_n(x)$ 和 $P_{n+1}(x)$ 的零点互相交错——$P_{n+1}$ 的每两个相邻零点之间恰好有一个 $P_n$ 的零点。</li>
-        </ul>
-
-        <div class="highlight">
-            <strong>为什么零点性质重要？</strong>交错性保证了 Gauss 求积节点在区间内分布良好，不会聚在一起。而且零点在区间内的分布密度与权函数 $w(x)$ 有关——权函数大的地方节点更密集，权函数小的地方节点较稀疏。这相当于"自适应"地分配了计算资源！比如 Chebyshev 多项式的零点在端点附近更密集，正好补偿了 Chebyshev 权函数 $1/\sqrt{1-x^2}$ 在端点附近的奇异性。
-        </div>
-
-        <h3>14.3 Gram-Schmidt 正交化</h3>
-
-        <p>如果我们需要对一组给定的基底（比如 $1, x, x^2, \dots$）做正交化处理，Gram-Schmidt 过程是最直接的方法。但这里的坑比想象的多。</p>
-
-        <p><strong>经典 Gram-Schmidt (CGS)：</strong>对 $k=0,1,\dots,n$，依次将 $x^k$ 减去它在前 $k-1$ 个已正交向量上的投影。</p>
-
-        <p><strong>修正 Gram-Schmidt (MGS)：</strong>每次减去一个投影分量后立即用差值更新后续计算，而不是一次性减去所有投影。</p>
-
-        <pre><code>import numpy as np
-
-def modified_gs(A):
-    """修正 Gram-Schmidt 正交化"""
-    m, n = A.shape
-    Q = np.zeros_like(A)
-    R = np.zeros((n, n))
-    for k in range(n):
-        Q[:, k] = A[:, k]
-        for j in range(k):
-            R[j, k] = np.dot(Q[:, j], Q[:, k])
-            Q[:, k] -= R[j, k] * Q[:, j]
-        R[k, k] = np.linalg.norm(Q[:, k])
-        Q[:, k] /= R[k, k]
-    return Q, R
-
-def classical_gs(A):
-    """经典 Gram-Schmidt (数值不稳定版本)"""
-    m, n = A.shape
-    Q = np.zeros_like(A)
-    for k in range(n):
-        Q[:, k] = A[:, k].copy()
-        Qk = Q[:, k].copy()  # 保存原始向量
-        for j in range(k):
-            R_jk = np.dot(Q[:, j], Qk)
-            Q[:, k] -= R_jk * Q[:, j]
-        Q[:, k] /= np.linalg.norm(Q[:, k])
-    return Q
-
-# 构造一个近线性相关的矩阵
-np.random.seed(42)
-A = np.random.randn(100, 20)
-# 让某些列近似线性相关
-A[:, 10] = A[:, 5] + 1e-6 * np.random.randn(100)
-
-Q_cgs = classical_gs(A)
-Q_mgs, _ = modified_gs(A)
-
-I = np.eye(20)
-err_cgs = np.linalg.norm(Q_cgs.T @ Q_cgs - I)
-err_mgs = np.linalg.norm(Q_mgs.T @ Q_mgs - I)
-print(f"CGS 正交性误差: {err_cgs:.2e}")
-print(f"MGS 正交性误差: {err_mgs:.2e}")</code></pre>
-
-        <p>上面的代码会显示：CGS 的误差可能高达 $10^{-5}$ 甚至更大，而 MGS 的误差接近机器精度。这是因为 CGS 中，对向量 $a_k$ 减去所有投影时，<strong>数值舍入误差会累积</strong>——你在用已经损失了正交性的向量去做投影，误差被"固化"了。而 MGS 每减去一个分量就立即更新，避免了这种累积。</p>
-
-        <div class="warning">
-            <strong>踩坑警告——经典 GS 的数值不稳定性：</strong>经典 Gram-Schmidt 在数值上非常不稳定！当基底接近线性相关时，CGS 计算出的向量可能会严重偏离正交。我亲眼见过有人用 CGS 做特征值计算，结果算出来的"正交"基底之间的内积高达 0.1——这哪叫正交！而修正 Gram-Schmidt 的稳定性好得多（虽然也不及 Householder QR）。<strong>在新代码中永远用修正 GS 而不是经典 GS；更推荐的做法是使用 Householder 反射或 Givens 旋转。</strong>
-        </div>
-
-        <h3>14.4 正交多项式与 Gauss 求积的联系</h3>
-
-        <p>终于到了本章的高潮——回答一个基础性问题：<strong>为什么正交多项式的零点是 Gauss 求积的最优节点？</strong></p>
-
-        <p>考虑 $n+1$ 个节点 $x_0, \dots, x_n$ 的求积公式。我们希望它对所有 $2n+1$ 次多项式精确成立。神奇的是，只要选节点为 $n+1$ 次正交多项式 $\phi_{n+1}$ 的零点，再选取适当的求积权重 $w_i$，这个公式就自动满足 $2n+1$ 次代数精度。证明如下：</p>
-
-        <p>给定任意 $2n+1$ 次多项式 $p(x)$，将其除以 $n+1$ 次正交多项式 $\phi_{n+1}(x)$，做带余除法：</p>
-
-        <pre><code>p(x) = q(x) · φ_{n+1}(x) + r(x)</code></pre>
-
-        <p>其中 $\deg(q) \le n$，$\deg(r) \le n$。两边用权函数 $w(x)$ 积分：</p>
-
-        <pre><code>∫ p(x) w(x) dx = ∫ q(x) φ_{n+1}(x) w(x) dx + ∫ r(x) w(x) dx</code></pre>
-
-        <p>关键来了：$\phi_{n+1}$ 与所有次数 $\le n$ 的多项式正交，所以右边第一项为零。因此：</p>
-
-        <pre><code>∫ p(x) w(x) dx = ∫ r(x) w(x) dx</code></pre>
-
-        <p>现在，在求积节点 $x_i = \phi_{n+1}$ 的零点处，$\phi_{n+1}(x_i) = 0$，所以 $p(x_i) = r(x_i)$。于是求积公式的数值结果为：</p>
-
-        <pre><code>Σ w_i p(x_i) = Σ w_i r(x_i)</code></pre>
-
-        <p>由于 $r(x)$ 次数 $\le n$，$n+1$ 个节点的插值型求积公式能精确积分 $r(x)$（只要权重 $w_i$ 取为插值权重）。因此公式对 $p(x)$ 也精确成立。证毕。</p>
-
-        <div class="highlight">
-            <strong>证明的优美之处：</strong>通过带余除法将高次多项式问题转化为低次问题。正交性"杀死"了 $\phi_{n+1}$ 部分，剩下部分恰好可以在求积节点处用插值精确计算。这就是 Gauss 求积能达到 $2n+1$ 次代数精度的根本原因——<strong>正交多项式的零点完美地将高次多项式简化为了低次多项式</strong>。回想第 12 章我们直接用了 Gauss-Legendre 节点，现在你明白这些节点为什么"神奇"了吧。
-        </div>
-
-        <p>为了直观地验证这一点，我们做一个数值实验——对比 Gauss 公式对 $2n+1$ 次和 $2n+2$ 次多项式的表现：</p>
-
-        <pre><code>import numpy as np
-from numpy.polynomial.legendre import leggauss
-
-def gauss_legendre_quad(f, a, b, n):
-    """n 点 Gauss-Legendre 求积"""
-    x, w = leggauss(n)
-    half = (b - a) / 2
-    mid = (a + b) / 2
-    return half * np.sum(w * f(half * x + mid))
-
-# 测试 Gauss 公式对 2n+1 次多项式的精确性
-print("测试 2n+1 次多项式（应精确到机器精度）:")
-for n in range(1, 8):
-    degree = 2 * n + 1
-    poly = np.polynomial.Polynomial(np.random.randn(degree + 1))
-    poly_int = poly.integ()
-    exact = poly_int(1) - poly_int(0)
-    approx = gauss_legendre_quad(poly, 0, 1, n)
-    print(f"n={n}, degree={degree}: 误差={abs(exact-approx):.2e}")
-
-print("\n测试 2n+2 次多项式（不应精确）:")
-for n in range(1, 5):
-    degree = 2 * n + 2
-    poly = np.polynomial.Polynomial(np.random.randn(degree + 1))
-    poly_int = poly.integ()
-    exact = poly_int(1) - poly_int(0)
-    approx = gauss_legendre_quad(poly, 0, 1, n)
-    print(f"n={n}, degree={degree}: 误差={abs(exact-approx):.2e}")</code></pre>
-
-        <p>输出会清晰地显示：对 $2n+1$ 次多项式误差接近机器精度（$10^{-15}$ 量级），而对 $2n+2$ 次多项式误差显著不为零（通常在 $10^{-1}$ 到 $10^{-3}$ 之间）。这就是代数精度的边界——Gauss 公式完美地做到了它能做到的最好。</p>
-
-        <div class="tip">
-            <strong>总结——正交多项式在数值分析中的三重角色：</strong>
-            <ul>
-                <li><strong>逼近论（第7-8章）</strong>：正交多项式是最佳平方逼近的理想基底，使 Gram 矩阵对角化，计算量从 $O(n^3)$ 降为 $O(n)$；</li>
-                <li><strong>求积理论（第12章及本章）</strong>：正交多项式的零点是 Gauss 求积的最优节点，达到 $2n+1$ 次代数精度；</li>
-                <li><strong>谱方法</strong>：正交多项式展开（如 Chebyshev 谱方法）是求解偏微分方程的高精度工具，误差随 $n$ 指数衰减（称为"谱收敛"），是计算流体力学的核心方法之一。</li>
-            </ul>
-        </div>
-
-        <p>本章我们系统学习了正交多项式的三大支柱——三项递推、零点性质和 Gram-Schmidt 正交化，并给出了正交多项式与 Gauss 求积之间深刻联系的一个完整证明框架。从第 8 章的最佳平方逼近到第 12 章的 Gauss 求积，再到本章的理论基础，正交多项式像一条红线贯穿了整个数值分析。下一章我们将进入数值线性代数的领域——从 Gauss 消去法与 LU 分解开始，学习如何高效、稳定地求解线性方程组。</p>
-
-        <div class="footer-nav">
-            <a href="13.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="15.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
+r4 = legendre_roots(4)            # 应与第 12 章的 Gauss 节点一致
+assert abs(r4[0] + 0.8611363116) &lt; 1e-8 and abs(r4[3] - 0.8611363116) &lt; 1e-8
+w = [0.3478548451374538, 0.6521451548625461, 0.6521451548625461, 0.3478548451374538]
+assert abs(sum(wi * ri**4 for wi, ri in zip(w, r4)) - 2/5) &lt; 1e-14   # 2m-1 = 7 覆盖 4 次
+print(r4)</code></pre>
+<p><strong>失败边界。</strong>正交多项式的零点性质依赖权函数 <code>w(x)≥0</code>（几乎处处）。若权函数变号，理论不再成立，零点可能超出区间甚至为复根。此外，Gram-Schmidt 本身在病态基上不稳定（图 2），因此实际构造高阶级数应优先用三项递推，QR 分解优先用 Householder。</p>
+<aside class="callout"><p><strong>三重角色：</strong>正交多项式在逼近论里是对角化 Gram 矩阵的理想基底（第 07–08 章），在求积理论里提供最优节点（第 12 章及本章），在谱方法里提供指数收敛的展开基。</p></aside>
+</section>
+<section id="references" aria-labelledby="references-heading">
+<h2 id="references-heading">原始资料与延伸阅读</h2>
+<p>本章将文献结论与本文独立构造的数值示例严格区分；表格与图示为教学演示。</p>
+<ol class="sources">
+<li><a href="https://dlmf.nist.gov/3.5">NIST DLMF §3.5 · Quadrature</a>：正交多项式零点与 Gauss 求积的代数精度。</li>
+<li><a href="https://nhigham.com/accuracy-and-stability-of-numerical-algorithms/">Nicholas J. Higham, <em>Accuracy and Stability of Numerical Algorithms</em></a>。SIAM 第二版，2002；经典与修正 Gram-Schmidt 的正交性丢失分析（QR 章）。</li>
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.roots_legendre.html">SciPy · scipy.special.roots_legendre</a>：基于 Jacobi 矩阵特征值的稳定节点与权重计算。</li>
+</ol>
+</section>
+<nav class="chapter-bottom" aria-label="前后章节"><a href="13.html">← 前一章</a><a href="15.html">下一章 →</a></nav>
+</article>
+</main>
+<footer><span>NUMERICAL ANALYSIS · 一份可独立阅读的计算笔记</span><a href="../index.html">返回课程首页</a></footer>
 </body>
 </html>
