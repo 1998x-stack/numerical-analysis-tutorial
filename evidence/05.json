@@ -1,0 +1,21 @@
+{
+  "chapter": "05",
+  "title": "Cubic Hermite and PCHIP",
+  "claims": [
+    [
+      "Piecewise cubic Hermite is C1 given common endpoint derivatives",
+      "polynomial construction"
+    ],
+    [
+      "PCHIP derivative selection and no overshoot on monotone data",
+      "SciPy PchipInterpolator documentation"
+    ],
+    [
+      "Generic Hermite C1 need not be shape preserving",
+      "independently generated counterexample"
+    ]
+  ],
+  "urls": [
+    "https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.PchipInterpolator.html"
+  ]
+}

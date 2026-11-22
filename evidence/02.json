@@ -1,0 +1,22 @@
+{
+  "chapter": "02",
+  "title": "Conditioning versus algorithmic stability",
+  "claims": [
+    [
+      "Cancellation and finite-precision computation",
+      "Goldberg 1991"
+    ],
+    [
+      "Forward/backward error and condition number",
+      "Higham 2002"
+    ],
+    [
+      "Quadratic toy example: x²−10⁹x+1=0",
+      "deterministic example in examples/reproduce.py"
+    ]
+  ],
+  "urls": [
+    "https://docs.oracle.com/cd/E19422-01/819-3693/ncg_goldberg.html",
+    "https://nhigham.com/accuracy-and-stability-of-numerical-algorithms/"
+  ]
+}

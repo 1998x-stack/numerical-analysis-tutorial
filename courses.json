@@ -13,7 +13,8 @@
         "绝对/相对误差与有效数字",
         "算法稳定性与收敛性"
       ],
-      "file": "01.html"
+      "file": "chapters/01.html",
+      "status": "refined"
     },
     {
       "num": "02",
@@ -24,7 +25,8 @@
         "条件数",
         "避免误差危害准则"
       ],
-      "file": "02.html"
+      "file": "chapters/02.html",
+      "status": "refined"
     },
     {
       "num": "03",
@@ -35,7 +37,8 @@
         "插值余项与误差估计",
         "Runge现象"
       ],
-      "file": "03.html"
+      "file": "chapters/03.html",
+      "status": "refined"
     },
     {
       "num": "04",
@@ -46,7 +49,8 @@
         "差分与等距节点",
         "Newton vs Lagrange"
       ],
-      "file": "04.html"
+      "file": "chapters/04.html",
+      "status": "refined"
     },
     {
       "num": "05",
@@ -57,7 +61,8 @@
         "分段低次插值",
         "工程应用"
       ],
-      "file": "05.html"
+      "file": "chapters/05.html",
+      "status": "refined"
     },
     {
       "num": "06",
@@ -68,7 +73,8 @@
         "边界条件",
         "追赶法求解"
       ],
-      "file": "06.html"
+      "file": "chapters/06.html",
+      "status": "legacy"
     },
     {
       "num": "07",
@@ -79,7 +85,8 @@
         "正交多项式族",
         "Chebyshev多项式"
       ],
-      "file": "07.html"
+      "file": "chapters/07.html",
+      "status": "legacy"
     },
     {
       "num": "08",
@@ -90,7 +97,8 @@
         "正交基逼近",
         "Fourier级数联系"
       ],
-      "file": "08.html"
+      "file": "chapters/08.html",
+      "status": "legacy"
     },
     {
       "num": "09",
@@ -101,7 +109,8 @@
         "多项式拟合实战",
         "非线性最小二乘"
       ],
-      "file": "09.html"
+      "file": "chapters/09.html",
+      "status": "legacy"
     },
     {
       "num": "10",
@@ -112,7 +121,8 @@
         "插值型求积公式",
         "梯形与Simpson公式"
       ],
-      "file": "10.html"
+      "file": "chapters/10.html",
+      "status": "legacy"
     },
     {
       "num": "11",
@@ -123,7 +133,8 @@
         "Richardson外推",
         "Romberg算法"
       ],
-      "file": "11.html"
+      "file": "chapters/11.html",
+      "status": "legacy"
     },
     {
       "num": "12",
@@ -134,7 +145,8 @@
         "其他Gauss型求积",
         "Gauss vs Newton-Cotes"
       ],
-      "file": "12.html"
+      "file": "chapters/12.html",
+      "status": "legacy"
     },
     {
       "num": "13",
@@ -145,7 +157,8 @@
         "复数步长法",
         "Richardson外推"
       ],
-      "file": "13.html"
+      "file": "chapters/13.html",
+      "status": "legacy"
     },
     {
       "num": "14",
@@ -156,7 +169,8 @@
         "Gram-Schmidt正交化",
         "Gauss求积理论联系"
       ],
-      "file": "14.html"
+      "file": "chapters/14.html",
+      "status": "legacy"
     },
     {
       "num": "15",
@@ -167,7 +181,8 @@
         "Doolittle/Crout分解",
         "LU分解应用"
       ],
-      "file": "15.html"
+      "file": "chapters/15.html",
+      "status": "legacy"
     },
     {
       "num": "16",
@@ -178,7 +193,8 @@
         "改进平方根法",
         "Thomas追赶法"
       ],
-      "file": "16.html"
+      "file": "chapters/16.html",
+      "status": "legacy"
     },
     {
       "num": "17",
@@ -189,7 +205,8 @@
         "谱半径",
         "条件数与误差分析"
       ],
-      "file": "17.html"
+      "file": "chapters/17.html",
+      "status": "legacy"
     },
     {
       "num": "18",
@@ -200,7 +217,8 @@
         "Gauss-Seidel迭代",
         "SOR超松弛法"
       ],
-      "file": "18.html"
+      "file": "chapters/18.html",
+      "status": "legacy"
     },
     {
       "num": "19",
@@ -211,7 +229,8 @@
         "CG算法实现",
         "收敛性与预处理"
       ],
-      "file": "19.html"
+      "file": "chapters/19.html",
+      "status": "legacy"
     },
     {
       "num": "20",
@@ -222,7 +241,8 @@
         "收敛阶定义",
         "Aitken/Steffensen加速"
       ],
-      "file": "20.html"
+      "file": "chapters/20.html",
+      "status": "legacy"
     },
     {
       "num": "21",
@@ -233,7 +253,8 @@
         "弦截法",
         "抛物线法(Müller)"
       ],
-      "file": "21.html"
+      "file": "chapters/21.html",
+      "status": "legacy"
     },
     {
       "num": "22",
@@ -244,7 +265,8 @@
         "拟Newton法(Broyden)",
         "实际求解策略"
       ],
-      "file": "22.html"
+      "file": "chapters/22.html",
+      "status": "legacy"
     },
     {
       "num": "23",
@@ -255,7 +277,8 @@
         "幂法",
         "反幂法与原点平移"
       ],
-      "file": "23.html"
+      "file": "chapters/23.html",
+      "status": "legacy"
     },
     {
       "num": "24",
@@ -266,7 +289,8 @@
         "上Hessenberg化",
         "带原点平移的QR"
       ],
-      "file": "24.html"
+      "file": "chapters/24.html",
+      "status": "legacy"
     },
     {
       "num": "25",
@@ -277,7 +301,8 @@
         "局部截断误差",
         "改进Euler/预估校正"
       ],
-      "file": "25.html"
+      "file": "chapters/25.html",
+      "status": "legacy"
     },
     {
       "num": "26",
@@ -288,7 +313,8 @@
         "自适应步长控制",
         "稳定性分析"
       ],
-      "file": "26.html"
+      "file": "chapters/26.html",
+      "status": "legacy"
     },
     {
       "num": "27",
@@ -299,7 +325,8 @@
         "线性多步法",
         "BDF方法"
       ],
-      "file": "27.html"
+      "file": "chapters/27.html",
+      "status": "legacy"
     },
     {
       "num": "28",
@@ -310,7 +337,60 @@
         "CG求解",
         "收敛验证与可视化"
       ],
-      "file": "28.html"
+      "file": "chapters/28.html",
+      "status": "legacy"
+    }
+  ],
+  "schemaVersion": 2,
+  "groups": [
+    {
+      "id": "foundations",
+      "title": "计算可信度",
+      "subtitle": "误差、舍入与稳定性",
+      "start": 1,
+      "end": 2
+    },
+    {
+      "id": "interpolation",
+      "title": "插值与连续性",
+      "subtitle": "从节点值到光滑曲线",
+      "start": 3,
+      "end": 6
+    },
+    {
+      "id": "approximation",
+      "title": "逼近与最小二乘",
+      "subtitle": "用有限表达重建连续信息",
+      "start": 7,
+      "end": 9
+    },
+    {
+      "id": "calculus",
+      "title": "积分与微分",
+      "subtitle": "离散采样下的连续算子",
+      "start": 10,
+      "end": 14
+    },
+    {
+      "id": "linear",
+      "title": "线性系统与迭代",
+      "subtitle": "大规模计算的核心",
+      "start": 15,
+      "end": 19
+    },
+    {
+      "id": "nonlinear",
+      "title": "非线性与特征值",
+      "subtitle": "迭代、谱与收敛",
+      "start": 20,
+      "end": 24
+    },
+    {
+      "id": "dynamics",
+      "title": "动力系统与实战",
+      "subtitle": "从时间推进到求解器",
+      "start": 25,
+      "end": 28
     }
   ]
 }
