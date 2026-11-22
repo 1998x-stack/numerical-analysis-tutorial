@@ -1,0 +1,29 @@
+{
+  "chapter": "16",
+  "sources": [
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.cholesky.html",
+      "claims": [
+        "LAPACK Cholesky; rejects matrices that are not positive definite"
+      ]
+    },
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.solve_banded.html",
+      "claims": [
+        "Banded/tridiagonal direct solvers implement the Thomas-style sweeps"
+      ]
+    },
+    {
+      "url": "https://doi.org/10.1137/1.9780898719574",
+      "claims": [
+        "Cholesky cost n^3/3 (half of LU); SPD requires no pivoting"
+      ]
+    }
+  ],
+  "checks": [
+    "Cholesky of [[4,2,-2],[2,5,1],[-2,1,6]] gives L = [[2,0,0],[1,2,0],[-1,1,2]]",
+    "Thomas on tridiag(-1,2,-1), n=6 solves to max error 1.1e-16",
+    "Cholesky on indefinite [[1,2],[2,1]] raises (negative pivot at column 2)",
+    "Thomas cost O(n) vs LU O(2n^3/3)"
+  ]
+}

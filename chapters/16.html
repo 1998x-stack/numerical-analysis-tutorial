@@ -1,372 +1,152 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第16章 Cholesky分解与追赶法</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="同样求解 Ax=b，通用 LU 是 2n³/3，Cholesky 只要 n³/3，而三对角的追赶法只要 O(n)。本文讲清对称正定为何能省一半、Cholesky/LDLᵀ 的公式，以及 Thomas 算法的两次扫掠。">
+<title>第 16 章 · Cholesky 分解与追赶法：结构即效率 | 数值分析</title>
+<link rel="stylesheet" href="../assets/css/article.css">
+<script src="../assets/js/chapter-labs.js" defer></script>
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>📐 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 数值分析概述</a></li>
-            <li><a href="02.html">第2章 误差分析与数值稳定性</a></li>
-            <li><a href="03.html">第3章 插值法基础</a></li>
-            <li><a href="04.html">第4章 Newton插值与均差</a></li>
-            <li><a href="05.html">第5章 Hermite插值与分段插值</a></li>
-            <li><a href="06.html">第6章 三次样条插值</a></li>
-            <li><a href="07.html">第7章 函数逼近基本理论</a></li>
-            <li><a href="08.html">第8章 最佳平方逼近</a></li>
-            <li><a href="09.html">第9章 最小二乘曲线拟合</a></li>
-            <li><a href="10.html">第10章 数值积分基础</a></li>
-            <li><a href="11.html">第11章 复合求积与Romberg外推</a></li>
-            <li><a href="12.html">第12章 Gauss求积公式</a></li>
-            <li><a href="13.html">第13章 数值微分</a></li>
-            <li><a href="14.html">第14章 正交多项式与数值积分</a></li>
-            <li><a href="15.html">第15章 Gauss消去法与LU分解</a></li>
-            <li><a href="16.html" class="active">第16章 Cholesky分解与追赶法</a></li>
-            <li><a href="17.html">第17章 向量/矩阵范数与条件数</a></li>
-            <li><a href="18.html">第18章 经典迭代法</a></li>
-            <li><a href="19.html">第19章 Krylov子空间与共轭梯度法</a></li>
-            <li><a href="20.html">第20章 非线性方程求根(一)</a></li>
-            <li><a href="21.html">第21章 非线性方程求根(二)</a></li>
-            <li><a href="22.html">第22章 非线性方程组Newton法</a></li>
-            <li><a href="23.html">第23章 矩阵特征值计算</a></li>
-            <li><a href="24.html">第24章 QR方法与特征值</a></li>
-            <li><a href="25.html">第25章 常微分方程数值解(一)</a></li>
-            <li><a href="26.html">第26章 常微分方程数值解(二)</a></li>
-            <li><a href="27.html">第27章 刚性方程与线性多步法</a></li>
-            <li><a href="28.html">第28章 综合实战：从算法到代码</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <h2>第十六章：Cholesky分解与追赶法</h2>
+<a class="skip" href="#content">跳转正文</a>
+<header class="site-header"><div class="topbar"><a class="brand" href="../index.html"><span>∑</span> NUMERICAL <b>ANALYSIS</b></a><nav aria-label="课程导航"><a href="../index.html#catalog">全部章节</a><a href="https://github.com/1998x-stack/numerical-analysis-tutorial">源码与勘误</a></nav></div></header>
+<main class="article-shell" id="content">
+<aside class="article-toc"><nav aria-label="本章目录"><small>ON THIS PAGE · CH 16</small><ol>
+<li><a href="#cost">01 · 结构决定成本</a></li>
+<li><a href="#spd">02 · 对称正定：为什么可以不选主元</a></li>
+<li><a href="#cholesky">03 · Cholesky 分解</a></li>
+<li><a href="#ldlt">04 · LDLᵀ：去掉平方根</a></li>
+<li><a href="#thomas">05 · 追赶法：三对角上的 O(n)</a></li>
+<li><a href="#experiment">06 · 实验与失败边界</a></li>
+<li><a href="#references">原始资料</a></li>
+</ol></nav></aside>
+<article class="article-body">
+<nav class="chapter-navline" aria-label="章节导览"><a href="15.html">← 前一章</a><a href="17.html">下一章 →</a></nav>
+<p class="chapter-kicker">CHAPTER 16 · NUMERICAL ANALYSIS</p>
+<h1>Cholesky 分解与追赶法：结构即效率</h1>
+<p class="lead">上一章的 LU 对任意矩阵都适用。但如果矩阵对称正定，或干脆是三对角的，通用算法就浪费了这些结构。本章沿“用掉越多结构、成本越低”这条线，从 Cholesky 走到最快的追赶法。</p>
+<section id="cost" aria-labelledby="cost-heading">
+<h2 id="cost-heading">01 · 结构决定成本</h2>
+<p>同样是求解 <code>Ax=b</code>，用掉多少结构，成本就差多少。对 <code>n×n</code> 矩阵：</p>
+<table>
+<tr><th>方法</th><th>适用的矩阵</th><th>运算量</th></tr>
+<tr><td>通用 LU（含选主元）</td><td>任意非奇异矩阵</td><td>≈ 2n³/3</td></tr>
+<tr><td>Cholesky / LDLᵀ</td><td>对称正定</td><td>≈ n³/3</td></tr>
+<tr><td>追赶法（Thomas）</td><td>三对角（常为对称正定）</td><td>≈ 8n</td></tr>
+</table>
+<p>从 <code>2n³/3</code> 到 <code>n³/3</code> 是少了一半，而从立方降到线性则是量级的变化。这些节约都不是“更聪明的技巧”，而是把矩阵的结构当成了算法设计的一部分。</p>
+</section>
+<section id="spd" aria-labelledby="spd-heading">
+<h2 id="spd-heading">02 · 对称正定：为什么可以不选主元</h2>
+<p>矩阵 <code>A</code> 对称正定（SPD）指 <code>A=Aᵀ</code> 且对所有非零向量 <code>x</code> 有</p>
+<div class="math-equation" role="group" aria-label="公式 16.1"><div class="math-scroll" role="region" tabindex="0" aria-label="对称正定要求对任意非零向量二次型为正，必要时可横向滚动"><math display="block" aria-label="对称正定要求对任意非零向量二次型为正"><msup><mi>x</mi><mi>T</mi></msup><mi>A</mi><mi>x</mi><mo>&gt;</mo><mn>0</mn></math></div><div class="equation-tag">(16.1)</div></div>
+<p>等价条件包括：所有特征值 <code>&gt;0</code>；所有顺序主子式 <code>&gt;0</code>。后者直接带来一个结论：Cholesky 消去过程中的主元总为正，<strong>不需要换行选主元</strong>。所以 SPD 求解器的代码可以比通用 LU 简单得多。</p>
+<p>SPD 矩阵不是罕见特例：有限元刚度矩阵（应变能 <code>xᵀKx&gt;0</code>）、协方差矩阵、核方法里的 Gram 矩阵、凸问题的 Hessian、Laplace 算子离散化，都天然 SPD。</p>
+<aside class="callout"><p><strong>数值警告：</strong>“严格正定”在浮点下有时很微妙。若某个主元小到与机器精度同量级（如 <code>10⁻¹⁶</code>），矩阵在数学上可能是正定的，但数值上已接近奇异。此时应当把它视为半正定或病态，并考虑正则化，而不是继续分解。</p></aside>
+</section>
+<section id="cholesky" aria-labelledby="cholesky-heading">
+<h2 id="cholesky-heading">03 · Cholesky 分解</h2>
+<p>对 SPD 矩阵 <code>A</code>，存在唯一的下三角矩阵 <code>L</code>（对角元为正）使得</p>
+<div class="math-equation" role="group" aria-label="公式 16.2"><div class="math-scroll" role="region" tabindex="0" aria-label="对称正定矩阵等于下三角乘其转置，必要时可横向滚动"><math display="block" aria-label="对称正定矩阵等于下三角乘其转置"><mi>A</mi><mo>=</mo><mi>L</mi><msup><mi>L</mi><mi>T</mi></msup></math></div><div class="equation-tag">(16.2)</div></div>
+<p>它是对称版 LU：只算半个三角，且对角元从平方根得到。逐列公式为</p>
+<div class="math-equation" role="group" aria-label="公式 16.3"><div class="math-scroll" role="region" tabindex="0" aria-label="对角元等于A对角元减去前面列的平方和再开方，必要时可横向滚动"><math display="block" aria-label="对角元等于A对角元减去前面列的平方和再开方"><msub><mi>l</mi><mrow><mi>j</mi><mi>j</mi></mrow></msub><mo>=</mo><msqrt><msub><mi>a</mi><mrow><mi>j</mi><mi>j</mi></mrow></msub><mo>−</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mrow><mi>j</mi><mo>−</mo><mn>1</mn></mrow></munderover><msubsup><mi>l</mi><mrow><mi>j</mi><mi>k</mi></mrow><mn>2</mn></msubsup></msqrt></math></div><div class="equation-tag">(16.3)</div></div>
+<div class="math-equation" role="group" aria-label="公式 16.4"><div class="math-scroll" role="region" tabindex="0" aria-label="下三角非对角元等于A减去前面乘积和除以对角元，必要时可横向滚动"><math display="block" aria-label="下三角非对角元等于A减去前面乘积和除以对角元"><msub><mi>l</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>=</mo><mfrac><mrow><msub><mi>a</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>−</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mrow><mi>j</mi><mo>−</mo><mn>1</mn></mrow></munderover><msub><mi>l</mi><mrow><mi>i</mi><mi>k</mi></mrow></msub><msub><mi>l</mi><mrow><mi>j</mi><mi>k</mi></mrow></msub></mrow><msub><mi>l</mi><mrow><mi>j</mi><mi>j</mi></mrow></msub></mfrac><mo>,</mo><mspace width="0.5em"/><mi>i</mi><mo>&gt;</mo><mi>j</mi></math></div><div class="equation-tag">(16.4)</div></div>
+<p>一个三位十进制数字就能手算的例子：</p>
+<pre><code>A = [[ 4,  2, -2],
+     [ 2,  5,  1],
+     [-2,  1,  6]]
 
-        <p>大家好，我是你们的讲师。这一章我们聊两个"特化版"的线性方程组求解方法。它们不像上一章的通用 LU 分解那样适用于任意矩阵，但当条件满足时，它们的效率会让人拍案叫绝。</p>
+l11 = sqrt(4) = 2；l21 = 2/2 = 1；l31 = -2/2 = -1
+l22 = sqrt(5 - 1) = 2；l32 = (1 - (-1)(1))/2 = 1
+l33 = sqrt(6 - 1 - 1) = 2
 
-        <p>先讲一个让我印象深刻的亲身经历。几年前，我在做一个气象模拟项目。模型的核心是一个扩散方程（diffusion equation），用 Crank-Nicolson 隐式格式离散化之后，每一步都需要求解一个 10⁶ × 10⁶ 的线性系统。我第一次尝试时用了一个通用的稀疏 LU 求解器，结果一步需要大约 5 秒——而我们的模型需要跑 10000 个时间步，那就是接近 14 个小时。项目 deadline 迫在眉睫，这个速度完全不可接受。</p>
+L = [[ 2, 0, 0],
+     [ 1, 2, 0],
+     [-1, 1, 2]]        # 验证 LLᵀ = A</code></pre>
+<figure><img src="../assets/svg/16-cholesky.svg" alt="对称正定矩阵分解为下三角L与其转置Lᵀ的示意图，A为满阵，L只存下三角" loading="lazy"><figcaption>图 1 · <code>A=LLᵀ</code>：只需存半个下三角 <code>L</code>，<code>Lᵀ</code> 是它的转置。运算量约 <code>n³/3</code>，是通用 LU 的一半，且 SPD 情形无需选主元。</figcaption></figure>
+</section>
+<section id="ldlt" aria-labelledby="ldlt-heading">
+<h2 id="ldlt-heading">04 · LDLᵀ：去掉平方根</h2>
+<p>Cholesky 要做 <code>n</code> 次开方。改进平方根法把对角因子单独拿出来：</p>
+<div class="math-equation" role="group" aria-label="公式 16.5"><div class="math-scroll" role="region" tabindex="0" aria-label="对称矩阵等于单位下三角乘对角阵乘其转置，必要时可横向滚动"><math display="block" aria-label="对称矩阵等于单位下三角乘对角阵乘其转置"><mi>A</mi><mo>=</mo><mi>L</mi><mi>D</mi><msup><mi>L</mi><mi>T</mi></msup></math></div><div class="equation-tag">(16.5)</div></div>
+<p>其中 <code>L</code> 是单位下三角（对角全为 1），<code>D=diag(d₁,…,dₙ)</code>。这样完全没有开方，<code>dⱼ</code> 可以取很小甚至负值，因此它还能用来<strong>判定对称矩阵是否正定</strong>：所有 <code>dⱼ&gt;0</code> 才是 SPD。求解时只需多一步按 <code>D</code> 缩放（<code>z=y/d</code>）。</p>
+<p>两者关系很直接：把 Cholesky 的 <code>L</code> 各列除以对角元、把平方根归入 <code>D</code>，就得到 LDLᵀ。对接近奇异的 SPD 矩阵，LDLᵀ 不会像 Cholesky 那样在开方时放大误差。</p>
+</section>
+<section id="thomas" aria-labelledby="thomas-heading">
+<h2 id="thomas-heading">05 · 追赶法：三对角上的 O(n)</h2>
+<p>三对角系统只在主对角 <code>b</code> 与两条次对角 <code>a, c</code> 上有非零元：</p>
+<div class="math-equation" role="group" aria-label="公式 16.6"><div class="math-scroll" role="region" tabindex="0" aria-label="三对角方程第i行是a乘左邻加b乘自身加c乘右邻等于d，必要时可横向滚动"><math display="block" aria-label="三对角方程第i行是a乘左邻加b乘自身加c乘右邻等于d"><msub><mi>a</mi><mi>i</mi></msub><msub><mi>x</mi><mrow><mi>i</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>+</mo><msub><mi>b</mi><mi>i</mi></msub><msub><mi>x</mi><mi>i</mi></msub><mo>+</mo><msub><mi>c</mi><mi>i</mi></msub><msub><mi>x</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>d</mi><mi>i</mi></msub></math></div><div class="equation-tag">(16.6)</div></div>
+<p>Thomas 算法就是针对它的 Gauss 消去：<strong>前向扫掠</strong>逐个消去下次对角线，<strong>反向回代</strong>从最后一行往上解。因为每行只涉及三个未知量，整个过程只有 <code>O(n)</code> 次运算，也不需要二维存储。</p>
+<figure><img src="../assets/svg/16-thomas.svg" alt="三对角矩阵的三条对角线分布，以及前向扫掠与反向回代两个方向的箭头" loading="lazy"><figcaption>图 2 · 三对角结构：<code>a</code> 为下次对角、<code>b</code> 为主对角、<code>c</code> 为上次对角。前向扫掠自上而下消去 <code>a</code>，反向回代自下而上求出 <code>x</code>。</figcaption></figure>
+<p>当矩阵是对称正定且严格对角占优（如 <code>A=tridiag(−1,2,−1)</code>，来自一维热方程或样条的离散化）时，Thomas 算法不需要选主元也不会遇到零主元。三次样条插值的弯矩方程、隐式差分格式、Yule–Walker 方程都属于这一类。</p>
+</section>
+<section id="experiment" aria-labelledby="experiment-heading">
+<h2 id="experiment-heading">06 · 实验与失败边界</h2>
+<p>下面用两个可复现的断言把“结构好用”固定下来：Cholesky 分解出的 <code>L</code> 与手算一致；Thomas 算法在 <code>O(n)</code> 下把三对角系统解到机器精度级。</p>
+<div class="demo" data-lab="cholesky"><label for="cholesky-mode">选择矩阵，观察 Cholesky 分解或失败</label><select id="cholesky-mode" data-input><option value="spd">对称正定 3×3</option><option value="indef">对称但非正定 2×2</option></select><output data-output aria-live="polite">下三角 L 或失败信息将在此显示。</output></div>
+<pre><code>import math
 
-        <p>后来我意识到，这个离散化后的矩阵不仅是对称正定的（SPD），而且是一个<strong>三对角矩阵</strong>（tridiagonal）。我换用了 Cholesky 分解的特化版本——追赶法（Thomas algorithm），结果每个时间步从 5 秒降到了 0.003 秒。整个模拟从 14 小时缩短到了 30 秒。项目经理以为我发明了什么新的数学方法，其实我只是用对了工具。</p>
-
-        <p>这个故事告诉我们：<strong>有时效率提升不在于更好的算法，而在于更匹配的算法</strong>。当一个方法利用了矩阵的全部结构信息时，它的效率可以碾压通用方法几个数量级。</p>
-
-        <h3>16.1 对称正定矩阵</h3>
-
-        <p>对称正定（Symmetric Positive Definite, SPD）矩阵在工程和科学计算中无处不在。一个矩阵 A 是对称正定的，如果它满足：</p>
-        <ul>
-            <li><strong>对称</strong>：A = Aᵀ</li>
-            <li><strong>正定</strong>：对任意非零向量 x，有 xᵀAx > 0</li>
-        </ul>
-
-        <p>SPD 矩阵出现在哪里？几乎每一个从连续问题离散化来的二次型优化或物理系统中：</p>
-
-        <table>
-            <tr>
-                <th>领域</th>
-                <th>矩阵来源</th>
-                <th>为什么是 SPD</th>
-            </tr>
-            <tr>
-                <td>结构力学</td>
-                <td>刚度矩阵 K（有限元法）</td>
-                <td>应变能 xᵀKx 总是正的</td>
-            </tr>
-            <tr>
-                <td>统计学</td>
-                <td>协方差矩阵</td>
-                <td>方差 xᵀΣx 非负且通常正定</td>
-            </tr>
-            <tr>
-                <td>机器学习</td>
-                <td>Gram 矩阵 K_{ij}=φ(x_i)ᵀφ(x_j)</td>
-                <td>内积的 Gram 矩阵总是半正定</td>
-            </tr>
-            <tr>
-                <td>优化</td>
-                <td>Hessian 矩阵（凸函数）</td>
-                <td>凸函数的二阶导矩阵正定</td>
-            </tr>
-            <tr>
-                <td>偏微分方程</td>
-                <td>Laplace 算子离散化</td>
-                <td>能量范数诱导的正定性</td>
-            </tr>
-        </table>
-
-        <p>判断一个矩阵是否 SPD 有以下几种方法：</p>
-        <ul>
-            <li><strong>特征值法</strong>：所有特征值 > 0。但计算特征值本身就挺贵的。</li>
-            <li><strong>Sylvester 准则</strong>：所有顺序主子式 > 0。手算小矩阵很实用。</li>
-            <li><strong>Cholesky 尝试法</strong>：直接尝试做 Cholesky 分解。如果中途遇到负的或零的平方根，说明矩阵不是 SPD。这其实是实践中最好的方法——因为它基本不额外花钱。</li>
-        </ul>
-
-        <div class="tip">
-            <p><strong>数值实践</strong>：在浮点精度下，判断"严格正定"有时很微妙。一个特征值为 10⁻¹⁶ 的矩阵在数学上正定，但在计算机上已是半正定。实际工作中，如果 Cholesky 分解在数值上失败（对角元的平方根接近机器精度），就应当将矩阵视为半正定或病态，并采取正则化措施。</p>
-        </div>
-
-        <h3>16.2 Cholesky分解（平方根法）</h3>
-
-        <p>对于 SPD 矩阵 A，存在唯一的<strong>下三角矩阵 L</strong>（对角元为正数），使得：</p>
-
-        <p style="text-align:center;"><strong>A = LLᵀ</strong></p>
-
-        <p>这就是 Cholesky 分解（又称平方根法）。它本质上是对称版本的 LU 分解——利用对称性将计算量和存储量都减半。</p>
-
-        <p><strong>计算公式</strong>：</p>
-
-        <p>对 j = 1, 2, ..., n：</p>
-        <ul>
-            <li>l_{jj} = √(a_{jj} - Σ_{k=1}^{j-1} l_{jk}²)</li>
-            <li>对 i = j+1, ..., n：l_{ij} = (a_{ij} - Σ_{k=1}^{j-1} l_{ik} l_{jk}) / l_{jj}</li>
-        </ul>
-
-        <p>关键特性：</p>
-        <ul>
-            <li><strong>运算量</strong>：大约 n³/3 次浮点运算——这是普通 LU 分解（2n³/3）的一半。当 n = 1000 时，Cholesky 比 LU 节省了约 3.3 亿次运算。</li>
-            <li><strong>无需选主元</strong>：对于 SPD 矩阵，Cholesky 分解永远有 l_{jj} > 0（在精确算术中），因此不需要选主元。这是 SPD 矩阵最重要且最实用的特性。</li>
-            <li><strong>数值稳定性</strong>：Cholesky 分解是数值稳定的。误差分析表明，它不会显著放大输入误差。</li>
-        </ul>
-
-        <p>用 3×3 的例子来演示：</p>
-
-        <pre><code>A = [4   2  -2]
-    [2   5   1]
-    [-2  1   6]
-
-第 1 列：
-l₁₁ = √4 = 2
-l₂₁ = 2 / 2 = 1
-l₃₁ = -2 / 2 = -1
-
-第 2 列：
-l₂₂ = √(5 - 1²) = √4 = 2
-l₃₂ = (1 - (-1)×1) / 2 = (1 + 1) / 2 = 1
-
-第 3 列：
-l₃₃ = √(6 - (-1)² - 1²) = √(6 - 1 - 1) = √4 = 2
-
-结果：
-L = [ 2   0   0]
-    [ 1   2   0]
-    [-1   1   2]
-
-验证：LLᵀ = [4  2 -2; 2  5  1; -2  1  6] ✓</code></pre>
-
-        <h3>16.3 改进平方根法（LDLᵀ分解）</h3>
-
-        <p>传统 Cholesky 分解需要计算平方根——这在浮点运算中稍微增加了成本，且当矩阵接近奇异时，l_{jj} 趋近于零，平方根会放大数值误差。</p>
-
-        <p><strong>LDLᵀ 分解</strong>（改进平方根法）避免了平方根运算：</p>
-
-        <p style="text-align:center;"><strong>A = LDLᵀ</strong></p>
-
-        <p>其中 L 是<strong>单位下三角矩阵</strong>（对角元全为 1），D = diag(d₁, d₂, ..., dₙ) 是对角矩阵（dⱼ > 0）。</p>
-
-        <p>算法步骤：</p>
-
-        <pre><code>import numpy as np
-
-def ldl_decomposition(A):
-    """
-    计算对称正定矩阵 A 的 LDLᵀ 分解（改进平方根法）。
-    返回 L（单位下三角）和 d（对角元向量）。
-    """
-    n = A.shape[0]
-    L = np.eye(n)
-    d = np.zeros(n)
-
+def cholesky(A):                    # 仅适用 SPD；遇非正平方根则失败
+    n = len(A)
+    L = [[0.0] * n for _ in range(n)]
     for j in range(n):
-        # 计算 d_j
-        v = d[:j] * L[j, :j]  # 逐元素乘法
-        d[j] = A[j, j] - np.dot(L[j, :j], v)
-
-        # 计算 L[i, j] for i > j
+        s = A[j][j] - sum(L[j][k] ** 2 for k in range(j))
+        if s &lt;= 0:
+            raise ValueError("not SPD at column %d" % j)
+        L[j][j] = math.sqrt(s)
         for i in range(j + 1, n):
-            v = d[:j] * L[i, :j]
-            L[i, j] = (A[i, j] - np.dot(L[i, :j], v)) / d[j]
+            L[i][j] = (A[i][j] - sum(L[i][k] * L[j][k] for k in range(j))) / L[j][j]
+    return L
 
-    return L, d
-
-# ---- 测试 ----
-A = np.array([[4, 2, -2],
-              [2, 5,  1],
-              [-2, 1, 6]], dtype=float)
-
-L, d = ldl_decomposition(A)
-print("L 矩阵：")
-print(np.round(L, 4))
-print("d 对角元：", np.round(d, 4))
-
-# 验证 A = LDLᵀ
-reconstructed = L @ np.diag(d) @ L.T
-print("\n重构误差 ||A - LDLᵀ||：",
-      np.linalg.norm(A - reconstructed))
-
-# 求解 Ax = b
-b = np.array([8, 11, 5], dtype=float)
-
-# 前向替换 Ly = b
-y = np.linalg.solve(L, b)
-# 缩放 Dz = y → z = y ./ d
-z = y / d
-# 回代 Lᵀx = z
-x = np.linalg.solve(L.T, z)
-print("解 x：", np.round(x, 6))
-print("残差 ||Ax - b||：", np.linalg.norm(A @ x - b))</code></pre>
-
-        <div class="highlight">
-            <p><strong>Cholesky vs LDLᵀ 对比</strong>：Cholesky 需要 n 次平方根运算，LDLᵀ 完全不需要。对于接近奇异的 SPD 矩阵，LDLᵀ 的数值稳定性更好，因为 dⱼ 可以变得非常小但不会出现负的平方根。此外，LDLᵀ 的 L 是对角元为 1 的单位下三角矩阵，在某些迭代精化（iterative refinement）场景中更方便。</p>
-        </div>
-
-        <h3>16.4 追赶法（Thomas算法）</h3>
-
-        <p>现在来看一个极端的特例——三对角矩阵。它只在主对角线和两条次对角线上有非零元素：</p>
-
-        <pre><code>A = [b₁  c₁   0  ...  0  ]
-    [a₂  b₂  c₂  ...  0  ]
-    [0   a₃  b₃  ...  0  ]
-    [⋮    ⋮   ⋮   ⋱   c_{n-1}]
-    [0    0   0  aₙ   bₙ ]</code></pre>
-
-        <p>Thomas 算法本质上是针对三对角矩阵的高斯消去法——它利用三对角结构的特殊性，将运算量从 O(n³) 降到了 O(n)。</p>
-
-        <p><strong>算法过程</strong>：</p>
-
-        <p><em>前向 sweep（消去次对角线）：</em></p>
-        <ul>
-            <li>对 i = 2, ..., n：</li>
-            <li>m = aᵢ / b_{i-1}</li>
-            <li>bᵢ' = bᵢ - m · c_{i-1}</li>
-            <li>dᵢ' = dᵢ - m · d_{i-1}</li>
-        </ul>
-
-        <p><em>反向 sweep（回代）：</em></p>
-        <ul>
-            <li>xₙ = dₙ' / bₙ'</li>
-            <li>对 i = n-1, ..., 1：xᵢ = (dᵢ' - cᵢ · x_{i+1}) / bᵢ'</li>
-        </ul>
-
-        <div class="tip">
-            <p><strong>效率解释</strong>：为什么 Thomas 算法是 O(n) 而不是 O(n³)？因为三对角矩阵的 LU 分解中，L 只有主对角线和下次对角线有非零元，U 只有主对角线和上次对角线有非零元。整个分解只有 O(n) 个元素需要计算，而不是稠密矩阵的 O(n²) 个。</p>
-        </div>
-
-        <p><strong>Python 实现</strong>：</p>
-
-        <pre><code>import numpy as np
-
-def thomas_solve(a, b, c, d):
-    """
-    求解三对角线性系统 Ax = d。
-    a: 下次对角线 (长度 n-1, a[0] 对应第 2 行)
-    b: 主对角线 (长度 n)
-    c: 上次对角线 (长度 n-1, c[-1] 对应第 n-1 行)
-    d: 右端项 (长度 n)
-    """
+def thomas(a, b, c, d):             # 三对角：前向扫掠 + 反向回代
     n = len(b)
-    # 复制数组以避免修改输入
-    bp = b.copy()
-    dp = d.copy()
-    x = np.zeros(n)
-
-    # 前向 sweep
+    bp, dp = b[:], d[:]
     for i in range(1, n):
         m = a[i-1] / bp[i-1]
-        bp[i] = bp[i] - m * c[i-1]
-        dp[i] = dp[i] - m * dp[i-1]
-
-    # 反向 sweep
+        bp[i] -= m * c[i-1]
+        dp[i] -= m * dp[i-1]
+    x = [0.0] * n
     x[-1] = dp[-1] / bp[-1]
-    for i in range(n-2, -1, -1):
+    for i in range(n - 2, -1, -1):
         x[i] = (dp[i] - c[i] * x[i+1]) / bp[i]
-
     return x
 
-# ---- 测试：100 万阶三对角系统 ----
-n = 1_000_000
+L = cholesky([[4, 2, -2], [2, 5, 1], [-2, 1, 6]])
+assert [round(v, 9) for v in L[0]] == [2.0, 0.0, 0.0]
+assert [round(v, 9) for v in L[1]] == [1.0, 2.0, 0.0]
+assert [round(v, 9) for v in L[2]] == [-1.0, 1.0, 2.0]
 
-# 构造一个典型的三对角矩阵（来自 PDE 离散化）
-# A = tridiag(-1, 2, -1)，这是一个 SPD 矩阵
-a = -np.ones(n-1)   # 下次对角线
-b = 2 * np.ones(n)   # 主对角线
-c = -np.ones(n-1)   # 上次对角线
+n = 6                                   # tridiag(-1, 2, -1) 是 SPD
+x_true = [math.sin(math.pi * (i + 1) / (n + 1)) for i in range(n)]
+d = [2 * x_true[i] for i in range(n)]
+for i in range(1, n):
+    d[i] += -x_true[i-1]
+for i in range(n - 1):
+    d[i] += -x_true[i+1]
+x = thomas([-1.0] * (n-1), [2.0] * n, [-1.0] * (n-1), d)
+assert max(abs(x[i] - x_true[i]) for i in range(n)) &lt; 1e-12
 
-# 右端项：sin 函数
-x_true = np.sin(np.linspace(0, np.pi, n))
-d = np.zeros(n)
-d[0] = b[0] * x_true[0] + c[0] * x_true[1]
-for i in range(1, n-1):
-    d[i] = a[i-1] * x_true[i-1] + b[i] * x_true[i] + c[i] * x_true[i+1]
-d[-1] = a[-1] * x_true[-2] + b[-1] * x_true[-1]
-
-import time
-start = time.time()
-x = thomas_solve(a, b, c, d)
-elapsed = time.time() - start
-
-print(f"n = {n:,}")
-print(f"求解时间: {elapsed:.4f} 秒")
-print(f"最大误差: {np.max(np.abs(x - x_true)):.2e}")
-print(f"每秒处理的自由度: {n / elapsed:.0f}")</code></pre>
-
-        <div class="warning">
-            <p><strong>踩坑提醒</strong>：当年我第一次用 Thomas 算法时，偷懒没有处理 a[0] 和 c[-1] 这两个"悬空"的数组边界。Python 的负索引让 a[-1] 悄悄地取到了 a 的最后一个元素，c[0] 也取到了 c 的第一个元素——代码跑了，但结果是错的！花了整整半天调试才发现问题。所以三对角数组索引千万要小心：a 是下次对角线，长度 n-1，a[i] 对应矩阵的第 i+2 行、第 i+1 列。建议总是画一个 3×3 的例子对照着写代码。</p>
-        </div>
-
-        <h3>16.5 追赶法的典型应用</h3>
-
-        <p>三对角系统广泛出现在以下场景中：</p>
-
-        <table>
-            <tr>
-                <th>应用场景</th>
-                <th>为什么出现三对角</th>
-                <th>矩阵规模</th>
-            </tr>
-            <tr>
-                <td>三次样条插值</td>
-                <td>连续性条件导出的线性系统</td>
-                <td>n 个插值点 → n-1 个区间</td>
-            </tr>
-            <tr>
-                <td>一维热方程（隐式 Euler）</td>
-                <td>空间二阶导数的中心差分</td>
-                <td>空间网格点数</td>
-            </tr>
-            <tr>
-                <td>一维对流-扩散方程</td>
-                <td>Crank-Nicolson 格式</td>
-                <td>空间网格点数</td>
-            </tr>
-            <tr>
-                <td>时间序列的 AR(2) 模型</td>
-                <td>Yule-Walker 方程</td>
-                <td>滞后阶数</td>
-            </tr>
-            <tr>
-                <td>期权定价（隐式二叉树）</td>
-                <td>Black-Scholes 方程离散化</td>
-                <td>价格网格点数</td>
-            </tr>
-        </table>
-
-        <div class="highlight">
-            <p><strong>结构即效率</strong>：从通用的 LU 分解（O(n³)）到 Cholesky 分解（O(n³/3)）再到 Thomas 算法（O(n)），我们看到一个清晰的模式——<strong>矩阵的结构信息越多，算法的效率就越高</strong>。三对角结构的 LU 分解只有两个非零的对角线需要计算，因此变成了 O(n)。在数值线性代数中，"认识你的矩阵结构"是选择算法的最重要前提。</p>
-        </div>
-
-        <p>回想开头的气象模拟故事：从 14 小时到 30 秒，靠的不是什么魔法——只是正确地识别了矩阵的三对角 SPD 结构，然后选择了 Thomas 算法。那个 10⁶ × 10⁶ 的三对角系统，在 Thomas 算法下只需要约 3 千万次浮点运算，现代 CPU 可以在毫秒级完成。</p>
-
-        <p>下一章，我们将讨论一个更基础的问题：<strong>如何量化矩阵的"病态"程度</strong>？答案就是向量范数、矩阵范数和条件数。它们是数值分析中最核心的误差分析工具，也是你诊断线性系统求解质量的关键指标。</p>
-
-        <div class="footer-nav">
-            <a href="15.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="17.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
+try:
+    cholesky([[1.0, 2.0], [2.0, 1.0]])   # 特征值为 -1, 3：非正定
+except ValueError:
+    pass
+else:
+    raise AssertionError("should have failed on an indefinite matrix")</code></pre>
+<p><strong>失败边界。</strong>Cholesky 与 LDLᵀ 只在 SPD 情形成立（非 SPD 时主元会变负，如图中演示）。Thomas 算法要求消去过程中主元不为零；严格对角占优或 SPD 的三对角矩阵满足这一点，否则需要选主元，而沿行交换会破坏三对角结构，须改用带状存储的带选主元版本。把结构用满的前提，是先确认结构真的存在。</p>
+</section>
+<section id="references" aria-labelledby="references-heading">
+<h2 id="references-heading">原始资料与延伸阅读</h2>
+<p>本章将文献结论与本文独立构造的数值示例严格区分；复杂度与图示为教学说明。</p>
+<ol class="sources">
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.cholesky.html">SciPy · scipy.linalg.cholesky</a>：基于 LAPACK 的 Cholesky 分解接口与错误语义（非正定时拒绝）。</li>
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.solve_banded.html">SciPy · scipy.linalg.solve_banded</a>：带状/三对角系统的高效求解（追赶法族）。</li>
+<li><a href="https://doi.org/10.1137/1.9780898719574">E. Anderson et al., <em>LAPACK Users' Guide</em></a>。SIAM，第三版，1999；Cholesky、LDLᵀ 与带状直接法。</li>
+</ol>
+</section>
+<nav class="chapter-bottom" aria-label="前后章节"><a href="15.html">← 前一章</a><a href="17.html">下一章 →</a></nav>
+</article>
+</main>
+<footer><span>NUMERICAL ANALYSIS · 一份可独立阅读的计算笔记</span><a href="../index.html">返回课程首页</a></footer>
 </body>
 </html>
