@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t15b t15b-d" width="720" height="360" viewBox="0 0 720 360">
+<title id="t15b">选主元把乘数压回 1 以内</title>
+<desc id="t15b-d">经典二乘二例中，不选主元的乘数高达一万，部分选主元后降到万分之一。</desc>
+<rect width="720" height="360" rx="12" fill="#fffdf9"/>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<text x="34" y="42" font-size="20" font-weight="600" fill="#24424a">乘数 |m₂₁| 的对比（对数）</text>
+<text x="34" y="70" font-size="13" fill="#607477">0.0001x+y=1 与 x+y=2：不选主元 |m|=10⁴，部分选主元 |m|=10⁻⁴。</text>
+<path d="M120 90 V300 H640" fill="none" stroke="#9fb1ad"/>
+<text x="112" y="304.0" font-size="12" fill="#607477" text-anchor="end">10^-4</text>
+<text x="112" y="257.3" font-size="12" fill="#607477" text-anchor="end">10^-2</text>
+<text x="112" y="210.7" font-size="12" fill="#607477" text-anchor="end">10^0</text>
+<text x="112" y="164.0" font-size="12" fill="#607477" text-anchor="end">10^2</text>
+<text x="112" y="117.3" font-size="12" fill="#607477" text-anchor="end">10^4</text>
+<rect x="220" y="113.3" width="90" height="186.7" fill="#c0392b"/>
+<text x="265" y="103.3" font-size="15" font-weight="600" fill="#c0392b" text-anchor="middle">10⁴</text>
+<text x="265" y="322" font-size="14" fill="#24424a" text-anchor="middle">不选主元</text>
+<rect x="430" y="300.0" width="90" height="0.0" fill="#147f80"/>
+<text x="475" y="290.0" font-size="15" font-weight="600" fill="#147f80" text-anchor="middle">10⁻⁴</text>
+<text x="475" y="322" font-size="14" fill="#24424a" text-anchor="middle">部分选主元</text>
+<text x="34" y="336" font-size="13" fill="#607477">乘数越大，一次行消去引入的舍入放大越严重。</text>
+</g></svg>

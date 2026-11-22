@@ -1,0 +1,29 @@
+{
+  "chapter": "15",
+  "sources": [
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.lu_factor.html",
+      "claims": [
+        "LAPACK-based partial-pivoting LU factorization interface"
+      ]
+    },
+    {
+      "url": "https://doi.org/10.1137/1.9780898719574",
+      "claims": [
+        "Direct solvers: pivoting strategies and O(2n^3/3) elimination cost"
+      ]
+    },
+    {
+      "url": "https://nhigham.com/accuracy-and-stability-of-numerical-algorithms/",
+      "claims": [
+        "LU error analysis involves the growth factor; partial pivoting keeps multipliers <= 1"
+      ]
+    }
+  ],
+  "checks": [
+    "3-digit arithmetic, no pivoting: |m21| = 1e4, x1 = 0.000 (fails vs exact 1.0001)",
+    "3-digit arithmetic, partial pivoting: |m21| = 1e-4, x1 = 1.000 (correct to three digits)",
+    "partial pivoting guarantees |m_ik| <= 1",
+    "growth factor bounded by 2^(n-1) in the worst case (rare in practice)"
+  ]
+}

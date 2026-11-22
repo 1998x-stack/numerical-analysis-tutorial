@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t15a t15a-d" width="720" height="360" viewBox="0 0 720 360">
+<title id="t15a">LU 分解的原地存储</title>
+<desc id="t15a-d">用同一个矩阵存储空间同时保存下三角L的上三角U，L的对角元隐含为1。</desc>
+<rect width="720" height="360" rx="12" fill="#fffdf9"/>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<text x="34" y="42" font-size="20" font-weight="600" fill="#24424a">一次存储，两个因子：原地 LU</text>
+<text x="34" y="70" font-size="13" fill="#607477">严格下三角存 L（对角隐含 1），上三角含对角存 U。</text>
+<rect x="250" y="110" width="52" height="52" fill="#fdf0ea" stroke="#ce7152" stroke-width="1.3"/>
+<text x="276.0" y="141.0" font-size="14" fill="#a04b32" text-anchor="middle">u11</text>
+<rect x="302" y="110" width="52" height="52" fill="#fdf0ea" stroke="#ce7152" stroke-width="1.3"/>
+<text x="328.0" y="141.0" font-size="14" fill="#a04b32" text-anchor="middle">u12</text>
+<rect x="354" y="110" width="52" height="52" fill="#fdf0ea" stroke="#ce7152" stroke-width="1.3"/>
+<text x="380.0" y="141.0" font-size="14" fill="#a04b32" text-anchor="middle">u13</text>
+<rect x="406" y="110" width="52" height="52" fill="#fdf0ea" stroke="#ce7152" stroke-width="1.3"/>
+<text x="432.0" y="141.0" font-size="14" fill="#a04b32" text-anchor="middle">u14</text>
+<rect x="250" y="162" width="52" height="52" fill="#e9f3f1" stroke="#147f80" stroke-width="1.3"/>
+<text x="276.0" y="193.0" font-size="14" fill="#147f80" text-anchor="middle">l21</text>
+<rect x="302" y="162" width="52" height="52" fill="#fdf0ea" stroke="#ce7152" stroke-width="1.3"/>
+<text x="328.0" y="193.0" font-size="14" fill="#a04b32" text-anchor="middle">u22</text>
+<rect x="354" y="162" width="52" height="52" fill="#fdf0ea" stroke="#ce7152" stroke-width="1.3"/>
+<text x="380.0" y="193.0" font-size="14" fill="#a04b32" text-anchor="middle">u23</text>
+<rect x="406" y="162" width="52" height="52" fill="#fdf0ea" stroke="#ce7152" stroke-width="1.3"/>
+<text x="432.0" y="193.0" font-size="14" fill="#a04b32" text-anchor="middle">u24</text>
+<rect x="250" y="214" width="52" height="52" fill="#e9f3f1" stroke="#147f80" stroke-width="1.3"/>
+<text x="276.0" y="245.0" font-size="14" fill="#147f80" text-anchor="middle">l31</text>
+<rect x="302" y="214" width="52" height="52" fill="#e9f3f1" stroke="#147f80" stroke-width="1.3"/>
+<text x="328.0" y="245.0" font-size="14" fill="#147f80" text-anchor="middle">l32</text>
+<rect x="354" y="214" width="52" height="52" fill="#fdf0ea" stroke="#ce7152" stroke-width="1.3"/>
+<text x="380.0" y="245.0" font-size="14" fill="#a04b32" text-anchor="middle">u33</text>
+<rect x="406" y="214" width="52" height="52" fill="#fdf0ea" stroke="#ce7152" stroke-width="1.3"/>
+<text x="432.0" y="245.0" font-size="14" fill="#a04b32" text-anchor="middle">u34</text>
+<rect x="250" y="266" width="52" height="52" fill="#e9f3f1" stroke="#147f80" stroke-width="1.3"/>
+<text x="276.0" y="297.0" font-size="14" fill="#147f80" text-anchor="middle">l41</text>
+<rect x="302" y="266" width="52" height="52" fill="#e9f3f1" stroke="#147f80" stroke-width="1.3"/>
+<text x="328.0" y="297.0" font-size="14" fill="#147f80" text-anchor="middle">l42</text>
+<rect x="354" y="266" width="52" height="52" fill="#e9f3f1" stroke="#147f80" stroke-width="1.3"/>
+<text x="380.0" y="297.0" font-size="14" fill="#147f80" text-anchor="middle">l43</text>
+<rect x="406" y="266" width="52" height="52" fill="#fdf0ea" stroke="#ce7152" stroke-width="1.3"/>
+<text x="432.0" y="297.0" font-size="14" fill="#a04b32" text-anchor="middle">u44</text>
+<text x="354" y="344" font-size="13" fill="#607477" text-anchor="middle">存储布局 Ã（覆盖原 A）</text>
+<text x="230" y="219" font-size="14" fill="#24424a" text-anchor="end">L 对角=1（隐含）</text>
+<text x="60" y="330" font-size="14" fill="#147f80">■ L（单位下三角）</text>
+<text x="300" y="330" font-size="14" fill="#ce7152">■ U（上三角）</text>
+</g></svg>
