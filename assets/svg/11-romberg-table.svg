@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t11b t11b-d" width="720" height="340" viewBox="0 0 720 340">
+<title id="t11b">Romberg 三角表：外推逐列提高精度</title>
+<desc id="t11b-d">第一列是复合梯形序列，每往右一列消去一个偶数次误差项，数值逼近真实积分 2。</desc>
+<rect width="720" height="340" rx="12" fill="#fffdf9"/>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<text x="34" y="44" font-size="20" font-weight="600" fill="#24424a">Romberg 表：∫₀^π sin x dx = 2</text>
+<text x="34" y="72" font-size="14" fill="#607477">列 j 消去 h^(2j) 项；对角线收敛最快。</text>
+<text x="134" y="125" font-size="14" fill="#607477" text-anchor="end">k=0</text>
+<rect x="150" y="96" width="112" height="38" rx="6" fill="#e9f3f1" stroke="#147f80" stroke-width="1.8"/>
+<text x="206" y="114" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">0.00000000</text>
+<text x="206" y="128" font-size="11" fill="#a04b32" text-anchor="middle">err 2.0e+00</text>
+<text x="134" y="177" font-size="14" fill="#607477" text-anchor="end">k=1</text>
+<rect x="150" y="148" width="112" height="38" rx="6" fill="#f6f8f7" stroke="#dbe4e1" stroke-width="1"/>
+<text x="206" y="166" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">1.57079633</text>
+<text x="206" y="180" font-size="11" fill="#a04b32" text-anchor="middle">err 4.3e-01</text>
+<rect x="270" y="148" width="112" height="38" rx="6" fill="#e9f3f1" stroke="#147f80" stroke-width="1.8"/>
+<text x="326" y="166" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">2.09439510</text>
+<text x="326" y="180" font-size="11" fill="#a04b32" text-anchor="middle">err 9.4e-02</text>
+<text x="134" y="229" font-size="14" fill="#607477" text-anchor="end">k=2</text>
+<rect x="150" y="200" width="112" height="38" rx="6" fill="#f6f8f7" stroke="#dbe4e1" stroke-width="1"/>
+<text x="206" y="218" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">1.89611890</text>
+<text x="206" y="232" font-size="11" fill="#a04b32" text-anchor="middle">err 1.0e-01</text>
+<rect x="270" y="200" width="112" height="38" rx="6" fill="#f6f8f7" stroke="#dbe4e1" stroke-width="1"/>
+<text x="326" y="218" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">2.00455975</text>
+<text x="326" y="232" font-size="11" fill="#a04b32" text-anchor="middle">err 4.6e-03</text>
+<rect x="390" y="200" width="112" height="38" rx="6" fill="#e9f3f1" stroke="#147f80" stroke-width="1.8"/>
+<text x="446" y="218" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">1.99857073</text>
+<text x="446" y="232" font-size="11" fill="#a04b32" text-anchor="middle">err 1.4e-03</text>
+<text x="134" y="281" font-size="14" fill="#607477" text-anchor="end">k=3</text>
+<rect x="150" y="252" width="112" height="38" rx="6" fill="#f6f8f7" stroke="#dbe4e1" stroke-width="1"/>
+<text x="206" y="270" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">1.97423160</text>
+<text x="206" y="284" font-size="11" fill="#a04b32" text-anchor="middle">err 2.6e-02</text>
+<rect x="270" y="252" width="112" height="38" rx="6" fill="#f6f8f7" stroke="#dbe4e1" stroke-width="1"/>
+<text x="326" y="270" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">2.00026917</text>
+<text x="326" y="284" font-size="11" fill="#a04b32" text-anchor="middle">err 2.7e-04</text>
+<rect x="390" y="252" width="112" height="38" rx="6" fill="#f6f8f7" stroke="#dbe4e1" stroke-width="1"/>
+<text x="446" y="270" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">1.99998313</text>
+<text x="446" y="284" font-size="11" fill="#a04b32" text-anchor="middle">err 1.7e-05</text>
+<rect x="510" y="252" width="112" height="38" rx="6" fill="#e9f3f1" stroke="#147f80" stroke-width="1.8"/>
+<text x="566" y="270" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">2.00000555</text>
+<text x="566" y="284" font-size="11" fill="#a04b32" text-anchor="middle">err 5.5e-06</text>
+<text x="134" y="333" font-size="14" fill="#607477" text-anchor="end">k=4</text>
+<rect x="150" y="304" width="112" height="38" rx="6" fill="#f6f8f7" stroke="#dbe4e1" stroke-width="1"/>
+<text x="206" y="322" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">1.99357034</text>
+<text x="206" y="336" font-size="11" fill="#a04b32" text-anchor="middle">err 6.4e-03</text>
+<rect x="270" y="304" width="112" height="38" rx="6" fill="#f6f8f7" stroke="#dbe4e1" stroke-width="1"/>
+<text x="326" y="322" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">2.00001659</text>
+<text x="326" y="336" font-size="11" fill="#a04b32" text-anchor="middle">err 1.7e-05</text>
+<rect x="390" y="304" width="112" height="38" rx="6" fill="#f6f8f7" stroke="#dbe4e1" stroke-width="1"/>
+<text x="446" y="322" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">1.99999975</text>
+<text x="446" y="336" font-size="11" fill="#a04b32" text-anchor="middle">err 2.5e-07</text>
+<rect x="510" y="304" width="112" height="38" rx="6" fill="#f6f8f7" stroke="#dbe4e1" stroke-width="1"/>
+<text x="566" y="322" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">2.00000002</text>
+<text x="566" y="336" font-size="11" fill="#a04b32" text-anchor="middle">err 1.6e-08</text>
+<rect x="630" y="304" width="112" height="38" rx="6" fill="#e9f3f1" stroke="#147f80" stroke-width="1.8"/>
+<text x="686" y="322" font-size="13" font-weight="600" fill="#24424a" text-anchor="middle">1.99999999</text>
+<text x="686" y="336" font-size="11" fill="#a04b32" text-anchor="middle">err 5.4e-09</text>
+<text x="206" y="104" font-size="13" font-weight="600" fill="#147f80" text-anchor="middle">j=0</text>
+<text x="326" y="104" font-size="13" font-weight="600" fill="#147f80" text-anchor="middle">j=1</text>
+<text x="446" y="104" font-size="13" font-weight="600" fill="#147f80" text-anchor="middle">j=2</text>
+<text x="566" y="104" font-size="13" font-weight="600" fill="#147f80" text-anchor="middle">j=3</text>
+<text x="686" y="104" font-size="13" font-weight="600" fill="#147f80" text-anchor="middle">j=4</text>
+<text x="34" y="316" font-size="13" fill="#607477">深绿对角线 R(k,k) 为各阶最佳估计；误差随 k 迅速下降。</text>
+</g></svg>

@@ -1,0 +1,29 @@
+{
+  "chapter": "11",
+  "sources": [
+    {
+      "url": "https://dlmf.nist.gov/3.5",
+      "claims": [
+        "Composite trapezoid/Simpson error orders and Euler-Maclaurin even-power structure"
+      ]
+    },
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.quad.html",
+      "claims": [
+        "Adaptive quadrature subdivides where the local error estimate is large"
+      ]
+    },
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.romberg.html",
+      "claims": [
+        "Romberg extrapolation requires a sufficiently smooth integrand"
+      ]
+    }
+  ],
+  "checks": [
+    "Romberg diagonal on sin[0,pi], K=5: |R(5,5)-2| = 1.32e-12 < 1e-9",
+    "Composite trapezoid row (K=5): |T_32-2| = 1.61e-3, still far from 2",
+    "Romberg diagonal on sqrt[0,1], K=5: |R(5,5)-2/3| = 3.79e-4 > 1e-4 (endpoint singularity)",
+    "sqrt diagonal keeps improving: err(K=5) < err(K=4)"
+  ]
+}
