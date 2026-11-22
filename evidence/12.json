@@ -1,0 +1,25 @@
+{
+  "chapter": "12",
+  "sources": [
+    {
+      "url": "https://dlmf.nist.gov/3.5",
+      "claims": [
+        "Gauss quadrature uses zeros of the orthogonal polynomial; degree of exactness 2m-1 is optimal",
+        "Orthogonality condition on the node polynomial"
+      ]
+    },
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.roots_legendre.html",
+      "claims": [
+        "Reliable computation of Gauss-Legendre nodes and weights"
+      ]
+    }
+  ],
+  "checks": [
+    "Gauss-Legendre m=5 for exp on [0,1]: |error| = 6.53e-13 < 1e-11",
+    "error(m=5) < error(m=2) = 3.86e-4",
+    "m=3 integrates x^4 on [-1,1] exactly (2/5) within 1e-14",
+    "m=3 on x^6 on [-1,1] is not exact (0.24 vs 2/7), degree 6 > 2m-1",
+    "Chebyshev weight 1/sqrt(1-x^2) integrable (pi) but undefined at endpoints; evaluate only inside"
+  ]
+}

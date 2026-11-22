@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t12a t12a-d" width="720" height="300" viewBox="0 0 720 300">
+<title id="t12a">Gauss 节点向端点聚拢</title>
+<desc id="t12a-d">在区间负一到一上，四个 Gauss-Legendre 节点比四个等距节点更靠近两端。</desc>
+<rect width="720" height="300" rx="12" fill="#fffdf9"/>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<text x="34" y="44" font-size="20" font-weight="600" fill="#24424a">四个节点：Gauss 与等距的位置对比</text>
+<text x="34" y="72" font-size="14" fill="#607477">Gauss 节点是 Legendre 多项式的根，朝端点聚拢以压低整体误差。</text>
+<text x="104.0" y="155" font-size="14" fill="#607477" text-anchor="end">Gauss-Legendre</text>
+<path d="M120.0 150 H620.0" stroke="#c9d5d1" stroke-width="2"/>
+<circle cx="154.7" cy="150" r="7" fill="#147f80" stroke="#fff" stroke-width="1.6"/>
+<text x="154.7" y="134" font-size="12" fill="#147f80" text-anchor="middle">-0.861</text>
+<circle cx="285.0" cy="150" r="7" fill="#147f80" stroke="#fff" stroke-width="1.6"/>
+<text x="285.0" y="134" font-size="12" fill="#147f80" text-anchor="middle">-0.340</text>
+<circle cx="455.0" cy="150" r="7" fill="#147f80" stroke="#fff" stroke-width="1.6"/>
+<text x="455.0" y="134" font-size="12" fill="#147f80" text-anchor="middle">+0.340</text>
+<circle cx="585.3" cy="150" r="7" fill="#147f80" stroke="#fff" stroke-width="1.6"/>
+<text x="585.3" y="134" font-size="12" fill="#147f80" text-anchor="middle">+0.861</text>
+<text x="104.0" y="235" font-size="14" fill="#607477" text-anchor="end">等距 (Newton–Cotes)</text>
+<path d="M120.0 230 H620.0" stroke="#c9d5d1" stroke-width="2"/>
+<circle cx="120.0" cy="230" r="7" fill="#ce7152" stroke="#fff" stroke-width="1.6"/>
+<text x="120.0" y="214" font-size="12" fill="#ce7152" text-anchor="middle">-1.000</text>
+<circle cx="286.7" cy="230" r="7" fill="#ce7152" stroke="#fff" stroke-width="1.6"/>
+<text x="286.7" y="214" font-size="12" fill="#ce7152" text-anchor="middle">-0.333</text>
+<circle cx="453.3" cy="230" r="7" fill="#ce7152" stroke="#fff" stroke-width="1.6"/>
+<text x="453.3" y="214" font-size="12" fill="#ce7152" text-anchor="middle">+0.333</text>
+<circle cx="620.0" cy="230" r="7" fill="#ce7152" stroke="#fff" stroke-width="1.6"/>
+<text x="620.0" y="214" font-size="12" fill="#ce7152" text-anchor="middle">+1.000</text>
+<text x="120.0" y="276" font-size="13" fill="#607477" text-anchor="middle">-1</text>
+<text x="370.0" y="276" font-size="13" fill="#607477" text-anchor="middle">0</text>
+<text x="620.0" y="276" font-size="13" fill="#607477" text-anchor="middle">1</text>
+</g></svg>
