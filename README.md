@@ -1,67 +1,49 @@
-# 📐 数值分析
+# 数值分析 · Numerical Analysis
 
-> 📐 28章 实战体系
+28 章中文数值分析教程，从浮点误差、插值、逼近、数值微积分到线性系统、特征值和常微分方程。
 
-一套完整的 **数值分析** 全中文实战课程体系，共 **28 章**。本课程以 HTML 可视化的形式呈现，从基础原理到工程实践循序渐进，适合系统性学习与复习。
+**首页目标地址**：https://1998x-stack.github.io/numerical-analysis-tutorial/ （实际访问取决于 Pages 设置和部署结果）
 
-## 🚀 快速开始
+## 内容状态
+- **01–05**：第一批独立深度重构，包含数学推导、原创 SVG、反例和实验。
+- **06–28**：原文无损迁移到 `chapters/`，尚未逐章技术复审，保留继续改进空间。
+- 根目录 `01.html` 等历史入口仅作跳转，保证旧链接兼容。
 
-无需安装任何依赖，直接用浏览器打开 `index.html` 即可在线阅读全部章节：
+## 七条学习路线
 
-```bash
-open index.html   # macOS
-# 或在浏览器中直接打开 index.html
-```
+| 路径 | 章节 | 主题 |
+|---|---|---|
+| 计算可信度 | 01–02 | 概述、误差、浮点与稳定性 |
+| 插值与连续性 | 03–06 | Lagrange、Newton、Hermite、样条 |
+| 逼近与最小二乘 | 07–09 | 逼近、最小二乘 |
+| 积分与微分 | 10–14 | 求积、微分、正交多项式 |
+| 线性系统与迭代 | 15–19 | LU、Cholesky、CG |
+| 非线性与特征值 | 20–24 | 求根、Newton、幂法、QR |
+| 动力系统与实战 | 25–28 | Euler、RK、刚性、Poisson |
 
-## 📖 章节目录
-
-| # | 章节 | 核心主题 |
-|---|------|----------|
-| 01 | 数值分析概述 | 什么是数值分析、误差来源与分类、绝对/相对误差与有效数字、算法稳定性与收敛性 |
-| 02 | 误差分析与数值稳定性 | 误差传播分析、IEEE 754浮点数、条件数、避免误差危害准则 |
-| 03 | 插值法基础 | 插值问题定义、Lagrange插值多项式、插值余项与误差估计、Runge现象 |
-| 04 | Newton插值与均差 | 均差定义与性质、Newton插值多项式、差分与等距节点、Newton vs Lagrange |
-| 05 | Hermite插值与分段插值 | 带导数条件的插值、Hermite多项式构造、分段低次插值、工程应用 |
-| 06 | 三次样条插值 | 样条函数定义、三弯矩法、边界条件、追赶法求解 |
-| 07 | 函数逼近基本理论 | 函数空间与范数、最佳逼近存在唯一性、正交多项式族、Chebyshev多项式 |
-| 08 | 最佳平方逼近 | 最佳平方逼近问题、法方程方法、正交基逼近、Fourier级数联系 |
-| 09 | 最小二乘曲线拟合 | 超定方程组、正规方程与QR分解、多项式拟合实战、非线性最小二乘 |
-| 10 | 数值积分基础 | 数值积分基本思想、代数精度、插值型求积公式、梯形与Simpson公式 |
-| 11 | 复合求积与Romberg外推 | 复合求积公式、步长选择策略、Richardson外推、Romberg算法 |
-| 12 | Gauss求积公式 | Gauss求积核心思想、Gauss-Legendre、其他Gauss型求积、Gauss vs Newton-Cotes |
-| 13 | 数值微分 | 差商逼近方法、步长选择误差平衡、复数步长法、Richardson外推 |
-| 14 | 正交多项式与数值积分 | 三项递推公式、零点性质、Gram-Schmidt正交化、Gauss求积理论联系 |
-| 15 | Gauss消去法与LU分解 | 顺序Gauss消去法、列主元消去法、Doolittle/Crout分解、LU分解应用 |
-| 16 | Cholesky分解与追赶法 | 对称正定矩阵、Cholesky分解、改进平方根法、Thomas追赶法 |
-| 17 | 向量/矩阵范数与条件数 | 向量范数、矩阵范数、谱半径、条件数与误差分析 |
-| 18 | 经典迭代法 | 迭代法基本框架、Jacobi迭代、Gauss-Seidel迭代、SOR超松弛法 |
-| 19 | Krylov子空间与共轭梯度法 | Krylov子空间、共轭梯度法原理、CG算法实现、收敛性与预处理 |
-| 20 | 非线性方程求根(一) | 二分法、不动点迭代、收敛阶定义、Aitken/Steffensen加速 |
-| 21 | 非线性方程求根(二) | Newton切线法、收敛性与陷阱、弦截法、抛物线法(Müller) |
-| 22 | 非线性方程组Newton法 | 多变量Newton法、Jacobian矩阵、拟Newton法(Broyden)、实际求解策略 |
-| 23 | 矩阵特征值计算 | 特征值问题概述、Gerschgorin圆盘定理、幂法、反幂法与原点平移 |
-| 24 | QR方法与特征值 | QR分解、基本QR迭代、上Hessenberg化、带原点平移的QR |
-| 25 | 常微分方程数值解(一) | ODE初值问题、Euler法、局部截断误差、改进Euler/预估校正 |
-| 26 | 常微分方程数值解(二) | Runge-Kutta思想、经典RK4、自适应步长控制、稳定性分析 |
-| 27 | 刚性方程与线性多步法 | 刚性定义、A稳定性、线性多步法、BDF方法 |
-| 28 | 综合实战：从算法到代码 | Poisson方程项目、有限差分离散化、CG求解、收敛验证与可视化 |
-
-## 📂 项目结构
-
+## 文件结构
 ```text
-numerical-analysis-tutorial/
-├── index.html      # 课程主入口（在线阅读全部章节）
-├── 01.html ~ 28.html   # 各章节正文
-├── courses.json    # 课程元数据（标题/章节/主题）
-└── theme.css       # 统一主题样式
+index.html                  # Pages 首页
+courses.json                # 28 章元数据
+chapters/01.html ... 28.html
+assets/css/{site,article,legacy}.css
+assets/js/                  # 搜索和渐进增强
+assets/svg/                 # 可单独打开的图解
+examples/reproduce.py      # 最小数值实验/回归断言
+scripts/validate_site.py   # 静态链接与 SVG/MathML 检查
+.github/workflows/pages.yml
+AGENTS.md
 ```
 
-## ✨ 课程特色
+## 预览与验证
+```bash
+python -m http.server 8000
+# http://localhost:8000/
+python scripts/validate_site.py
+python examples/reproduce.py
+```
 
-- **全中文实战体系**：面向中文读者，由浅入深，覆盖原理与工程实践
-- **28 章完整内容**：系统化章节编排，形成完整知识闭环
-- **可视化呈现**：HTML 图文并茂，适合快速浏览与重点回顾
-- **即开即用**：无需构建、无需服务器，纯静态页面随开随看
+## GitHub Pages
+该仓库预置 Pages Actions 工作流。请在 **Settings → Pages → Source** 选择 **GitHub Actions**。在工作流成功及公网 URL 可访问之前，不将站点标为已上线。
 
----
-*本课程由 `numerical-analysis-tutorial/` 项目维护。*
+具体写作、可视化、校验标准见 [AGENTS.md](AGENTS.md)。叙事灵感来自 [Olah-style-posts](https://github.com/1998x-stack/Olah-style-posts)，所有技术图解独立绘制。
