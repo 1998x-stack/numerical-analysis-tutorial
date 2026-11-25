@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t19a t19a-d" width="720" height="330" viewBox="0 0 720 330">
+<title id="t19a">Krylov 子空间的生成与嵌套</title>
+<desc id="t19a-d">初始残差 r0 反复左乘矩阵 A，得到 A r0、A² r0 等向量；它们张成的 Krylov 子空间随步数嵌套增长，精确解 x* 落在 K_n 内。</desc>
+<rect width="720" height="330" rx="12" fill="#fffdf9"/>
+<defs><marker id="a19a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 z" fill="#147f80"/></marker></defs>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<text x="30" y="38" font-size="20" font-weight="600" fill="#24424a">从残差到搜索空间：K_k(A, r₀)</text>
+<text x="30" y="62" font-size="13" fill="#607477">每扩张一步只做一次矩阵-向量乘法：A 乘以最新方向。</text>
+<rect x="30" y="90" width="120" height="46" rx="8" fill="#fff" stroke="#24424a" stroke-width="2"/><text x="90" y="119" font-size="16" fill="#24424a" text-anchor="middle">r₀</text>
+<rect x="210" y="90" width="120" height="46" rx="8" fill="#fff" stroke="#147f80" stroke-width="2"/><text x="270" y="119" font-size="16" fill="#147f80" text-anchor="middle">A r₀</text>
+<rect x="390" y="90" width="120" height="46" rx="8" fill="#fff" stroke="#147f80" stroke-width="2"/><text x="450" y="119" font-size="16" fill="#147f80" text-anchor="middle">A² r₀</text>
+<rect x="570" y="90" width="120" height="46" rx="8" fill="#fff" stroke="#ce7152" stroke-width="2"/><text x="630" y="119" font-size="16" fill="#ce7152" text-anchor="middle">A³ r₀ …</text>
+<path d="M152 113 H206" stroke="#147f80" stroke-width="2" marker-end="url(#a19a)"/><text x="179" y="106" font-size="13" fill="#147f80" text-anchor="middle">×A</text>
+<path d="M332 113 H386" stroke="#147f80" stroke-width="2" marker-end="url(#a19a)"/><text x="359" y="106" font-size="13" fill="#147f80" text-anchor="middle">×A</text>
+<path d="M512 113 H566" stroke="#ce7152" stroke-width="2" marker-end="url(#a19a)"/><text x="539" y="106" font-size="13" fill="#ce7152" text-anchor="middle">×A</text>
+<rect x="30" y="175" width="560" height="120" rx="10" fill="#f2f7f6" stroke="#24424a" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="46" y="198" font-size="14" font-weight="600" fill="#24424a">span{r₀, A r₀, A² r₀, …, Aᵏ⁻¹ r₀}（维数随 k 增长）</text>
+<rect x="46" y="210" width="150" height="68" rx="8" fill="#fff" stroke="#147f80" stroke-width="2"/><text x="121" y="250" font-size="15" fill="#147f80" text-anchor="middle">K₁ ⊆ K₂ ⊆ K₃</text>
+<rect x="212" y="210" width="360" height="68" rx="8" fill="#fff" stroke="#ce7152" stroke-width="2"/><text x="392" y="243" font-size="15" fill="#ce7152" text-anchor="middle">x* = A⁻¹b 必落在 K_n 内</text>
+<text x="392" y="266" font-size="13" fill="#607477" text-anchor="middle">Cayley–Hamilton：A⁻¹ 是 A 的 n−1 次多项式</text>
+<text x="30" y="320" font-size="13" fill="#607477">子空间每步扩张，但维数至多 n；精确算术下 CG 在 ≤ n 步内终止。</text>
+</g></svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t19b t19b-d" width="720" height="330" viewBox="0 0 720 330">
+<title id="t19b">最速下降与共轭梯度的路径对比</title>
+<desc id="t19b-d">以 A=diag(1,9) 的二维二次型为例，等值线是拉长的椭圆；最速下降法来回锯齿，共轭梯度沿两条 A-共轭方向两步到达极小点 x*。</desc>
+<rect width="720" height="330" rx="12" fill="#fffdf9"/>
+<defs>
+<marker id="a19b-cg" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 z" fill="#ce7152"/></marker>
+<marker id="a19b-sd" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#9fb1ad"/></marker>
+</defs>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<text x="28" y="34" font-size="19" font-weight="600" fill="#24424a">同一条椭圆谷：锯齿 vs. 共轭方向</text>
+<text x="28" y="56" font-size="13" fill="#607477">A = diag(1, 9)，x* = (2, 1)；等值线为真实算例，非示意。</text>
+<ellipse cx="412.9" cy="173.7" rx="289" ry="106.5" fill="none" stroke="#d7e2df" stroke-width="1.5"/>
+<ellipse cx="412.9" cy="173.7" rx="223.8" ry="82.5" fill="none" stroke="#c2d3cf" stroke-width="1.5"/>
+<ellipse cx="412.9" cy="173.7" rx="158.3" ry="58.3" fill="none" stroke="#a9c1bc" stroke-width="1.5"/>
+<ellipse cx="412.9" cy="173.7" rx="100.1" ry="36.9" fill="none" stroke="#8fb0aa" stroke-width="1.5"/>
+<polyline points="150,129.5 192.3,193.5 250.6,146.4 276.7,185.9 312.7,156.8 328.8,181.2 351,163.3" fill="none" stroke="#9fb1ad" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a19b-sd)"/>
+<polyline points="150,129.5 192.3,193.5 412.9,173.7" fill="none" stroke="#ce7152" stroke-width="2.6" marker-end="url(#a19b-cg)"/>
+<circle cx="150" cy="129.5" r="4.5" fill="#24424a"/><text x="150" y="118" font-size="14" fill="#24424a" text-anchor="middle">x₀</text>
+<circle cx="412.9" cy="173.7" r="5" fill="#ce7152"/><text x="412.9" y="196" font-size="14" fill="#ce7152" text-anchor="middle">x*</text>
+<text x="205" y="220" font-size="14" fill="#ce7152">p₀</text>
+<text x="300" y="158" font-size="14" fill="#ce7152">p₁（A-共轭于 p₀）</text>
+<text x="620" y="128" font-size="14" fill="#7d8f8b" text-anchor="end">最速下降</text>
+<text x="620" y="146" font-size="14" fill="#ce7152" text-anchor="end">共轭梯度</text>
+<text x="28" y="300" font-size="13" fill="#607477">共轭梯度保证每步沿新方向不破坏先前方向上的极小化，二维时恰好 2 步收敛。</text>
+<text x="28" y="320" font-size="13" fill="#607477">步长 α 由精确一维搜索给出；残差 r_k 与所有旧搜索方向正交。</text>
+</g></svg>

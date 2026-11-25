@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t19c t19c-d" width="720" height="330" viewBox="0 0 720 330">
+<title id="t19c">共轭梯度收敛上界随条件数的变化</title>
+<desc id="t19c-d">纵轴是以 10 为底的误差上界 log 值，横轴是迭代步数；条件数 κ 越大，上界曲线越平缓，达到同一精度所需步数越多。</desc>
+<rect width="720" height="330" rx="12" fill="#fffdf9"/>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<line x1="90" y1="60" x2="90" y2="260" stroke="#24424a" stroke-width="1.5"/>
+<line x1="90" y1="260" x2="660" y2="260" stroke="#24424a" stroke-width="1.5"/>
+<line x1="90" y1="93.3" x2="650" y2="93.3" stroke="#e6eeec"/><line x1="90" y1="126.7" x2="650" y2="126.7" stroke="#e6eeec"/>
+<line x1="90" y1="160" x2="650" y2="160" stroke="#e6eeec"/><line x1="90" y1="193.3" x2="650" y2="193.3" stroke="#e6eeec"/>
+<line x1="90" y1="226.7" x2="650" y2="226.7" stroke="#e6eeec"/>
+<text x="82" y="64" font-size="13" fill="#607477" text-anchor="end">10⁰</text>
+<text x="82" y="130" font-size="13" fill="#607477" text-anchor="end">10⁻²</text>
+<text x="82" y="196" font-size="13" fill="#607477" text-anchor="end">10⁻⁴</text>
+<text x="82" y="264" font-size="13" fill="#607477" text-anchor="end">10⁻⁶</text>
+<text x="276.7" y="278" font-size="13" fill="#607477" text-anchor="middle">20</text>
+<text x="463.3" y="278" font-size="13" fill="#607477" text-anchor="middle">40</text>
+<text x="650" y="278" font-size="13" fill="#607477" text-anchor="middle">60 步 k</text>
+<polyline points="90,60 127.3,152 164.7,254.1 202,260 650,260" fill="none" stroke="#147f80" stroke-width="2.4"/>
+<polyline points="90,60 127.3,87.9 164.7,125.8 202,163.7 239.3,201.7 276.7,239.6 314,260 650,260" fill="none" stroke="#24424a" stroke-width="2.4"/>
+<polyline points="90,60 127.3,61.6 164.7,73.2 202,84.8 239.3,96.4 276.7,108.1 314,119.7 351.3,131.3 388.7,142.9 426,154.5 463.3,166.2 500.7,177.8 538,189.4 575.3,201 612.7,212.6 650,224.3" fill="none" stroke="#ce7152" stroke-width="2.4"/>
+<polyline points="90,60 127.3,60 164.7,60 202,61 239.3,64.6 276.7,68.3 314,71.9 351.3,75.6 388.7,79.3 426,82.9 463.3,86.6 500.7,90.3 538,93.9 575.3,97.6 612.7,101.3 650,104.9" fill="none" stroke="#7a5fa3" stroke-width="2.4"/>
+<text x="100" y="52" font-size="14" fill="#147f80">κ = 2</text>
+<text x="230" y="94" font-size="14" fill="#24424a">κ = 10</text>
+<text x="430" y="140" font-size="14" fill="#ce7152">κ = 100</text>
+<text x="560" y="94" font-size="14" fill="#7a5fa3">κ = 1000</text>
+<text x="28" y="308" font-size="13" fill="#607477">上界 = 2·((√κ−1)/(√κ+1))ᵏ；κ=100 时要 1e-6 约 73 步，κ=1000 约 230 步（由公式估算）。</text>
+<text x="28" y="324" font-size="13" fill="#607477">上界偏保守：小规模问题里有限终止（≤ n 步）往往先起作用。</text>
+</g></svg>

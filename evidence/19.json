@@ -1,0 +1,39 @@
+{
+  "chapter": "19",
+  "sources": [
+    {
+      "url": "https://www.netlib.org/linalg/html_templates/Templates.html",
+      "claims": [
+        "Krylov subspace K_k(A,r0) = span{r0, A r0, ..., A^{k-1} r0}",
+        "CG energy-norm minimization and A-conjugate short recurrence",
+        "Convergence bound 2((sqrt(kappa)-1)/(sqrt(kappa)+1))^k"
+      ]
+    },
+    {
+      "url": "https://www.cs.cmu.edu/~quake-papers/painless-conjugate-gradient.pdf",
+      "claims": [
+        "A-conjugate directions do not spoil prior 1D minimizations",
+        "Finite termination in at most n steps in exact arithmetic"
+      ]
+    },
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.cg.html",
+      "claims": [
+        "SPD requirement and iterative solver interface"
+      ]
+    },
+    {
+      "url": "https://nhigham.com/accuracy-and-stability-of-numerical-algorithms/",
+      "claims": [
+        "Rounding error degrades residual orthogonality in Krylov methods"
+      ]
+    }
+  ],
+  "checks": [
+    "A=diag(1+99i/7), n=8 (kappa=100): CG terminates in exactly 8 iterations, max error 4.4e-16",
+    "3x3 SPD A=[[4,1,0],[1,3,1],[0,1,2]]: CG terminates in exactly 3 iterations",
+    "Contraction factor (sqrt(k)-1)/(sqrt(k)+1): kappa=2 -> 0.1716, 10 -> 0.5195, 100 -> 0.8182, 1000 -> 0.9387",
+    "Bound steps to 1e-6 (ceil of log(5e-7)/log(r)): kappa=2 -> 9, 10 -> 23, 100 -> 73, 1000 -> 230",
+    "2D figure: A=diag(1,9), x*=(2,1), x0=(-2.6,1.7); CG reaches x* in exactly 2 steps, steepest descent zig-zags"
+  ]
+}
