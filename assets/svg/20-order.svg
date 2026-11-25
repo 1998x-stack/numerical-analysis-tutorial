@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t20c t20c-d" width="720" height="300" viewBox="0 0 720 300">
+<title id="t20c">三种求根方法的误差随迭代步数下降</title>
+<desc id="t20c-d">纵轴是以十为底的误差对数，横轴是迭代步数；二分法与不动点线性下降，Steffensen 加速近似二次下降，几步内就把误差压到机器精度附近。</desc>
+<rect width="720" height="300" rx="12" fill="#fffdf9"/>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<line x1="80" y1="60" x2="80" y2="260" stroke="#24424a" stroke-width="1.5"/>
+<line x1="80" y1="260" x2="670" y2="260" stroke="#24424a" stroke-width="1.5"/>
+<line x1="80" y1="90.8" x2="660" y2="90.8" stroke="#e6eeec"/><line x1="80" y1="121.5" x2="660" y2="121.5" stroke="#e6eeec"/>
+<line x1="80" y1="152.3" x2="660" y2="152.3" stroke="#e6eeec"/><line x1="80" y1="183.1" x2="660" y2="183.1" stroke="#e6eeec"/>
+<line x1="80" y1="213.8" x2="660" y2="213.8" stroke="#e6eeec"/><line x1="80" y1="244.6" x2="660" y2="244.6" stroke="#e6eeec"/>
+<text x="72" y="64" font-size="13" fill="#607477" text-anchor="end">10⁰</text>
+<text x="72" y="125" font-size="13" fill="#607477" text-anchor="end">10⁻⁴</text>
+<text x="72" y="187" font-size="13" fill="#607477" text-anchor="end">10⁻⁸</text>
+<text x="72" y="249" font-size="13" fill="#607477" text-anchor="end">10⁻¹²</text>
+<text x="225" y="278" font-size="13" fill="#607477" text-anchor="middle">10</text>
+<text x="370" y="278" font-size="13" fill="#607477" text-anchor="middle">20</text>
+<text x="515" y="278" font-size="13" fill="#607477" text-anchor="middle">30</text>
+<text x="660" y="278" font-size="13" fill="#607477" text-anchor="middle">40 步 k</text>
+<polyline points="80,64.6 138,83.2 196,101.7 254,120.2 312,138.7 370,157.3 428,175.8 486,194.3 544,212.8 602,231.4 660,249.9" fill="none" stroke="#147f80" stroke-width="2.4"/>
+<polyline points="80,69.6 109,75.4 138,80.8 167,86.2 196,91.5 225,96.8 254,102 283,107.3 312,112.6 341,117.9 370,123.2 399,128.4 428,133.7 457,139 486,144.3 515,149.6 544,154.8 573,160.1 602,165.4 631,170.7 660,176" fill="none" stroke="#24424a" stroke-width="2.4"/>
+<polyline points="80,69.6 94.5,92.5 109,137.8 123.5,228.3 138,260" fill="none" stroke="#ce7152" stroke-width="2.6"/>
+<text x="300" y="150" font-size="14" fill="#147f80">二分法（区间半宽，因子 1/2）</text>
+<text x="360" y="112" font-size="14" fill="#24424a">不动点迭代（因子 |g′|≈0.674）</text>
+<text x="150" y="70" font-size="14" fill="#ce7152">Steffensen（近似二次）</text>
+<text x="30" y="294" font-size="13" fill="#607477">数据来自 f(x)=cos x − x、x₀=0.5 的真实迭代序列；二分法纵轴为区间半宽上界，其余为实际误差 |xₖ−x*|。</text>
+</g></svg>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t20b t20b-d" width="720" height="330" viewBox="0 0 720 330">
+<title id="t20b">不动点迭代的蛛网图：收敛与发散</title>
+<desc id="t20b-d">左图 g(x)=cos x 的导数绝对值小于一，蛛网螺旋收敛到不动点；右图 g(x)=1.5x−0.25 的导数绝对值大于一，蛛网向外发散。</desc>
+<rect width="720" height="330" rx="12" fill="#fffdf9"/>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<text x="30" y="32" font-size="19" font-weight="600" fill="#24424a">蛛网图：|g′(x*)|&lt;1 收敛，|g′|&gt;1 发散</text>
+<text x="30" y="54" font-size="13" fill="#607477">竖线到达曲线 y=g(x)，横线到达直线 y=x；交点是方程 x=g(x) 的根。</text>
+<rect x="40" y="70" width="260" height="180" rx="6" fill="#f5faf8" stroke="#d3e2de"/>
+<rect x="380" y="70" width="260" height="180" rx="6" fill="#fff6f0" stroke="#f0d8c8"/>
+<polyline points="40,250 300,70" fill="none" stroke="#9fb1ad" stroke-width="1.6"/>
+<polyline points="40,70 53,70.2 66,70.9 79,72 92,73.6 105,75.6 118,78 131,80.9 144,84.2 157,87.9 170,92 183,96.5 196,101.4 209,106.7 222,112.3 235,118.3 248,124.6 261,131.2 274,138.1 287,145.3 300,152.7" fill="none" stroke="#147f80" stroke-width="2.2"/>
+<polyline points="170,250 170,92 268.2,92 268.2,135 206.1,135 206.1,105.5 248.7,105.5 248.7,124.9 220.6,124.9 220.6,111.7 239.7,111.7 239.7,120.6 227,120.6 227,114.6 235.6,114.6 235.6,118.6 229.8,118.6" fill="none" stroke="#ce7152" stroke-width="1.8"/>
+<circle cx="232.2" cy="117" r="4" fill="#24424a"/>
+<text x="66" y="88" font-size="13" fill="#147f80">y=g(x)</text><text x="250" y="150" font-size="13" fill="#9fb1ad">y=x</text>
+<text x="170" y="66" font-size="14" fill="#24424a" text-anchor="middle">g(x)=cos x，|g′|≈0.674</text>
+<polyline points="380,250 640,70" fill="none" stroke="#9fb1ad" stroke-width="1.6"/>
+<polyline points="429,250 446.3,232 463.7,214 481,196 498.3,178 515.7,160 533,142 550.3,124 567.6,106 585,88 602.3,70" fill="none" stroke="#ce7152" stroke-width="2.2"/>
+<polyline points="515.7,226.5 515.7,160 510,160 510,165.9 501.5,165.9 501.5,174.7 488.8,174.7 488.8,187.9 469.7,187.9 469.7,207.7 441.1,207.7 441.1,237.4 398.2,237.4" fill="none" stroke="#24424a" stroke-width="1.8"/>
+<circle cx="527" cy="148.3" r="4" fill="#24424a"/>
+<text x="600" y="90" font-size="13" fill="#ce7152">y=g(x)</text><text x="580" y="130" font-size="13" fill="#9fb1ad">y=x</text>
+<text x="510" y="66" font-size="14" fill="#24424a" text-anchor="middle">g(x)=1.5x−0.25，|g′|=1.5</text>
+<text x="30" y="292" font-size="13" fill="#607477">压缩条件 |g′(x)| ≤ L &lt; 1 保证收敛，渐近误差每步乘以 L；L≥1 时通常发散。</text>
+<text x="30" y="312" font-size="13" fill="#607477">蛛网坐标为真实迭代点（左图 x₀=0.5，右图 x₀=0.45），非手绘示意。</text>
+</g></svg>

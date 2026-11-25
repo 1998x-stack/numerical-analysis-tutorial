@@ -1,0 +1,31 @@
+{
+  "chapter": "20",
+  "sources": [
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.root_scalar.html",
+      "claims": [
+        "Bracketing methods (bisect/brentq) and iterative root solvers"
+      ]
+    },
+    {
+      "url": "https://nhigham.com/accuracy-and-stability-of-numerical-algorithms/",
+      "claims": [
+        "Sensitivity of a root to perturbations of f; stopping criteria"
+      ]
+    },
+    {
+      "url": "https://www.netlib.org/linalg/html_templates/Templates.html",
+      "claims": [
+        "Fixed-point / contraction convergence framework"
+      ]
+    }
+  ],
+  "checks": [
+    "f(x)=cos x - x, x* = 0.7390851332151607",
+    "Bisection on [0,1] to (b-a)/2 <= 1e-12: 39 iterations, |mid - x*| ~ 5e-13",
+    "Fixed-point x=cos(x) from x0=0.5: 68 iterations; |g'(x*)| = sin(x*) ~ 0.674",
+    "Steffensen from x0=0.5: 5 iterations to 1e-12 (near-quadratic)",
+    "Iteration bound n >= log2((b-a)/eps): for [0,1], eps=1e-12 -> ~40 steps",
+    "Cobweb: g=cos x (|g'|~0.674) converges; g=1.5x-0.25 (|g'|=1.5) diverges"
+  ]
+}
