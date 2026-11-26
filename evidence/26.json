@@ -1,0 +1,31 @@
+{
+  "chapter": "26",
+  "sources": [
+    {
+      "url": "https://doi.org/10.1007/978-3-540-78862-1",
+      "claims": [
+        "Runge-Kutta order conditions, stability functions and A-stability"
+      ]
+    },
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html",
+      "claims": [
+        "RK45 = Dormand-Prince 5(4) embedded pair; rtol/atol error control"
+      ]
+    },
+    {
+      "url": "https://doi.org/10.1016/0021-9991(80)90033-9",
+      "claims": [
+        "Dormand-Prince embedded Runge-Kutta formulae (dopri5)"
+      ]
+    }
+  ],
+  "checks": [
+    "Classical RK4 on y'=-y to t=5: error 3.05e-8 (h=0.1), 1.83e-9 (h=0.05); observed order ~ 4.06",
+    "Forward Euler observed order ~ 0.95, Heun ~ 2.06 on the same problem",
+    "Stability function R(z): Euler 1+z; RK2 1+z+z^2/2; RK4 1+z+z^2/2+z^3/6+z^4/24",
+    "Real-axis stability intervals: Euler [-2,0], RK2 [-2,0], RK4 ~ [-2.785,0]",
+    "RK4 on y'=-100y: h=0.02 (|h*lambda|=2) stable, h=0.03 (|h*lambda|=3) diverges (~3.7e4)",
+    "RK4 weight 1:2:2:1 matches Simpson quadrature weights"
+  ]
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t26a t26a-d" width="720" height="300" viewBox="0 0 720 300">
+<title id="t26a">经典 RK4 在一段区间内的四个采样点</title>
+<desc id="t26a-d">在一个步长区间内采样四个斜率 k1 到 k4，位置为区间起点、中点两次和终点，最后以权重 1:2:2:1 平均得到更新</desc>
+<rect width="720" height="300" rx="12" fill="#fffdf9"/>
+<line x1="90" y1="212" x2="610" y2="212" stroke="#9fb1ad" stroke-width="1.6"/>
+<text x="66" y="230" font-size="13" fill="#3a4a55">tₙ</text>
+<text x="332" y="230" font-size="13" fill="#3a4a55">tₙ+h/2</text>
+<text x="598" y="230" font-size="13" fill="#3a4a55">tₙ+h</text>
+<line x1="90" y1="200" x2="90" y2="212" stroke="#c9d6d2" stroke-width="1"/><circle cx="90" cy="200" r="5" fill="#147f80"/><text x="100" y="194" font-size="13" fill="#1f2d3a">k₁</text><text x="100" y="210" font-size="11" fill="#7c8b93">f(tₙ, yₙ)</text><line x1="350" y1="162" x2="350" y2="212" stroke="#c9d6d2" stroke-width="1"/><circle cx="350" cy="162" r="5" fill="#147f80"/><text x="360" y="156" font-size="13" fill="#1f2d3a">k₂</text><text x="360" y="172" font-size="11" fill="#7c8b93">f(tₙ+h/2, yₙ+k₁/2)</text><line x1="350" y1="124" x2="350" y2="212" stroke="#c9d6d2" stroke-width="1"/><circle cx="350" cy="124" r="5" fill="#147f80"/><text x="360" y="118" font-size="13" fill="#1f2d3a">k₃</text><text x="360" y="134" font-size="11" fill="#7c8b93">f(tₙ+h/2, yₙ+k₂/2)</text><line x1="610" y1="86" x2="610" y2="212" stroke="#c9d6d2" stroke-width="1"/><circle cx="610" cy="86" r="5" fill="#147f80"/><text x="620" y="80" font-size="13" fill="#1f2d3a">k₄</text><text x="620" y="96" font-size="11" fill="#7c8b93">f(tₙ+h, yₙ+k₃)</text>
+<text x="90" y="248" font-size="13" fill="#3a4a55">更新：yₙ₊₁ = yₙ + (k₁ + 2k₂ + 2k₃ + k₄)/6</text>
+<text x="90" y="272" font-size="12" fill="#7c8b93">权重 1:2:2:1 与 Simpson 求积一致</text>
+</svg>

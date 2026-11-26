@@ -1,339 +1,128 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第26章 常微分方程数值解(二)</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Runge-Kutta 方法用一段区间内多个采样斜率的加权平均逼近解，经典 RK4 每步四次求值、四阶精度。稳定性由测试方程 y'=λy 与稳定性函数 R(z) 决定：所有显式方法的绝对稳定区域有界（RK4 实轴到约 −2.78），这正是刚性方程必须用隐式方法的根本原因。">
+<title>第 26 章 · 常微分方程数值解（二）：Runge-Kutta 与稳定性 | 数值分析</title>
+<link rel="stylesheet" href="../assets/css/article.css">
+<script src="../assets/js/chapter-labs.js" defer></script>
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>📐 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 数值分析概述</a></li>
-            <li><a href="02.html">第2章 误差分析与数值稳定性</a></li>
-            <li><a href="03.html">第3章 插值法基础</a></li>
-            <li><a href="04.html">第4章 Newton插值与均差</a></li>
-            <li><a href="05.html">第5章 Hermite插值与分段插值</a></li>
-            <li><a href="06.html">第6章 三次样条插值</a></li>
-            <li><a href="07.html">第7章 函数逼近基本理论</a></li>
-            <li><a href="08.html">第8章 最佳平方逼近</a></li>
-            <li><a href="09.html">第9章 最小二乘曲线拟合</a></li>
-            <li><a href="10.html">第10章 数值积分基础</a></li>
-            <li><a href="11.html">第11章 复合求积与Romberg外推</a></li>
-            <li><a href="12.html">第12章 Gauss求积公式</a></li>
-            <li><a href="13.html">第13章 数值微分</a></li>
-            <li><a href="14.html">第14章 正交多项式与数值积分</a></li>
-            <li><a href="15.html">第15章 Gauss消去法与LU分解</a></li>
-            <li><a href="16.html">第16章 Cholesky分解与追赶法</a></li>
-            <li><a href="17.html">第17章 向量/矩阵范数与条件数</a></li>
-            <li><a href="18.html">第18章 经典迭代法</a></li>
-            <li><a href="19.html">第19章 Krylov子空间与共轭梯度法</a></li>
-            <li><a href="20.html">第20章 非线性方程求根(一)</a></li>
-            <li><a href="21.html">第21章 非线性方程求根(二)</a></li>
-            <li><a href="22.html">第22章 非线性方程组Newton法</a></li>
-            <li><a href="23.html">第23章 矩阵特征值计算</a></li>
-            <li><a href="24.html">第24章 QR方法与特征值</a></li>
-            <li><a href="25.html">第25章 常微分方程数值解(一)</a></li>
-            <li><a href="26.html" class="active">第26章 常微分方程数值解(二)</a></li>
-            <li><a href="27.html">第27章 刚性方程与线性多步法</a></li>
-            <li><a href="28.html">第28章 综合实战：从算法到代码</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <h2>第26章 常微分方程数值解(二)</h2>
+<a class="skip" href="#content">跳转正文</a>
+<header class="site-header"><div class="topbar"><a class="brand" href="../index.html"><span>∑</span> NUMERICAL <b>ANALYSIS</b></a><nav aria-label="课程导航"><a href="../index.html#catalog">全部章节</a><a href="https://github.com/1998x-stack/numerical-analysis-tutorial">源码与勘误</a></nav></div></header>
+<main class="article-shell" id="content">
+<aside class="article-toc"><nav aria-label="本章目录"><small>ON THIS PAGE · CH 26</small><ol>
+<li><a href="#framework">01 · Runge-Kutta 框架</a></li>
+<li><a href="#rk4">02 · 经典 RK4</a></li>
+<li><a href="#adaptive">03 · 自适应步长</a></li>
+<li><a href="#stability">04 · 稳定性与稳定域</a></li>
+<li><a href="#traps">05 · 失败边界</a></li>
+<li><a href="#experiment">06 · 实验与选型</a></li>
+<li><a href="#references">原始资料</a></li>
+</ol></nav></aside>
+<article class="article-body">
+<nav class="chapter-navline" aria-label="章节导览"><a href="25.html">← 前一章</a><a href="27.html">下一章 →</a></nav>
+<p class="chapter-kicker">CHAPTER 26 · NUMERICAL ANALYSIS</p>
+<h1>常微分方程数值解（二）：Runge-Kutta 与稳定性</h1>
+<p class="lead">Heun 法用两次求值换到二阶。能否用更多次求值换更高阶？可以——这就是 Runge–Kutta 家族。但“阶数高”并不等于“一定能用”：真正决定成败的往往是<strong>稳定域</strong>，而这一点会在刚性问题上变成生死线。</p>
+<section id="framework" aria-labelledby="framework-heading">
+<h2 id="framework-heading">01 · Runge-Kutta 框架</h2>
+<p><strong>输入：</strong><code>f(t,y)</code>、初值 <code>(t₀,y₀)</code>、步长 <code>h</code>。<strong>输出：</strong><code>yₙ₊₁</code>。<strong>假设：</strong><code>f</code> 对 <code>y</code> 满足 Lipschitz 条件（相容性与收敛性的前提）。</p>
+<p>Heun 法的启发是：区间 <code>[tₙ,tₙ₊₁]</code> 内单点斜率不够准，多采样几个点取<strong>加权平均</strong>就更准。把一个 s 级显式 RK 方法写成：</p>
+<div class="math-equation" role="group" aria-label="公式 26.1"><div class="math-scroll" role="region" tabindex="0" aria-label="显式 Runge-Kutta 格式：各级斜率与最终加权和，必要时可横向滚动"><math display="block" aria-label="RK方法：k_i等于h f(t_n加c_i h, y_n加累加a_ij k_j)，y_{n+1}等于y_n加累加b_i k_i"><msub><mi>k</mi><mi>i</mi></msub><mo>=</mo><mi>h</mi><mi>f</mi><mo>(</mo><msub><mi>t</mi><mi>n</mi></msub><mo>+</mo><msub><mi>c</mi><mi>i</mi></msub><mi>h</mi><mo>,</mo><mspace width="0.4em"/><msub><mi>y</mi><mi>n</mi></msub><mo>+</mo><munder><mo>∑</mo><mi>j</mi></munder><msub><mi>a</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub><msub><mi>k</mi><mi>j</mi></msub><mo>)</mo><mo>,</mo><mspace width="0.5em"/><msub><mi>y</mi><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>y</mi><mi>n</mi></msub><mo>+</mo><munder><mo>∑</mo><mi>i</mi></munder><msub><mi>b</mi><mi>i</mi></msub><msub><mi>k</mi><mi>i</mi></msub></math></div><div class="equation-tag">(26.1)</div></div>
+<p>系数 <code>(A,b,c)</code> 整体记作 <strong>Butcher 表</strong>。<code>cᵢ</code> 是采样点在区间内的位置，<code>aᵢⱼ</code> 是构造第 i 个斜率时对已知斜率 <code>kⱼ</code> 的权重，<code>bᵢ</code> 是最终输出权重。一致性只要求 <code>Σbᵢ=1</code> 与 <code>cᵢ=Σⱼaᵢⱼ</code>；要提到 p 阶，就必须让泰勒展开一直匹配到 <code>h^p</code> 项——阶数越高，<strong>匹配条件数量增长得越快</strong>（p=5 需 17 个条件），所以高阶 RK 的系数表很难“手工凑”。</p>
+<aside class="callout"><p><strong>Butcher 表怎么读：</strong>以 Heun 法为例，<code>c₂=1</code>、<code>a₂₁=1</code>、<code>b=(1/2,1/2)</code>。翻译成人话就是：在区间<strong>终点</strong>估一次斜率（用起点斜率外推得到该处的 <code>y</code>），再把起点与终点的斜率<strong>各半</strong>平均——正是上一章的“预估-校正”。RK4 只是把这一套推得更精细。</p></aside>
+</section>
+<section id="rk4" aria-labelledby="rk4-heading">
+<h2 id="rk4-heading">02 · 经典 RK4</h2>
+<p>最常用的 RK 方法是<strong>经典四阶</strong>（RK4）。它每步四次求值，采样点为起点、两个中点、终点：</p>
+<div class="math-equation" role="group" aria-label="公式 26.2"><div class="math-scroll" role="region" tabindex="0" aria-label="RK4 的四个斜率和最终更新公式，权重为一比二比二比一，必要时可横向滚动"><math display="block" aria-label="RK4更新：y_{n+1}等于y_n加(k1加2k2加2k3加k4)除以6"><msub><mi>y</mi><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>y</mi><mi>n</mi></msub><mo>+</mo><mfrac><mrow><msub><mi>k</mi><mn>1</mn></msub><mo>+</mo><mn>2</mn><msub><mi>k</mi><mn>2</mn></msub><mo>+</mo><mn>2</mn><msub><mi>k</mi><mn>3</mn></msub><mo>+</mo><msub><mi>k</mi><mn>4</mn></msub></mrow><mn>6</mn></mfrac></math></div><div class="equation-tag">(26.2)</div></div>
+<p>其中 <code>k₁=h f(tₙ,yₙ)</code>、<code>k₂=h f(tₙ+h/2, yₙ+k₁/2)</code>、<code>k₃=h f(tₙ+h/2, yₙ+k₂/2)</code>、<code>k₄=h f(tₙ+h, yₙ+k₃)</code>。全局误差 <code>O(h⁴)</code>，而每步只要 4 次 <code>f</code>。<strong>权重 1:2:2:1 与 Simpson 求积一致</strong>，并非巧合：RK4 本质上是用 Simpson 型加权平均去近似区间积分。</p>
+<figure><img src="../assets/svg/26-rk4-stages.svg" alt="一个步长区间内标出四个采样点：区间起点、两次中点、终点，分别对应 k1 到 k4，最后以 1:2:2:1 加权平均"><figcaption>图 1 · 经典 RK4 在单步内的四个采样点。<code>k₂,k₃</code> 都在中点，但带入的 <code>y</code> 估计不同（分别用 <code>k₁/2</code> 与 <code>k₂/2</code>），这正是它比 Heun 多出的一级“探路”。</figcaption></figure>
+<aside class="callout"><p><strong>为什么 RK4 是“甜蜜点”：</strong>对绝大多数非刚性问题，四阶已足够准，再提高阶数（如 RK5、RK6）每步求值次数增加、稳定性增益却有限。因此 RK4 长期是通用主力方法——再配合下一节的自适应步长，就是工业标准。</p></aside>
+</section>
+<section id="adaptive" aria-labelledby="adaptive-heading">
+<h2 id="adaptive-heading">03 · 自适应步长</h2>
+<p>固定步长几乎总是坏主意：解在有的区域光滑、有的区域陡峭。自适应步长用<strong>一对不同阶数的公式</strong>在每步估计局部误差，再据此调步长。设高阶解为 <code>ŷ</code>、低阶解为 <code>y</code>，误差估计就是它们的差：</p>
+<div class="math-equation" role="group" aria-label="公式 26.3"><div class="math-scroll" role="region" tabindex="0" aria-label="局部误差估计：高低阶解的差，以及按容差缩放的新步长，必要时可横向滚动"><math display="block" aria-label="误差估计eps等于y帽减y；新步长h_new等于h乘(tol除以eps)的1/(p+1)次幂"><mi>ε</mi><mo>≈</mo><mo>‖</mo><mover><mi>y</mi><mo>^</mo></mover><mo>−</mo><mi>y</mi><mo>‖</mo><mo>,</mo><mspace width="0.6em"/><msub><mi>h</mi><mi>new</mi></msub><mo>=</mo><mi>h</mi><mo>⋅</mo><mo>(</mo><mfrac><mi>tol</mi><mi>ε</mi></mfrac><msup><mo>)</mo><mrow><mn>1</mn><mo>/</mo><mo>(</mo><mi>p</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></msup></math></div><div class="equation-tag">(26.3)</div></div>
+<p>实用的方案是嵌入对（embedded pair）：用同一组 <code>k</code> 同时算出四阶和五阶结果，差作为误差。历史上 <strong>Fehlberg 4(5)</strong> 用 6 个 <code>k</code> 给出 4、5 阶两解；现代标准是 <strong>Dormand–Prince 5(4)（dopri5）</strong>——<code>scipy.integrate.solve_ivp</code> 的默认方法，系数设计让五阶解的误差系数更小，并支持<strong>密集输出</strong>（在任意点插值而不用重新积分）。</p>
+<aside class="callout"><p><strong>步长控制的逻辑：</strong>每步先算 <code>ε</code>。若 <code>ε&gt;tol</code>，拒绝该步、把 <code>h</code> 缩小重试；若远小于 <code>tol</code>，接受并适当放大 <code>h</code>（通常限幅在 2 倍以内）。这让方法在光滑区走大步、在陡峭区走小步。<strong>容差控制的是局部误差，不是全局误差</strong>——全局误差会沿区间累积，两者不要混淆。</p></aside>
+</section>
+<section id="stability" aria-labelledby="stability-heading">
+<h2 id="stability-heading">04 · 稳定性与稳定域</h2>
+<p>稳定性的标准探针是<strong>测试方程</strong> <code>y'=λy</code>（<code>Re λ&lt;0</code>），其真解单调衰减。数值方法每步给出 <code>yₙ₊₁=R(z)yₙ</code>，<code>z=hλ</code>，<code>R</code> 叫<strong>稳定性函数</strong>。<strong>绝对稳定区域</strong>就是所有满足 <code>|R(z)|≤1</code> 的 <code>z</code> 的集合——一旦 <code>hλ</code> 掉在区域外，数值解就会振荡发散。</p>
+<div class="math-equation" role="group" aria-label="公式 26.4"><div class="math-scroll" role="region" tabindex="0" aria-label="稳定条件：稳定性函数 R(z) 的模不超过 1，z 等于 h 乘 lambda，必要时可横向滚动"><math display="block" aria-label="稳定条件：R(z)的模小于等于1，其中z=h lambda"><mo>|</mo><mi>R</mi><mo>(</mo><mi>z</mi><mo>)</mo><mo>|</mo><mo>≤</mo><mn>1</mn><mo>,</mo><mspace width="0.8em"/><mi>z</mi><mo>=</mo><mi>h</mi><mi>λ</mi></math></div><div class="equation-tag">(26.4)</div></div>
+<p>常见方法的 <code>R(z)</code> 与实轴上的稳定区间：向前 Euler <code>R=1+z</code>，区间 <code>[−2,0]</code>；RK4 <code>R=1+z+z²/2+z³/6+z⁴/24</code>，区间约 <code>[−2.78,0]</code>；向后 Euler <code>R=1/(1−z)</code> 与梯形法 <code>R=(1+z/2)/(1−z/2)</code> 则<strong>覆盖整个左半平面</strong>——这就是 A-稳定性。</p>
+<figure><img src="../assets/svg/26-stability-region.svg" alt="复平面上向前 Euler 的稳定区域是圆心 −1 半径 1 的圆；RK2 与 RK4 的区域更大但仍有界，实轴边界约 −2 与 −2.78"><figcaption>图 2 · 显式方法的绝对稳定区域（<code>|R(z)|≤1</code>，<code>z=hλ</code>）。区域边界由数值求根算出：Euler（橙）是圆；RK2（黄）实轴延伸到 <code>−2</code>；RK4（青）延伸到约 <code>−2.78</code>。<strong>所有显式方法的区域都有界</strong>——这就是刚性方程必须用隐式方法的根本原因。</figcaption></figure>
+<aside class="callout"><p><strong>精度与稳定性是两件事：</strong>RK4 的“四阶”讲的是<strong>精度</strong>；而 <code>|hλ|≤2.78</code> 说的是<strong>稳定性</strong>。后者会强制 <code>h</code> 小到与精度需求无关——若 <code>λ=−10⁶</code>，就必须 <code>h≲2.8×10⁻⁶</code>，即使解本身早已平滑。这就是“步长被稳定性卡死”，也是刚性问题的特征。</p></aside>
+</section>
+<section id="traps" aria-labelledby="traps-heading">
+<h2 id="traps-heading">05 · 失败边界</h2>
+<div class="table-scroll"><table>
+<tr><th>场景</th><th>原因</th><th>表现</th><th>对策</th></tr>
+<tr><td>阶数高就安全？</td><td>精度与稳定性是两回事</td><td>高精度公式仍振荡发散</td><td>查稳定域 <code>|R(hλ)|≤1</code></td></tr>
+<tr><td>刚性方程</td><td><code>|λ|</code> 极大，显式稳定域有界</td><td>步长被稳定性卡死</td><td>换隐式（第 27 章）</td></tr>
+<tr><td>把容差当全局误差</td><td>自适应控的是局部误差</td><td>总误差仍累积偏大</td><td>收紧容差 / 后续打磨</td></tr>
+<tr><td>不连续 <code>f</code></td><td>泰勒假设被破坏、误差估计失真</td><td>步长震荡/阶数降低</td><td>分段积分、在间断处重启</td></tr>
+</table></div>
+<p>最常见也最危险的误读是<strong>“高阶 = 能用”</strong>。反例：<code>y'=−10⁶y</code>，真解在 <code>t∼10⁻⁶</code> 尺度就衰减到零，但 RK4 必须 <code>h≤2.78×10⁻⁶</code>；若图省事取 <code>h=10⁻⁴</code>，<code>|hλ|=100</code> 远超稳定边界，数值解会疯狂振荡直到 <code>NaN</code>，而真解本是光滑的。</p>
+</section>
+<section id="experiment" aria-labelledby="experiment-heading">
+<h2 id="experiment-heading">06 · 实验与选型</h2>
+<p>对 <code>y'=−y, y(0)=1</code>（解析解 <code>e⁻ᵗ</code>）在 <code>t=5</code> 处比较三种方法的全局误差与观测阶数：</p>
+<div class="demo" data-lab="rk4-order"><label for="rk4-method">选择方法，观察 t=5 处的误差与阶数</label><select id="rk4-method" data-input><option value="euler">向前 Euler（一阶）</option><option value="heun">Heun（二阶）</option><option value="rk4">RK4（四阶）</option></select><output data-output aria-live="polite">误差与估计阶数将在此显示。</output></div>
+<p><strong>失败边界（可验证）：</strong>第一，阶数越高误差下降越快，但稳定性另论；第二，<code>y'=−100y</code> 时 RK4 的稳定边界约 <code>h≤0.0278</code>，超一点就发散；第三，减小步长看误差是否按阶数下降，是区分“截断误差”与“实现错误”的可靠手段。</p>
+<pre><code>import math
 
-        <h3>26.1 Runge-Kutta 方法的一般思想</h3>
-
-        <p>大家好，我是你们的讲师。上一章我们学习了 Euler 法和改进 Euler 法。你可能会想：有没有一种系统性的方法，可以构造任意高阶的数值方法？答案是：有，这就是 <strong>Runge-Kutta（龙格-库塔）</strong>方法家族。</p>
-
-        <p>Runge-Kutta 方法的核心思想是：在一个步长区间 [tₙ, tₙ₊₁] 内，<strong>采样多个点的斜率并取加权平均</strong>，以更精确地逼近 y(t) 的真实变化。</p>
-
-        <p>一个典型的 s 级显式 Runge-Kutta 方法的形式是：</p>
-
-        <pre><code>k₁ = h · f(tₙ, yₙ)
-k₂ = h · f(tₙ + c₂h, yₙ + a₂₁k₁)
-k₃ = h · f(tₙ + c₃h, yₙ + a₃₁k₁ + a₃₂k₂)
-...
-kₛ = h · f(tₙ + cₛh, yₙ + aₛ₁k₁ + aₛ₂k₂ + ... + aₛ,ₛ₋₁kₛ₋₁)
-yₙ₊₁ = yₙ + b₁k₁ + b₂k₂ + ... + bₛkₛ</code></pre>
-
-        <p>系数 (A, b, c) 通常被整理成 <strong>Butcher 表（Butcher Tableau）</strong>的形式：</p>
-
-        <table>
-            <tr>
-                <th>c</th>
-                <th>A</th>
-            </tr>
-            <tr>
-                <td></td>
-                <td>b<sup>T</sup></td>
-            </tr>
-        </table>
-
-        <p>更具体地：</p>
-
-        <table>
-            <tr>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-            </tr>
-            <tr>
-                <td>0</td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>c₂</td>
-                <td>a₂₁</td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>c₃</td>
-                <td>a₃₁</td>
-                <td>a₃₂</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>⋮</td>
-                <td>⋮</td>
-                <td>⋮</td>
-                <td>⋱</td>
-            </tr>
-            <tr>
-                <td>cₛ</td>
-                <td>aₛ₁</td>
-                <td>aₛ₂</td>
-                <td>... a<sub>s,s-1</sub></td>
-            </tr>
-            <tr>
-                <td></td>
-                <td>b₁</td>
-                <td>b₂</td>
-                <td>... bₛ</td>
-            </tr>
-        </table>
-
-        <p>系数必须满足一致性条件 Σbᵢ = 1 和 cᵢ = Σa<sub>ij</sub>（对于 i = 2, ..., s）。更高阶的条件来自对 Taylor 展开的匹配，随着阶数的增加，条件数量迅速增长——这就是为什么构造高阶 RK 方法是一件很有技巧性的事。</p>
-
-        <div class="tip">
-            <p><strong>Butcher 表的直观理解</strong>：表中的 c 表示在区间内的采样位置，A 的每一行是计算该采样点斜率时对各已知斜率的权重，b 是最终输出时的加权系数。如果你看 Heun 法的 Butcher 表：c₂ = 1, a₂₁ = 1, b = [1/2, 1/2]——正好对应"先用 Euler 预测，再平均两个斜率"。</p>
-        </div>
-
-        <h3>26.2 经典四阶 Runge-Kutta（RK4）</h3>
-
-        <p>在所有 Runge-Kutta 方法中，最著名、最常用、最"传奇"的就是<strong>经典四阶 Runge-Kutta 方法（RK4）</strong>。它的公式是：</p>
-
-        <pre><code>k₁ = h · f(tₙ, yₙ)
-k₂ = h · f(tₙ + h/2, yₙ + k₁/2)
-k₃ = h · f(tₙ + h/2, yₙ + k₂/2)
-k₄ = h · f(tₙ + h, yₙ + k₃)
-yₙ₊₁ = yₙ + (k₁ + 2k₂ + 2k₃ + k₄) / 6</code></pre>
-
-        <p>RK4 的局部截断误差是 O(h⁵)，全局误差 O(h⁴) ——所以叫"四阶"方法。它的权重 1:2:2:1 对应 Simpson 求积公式的系数，这不是巧合——RK4 本质上是用 Simpson 规则来近似积分 ∫f dt。</p>
-
-        <pre><code>import numpy as np
-
-def rk4(f, y0, t_span, h):
-    """经典四阶 Runge-Kutta 方法"""
-    t0, tf = t_span
-    n_steps = int((tf - t0) / h)
-    t = np.linspace(t0, tf, n_steps + 1)
-    y = np.zeros(n_steps + 1)
-    y[0] = y0
-
-    for i in range(n_steps):
-        k1 = h * f(t[i], y[i])
-        k2 = h * f(t[i] + h/2, y[i] + k1/2)
-        k3 = h * f(t[i] + h/2, y[i] + k2/2)
-        k4 = h * f(t[i] + h, y[i] + k3)
-        y[i+1] = y[i] + (k1 + 2*k2 + 2*k3 + k4) / 6
-
-    return t, y
-
-# 测试：谐振子 y'' = -y, 转化为一阶系统
-# 令 u = [y, y']^T, u' = [u[1], -u[0]]^T
-def harmonic_oscillator(t, u):
-    return np.array([u[1], -u[0]])
-
-u0 = np.array([1.0, 0.0])  # 初始位置 1, 初始速度 0
-t_span = (0.0, 2*np.pi)
-h = 0.01
-
-t_rk4, u_rk4 = rk4(harmonic_oscillator, u0, t_span, h)
-# 解析解: y(t) = cos(t)
-err = np.max(np.abs(u_rk4[:, 0] - np.cos(t_rk4)))
-print(f"RK4 最大误差 (h={h}): {err:.2e}")
-
-# 对比 Euler 法
-def euler_ode(f, y0, t_span, h):
-    t0, tf = t_span
-    n = int((tf - t0) / h) + 1
-    t = np.linspace(t0, tf, n)
-    y = np.zeros((n, len(y0)))
-    y[0] = y0
-    for i in range(n-1):
-        y[i+1] = y[i] + h * f(t[i], y[i])
-    return t, y
-
-t_e, u_e = euler_ode(harmonic_oscillator, u0, t_span, h)
-err_euler = np.max(np.abs(u_e[:, 0] - np.cos(t_e)))
-print(f"Euler 最大误差 (h={h}): {err_euler:.2e}")
-
-# 展示阶数验证
-for h_test in [0.1, 0.05, 0.025, 0.0125]:
-    _, u = rk4(harmonic_oscillator, u0, t_span, h_test)
-    e = np.max(np.abs(u[:, 0] - np.cos(t := np.linspace(0, 2*np.pi, int(2*np.pi/h_test)+1))))
-    print(f"h={h_test:.4f}: RK4 误差={e:.2e}, 比值={e/(h_test**4):.2f}")
-    # 期望：误差 / h^4 接近常数，验证四阶收敛</code></pre>
-
-        <div class="highlight">
-            <p><strong>NASA Apollo 的传奇故事</strong>：你知道吗？1969 年阿波罗 11 号登月任务中，宇航员在月球着陆的最后阶段，导航计算机执行的就是 Runge-Kutta 积分。当时的计算机——Apollo Guidance Computer——主频只有 2 MHz，内存只有 4 KB。但它成功地在实时环境下对飞船的运动方程做了数值积分，以每秒几十次的速度更新位置和速度估计。用的就是 RK4 方法。这个例子告诉我们：<strong>好的数值方法 + 有限的算力 = 可行的工程方案</strong>。今天你的手机拥有比阿波罗计算机强百万倍的计算能力——但那些 RK4 算法几乎没有任何改变。</p>
-        </div>
-
-        <h3>26.3 自适应步长控制</h3>
-
-        <p>在实际工程中，固定的步长 h 几乎总是一个坏主意——因为解的光滑性在不同时间可能完全不同。在解变化缓慢的区域，大步长就够；在解陡峭变化的区域，必须用小步长来捕捉细节。这就是<strong>自适应步长控制（Adaptive Step Size Control）</strong>的用武之地。</p>
-
-        <p>基本思想是：在每一步中，用两种不同阶数的方法计算 yₙ₊₁，用它们的差来估计局部误差，然后根据误差决定是否接受这一步以及下一步用什么步长。</p>
-
-        <p><strong>Fehlberg 的 4(5) 对（RK45）</strong>：Fehlberg 在 1969 年设计了一组巧妙的系数——使用<strong>6 个 k</strong> 同时计算出四阶和五阶的结果（共享 k 值，只加权系数不同）。两者的差给出误差估计。这就是 MATLAB 早期版本中 <code>ode45</code> 的基础。</p>
-
-        <p><strong>Dormand-Prince 5(4)（dopri5）</strong>：这是现代标准——默认就在 <code>scipy.integrate.solve_ivp</code> 中使用。和 Fehlberg 类似，但系数设计不同，使得五阶公式的误差系数更小，并额外提供<strong>密集输出（dense output）</strong>功能（可在任意点插值而不需要重新积分）。</p>
-
-        <p>自适应步长控制的一般策略（步长加倍/减半）：</p>
-
-        <ol>
-            <li>用当前步长 h 计算一步，得到误差估计 ε。</li>
-            <li>如果 ε > tol（容差），拒绝这一步，将 h 减半，重试。</li>
-            <li>如果 ε 远小于 tol，接受这一步，并将下一步的 h 放大（但不超过 2 倍）。</li>
-            <li>如果 ε 在可接受范围内，接受这一步，保持 h 不变或微调。</li>
-        </ol>
-
-        <div class="tip">
-            <p><strong>自适应方法的"甜蜜点"</strong>：自适应步长不仅提高了可靠性，还<strong>节省了计算量</strong>。对于一个在大部分区域光滑、只有少数区域陡峭的 ODE，自适应方法自动在光滑区域用大步长、陡峭区域用小步长，比固定步长方法效率高数十倍甚至更多。实际经验表明，对于大多数非刚性问题，<code>scipy.integrate.solve_ivp</code> 的默认设置（RK45，容差 1e-3）就能给出满意的结果——远比手动调步长更省心。</p>
-        </div>
-
-        <h3>26.4 稳定性分析</h3>
-
-        <p>现在我们讨论最重要的理论问题之一——<strong>数值稳定性（Numerical Stability）</strong>。你可能觉得："既然方法精度是四阶，那肯定没问题。" 错。一个方法即使理论精度很高，如果数值不稳定，结果也是垃圾。</p>
-
-        <p>稳定性分析的标准方法是研究<strong>测试方程（Test Equation）</strong>：</p>
-
-        <p style="text-align:center"><strong>y' = λy,  λ ∈ ℂ,  Re(λ) < 0</strong></p>
-
-        <p>这个简单的线性方程的解 y(t) = y₀e<sup>λt</sup> 是单调衰减的。我们用数值方法求解它，然后看数值解是否也衰减（而不是振荡增长）。</p>
-
-        <p>定义<strong>稳定性函数（Stability Function）</strong>R(z) = yₙ₊₁/yₙ，其中 z = hλ。对于不同的方法，R(z) 不同：</p>
-
-        <table>
-            <tr>
-                <th>方法</th>
-                <th>稳定性函数 R(z)</th>
-                <th>绝对稳定区域</th>
-                <th>实轴上的稳定区间</th>
-            </tr>
-            <tr>
-                <td>向前 Euler</td>
-                <td>1 + z</td>
-                <td>以 (-1, 0) 为圆心、半径 1 的圆</td>
-                <td>[-2, 0]</td>
-            </tr>
-            <tr>
-                <td>向后 Euler</td>
-                <td>1 / (1 - z)</td>
-                <td>整个复平面去掉圆心 (1, 0) 的圆</td>
-                <td>(-∞, 0]（A-稳定）</td>
-            </tr>
-            <tr>
-                <td>梯形法</td>
-                <td>(1 + z/2) / (1 - z/2)</td>
-                <td>整个左半平面</td>
-                <td>(-∞, 0]（A-稳定）</td>
-            </tr>
-            <tr>
-                <td>RK2（改进 Euler）</td>
-                <td>1 + z + z²/2</td>
-                <td>复杂形状</td>
-                <td>≈ [-2, 0]</td>
-            </tr>
-            <tr>
-                <td>RK4</td>
-                <td>1 + z + z²/2 + z³/6 + z⁴/24</td>
-                <td>复杂形状</td>
-                <td>≈ [-2.78, 0]</td>
-            </tr>
-        </table>
-
-        <p><strong>绝对稳定区域（Region of Absolute Stability）</strong>定义为满足 |R(z)| ≤ 1 的所有 z = hλ 的集合。对于给定的 λ，这个区域直接将步长 h 限制在某个范围内。如果 h 超出这个范围，数值解就会振荡发散——即使真实解是单调衰减的。</p>
-
-        <div class="warning">
-            <p><strong>一个惨痛的稳定性教训</strong>：几年前，我帮一个团队调试一个化学反应网络模型。模型包含一个快速反应，时间常数 τ = 10⁻⁶ 秒（λ = -10⁶）。团队用 RK4 方法，步长 h = 10⁻⁴ 秒——看起来"远小于"反应时间尺度？错！|hλ| = 100 ≫ 2.78，远远超出 RK4 的稳定区域。结果数值解疯了一样振荡到 ±10²⁰，然后 NaN。更危险的是，团队在调试过程中尝试减小步长，逐渐从 10⁻⁴ 减到 10⁻⁵，仍在振荡。直到 h ≤ 2.78 × 10⁻⁶ 才稳定——<strong>这就是为什么稳定性分析不是理论游戏，而是工程生命线</strong>。</p>
-        </div>
-
-        <div class="highlight">
-            <p><strong>显式 vs 隐式的稳定性博弈</strong>：从这个表格可以看出一条关键分界线：<strong>所有显式方法的稳定区域都是有界的</strong>（在实轴上最多到 -2 附近），而<strong>隐式方法（向后 Euler、梯形法）的稳定区域覆盖整个左半平面</strong>——这个性质叫 A-稳定性（A-Stability）。这就是为什么对于<strong>刚性方程（Stiff Equations）</strong>（包含快变和慢变两种时间尺度的系统），必须使用隐式方法。这个主题将是我们第 27 章的核心内容。</p>
-        </div>
-
-        <p>让我们用代码来直观感受一下稳定性边界的影响：</p>
-
-        <pre><code>import numpy as np
-
-# 测试稳定性：y' = -100y, y(0) = 1
-# 稳定条件：h ≤ 2/100 = 0.02 (Euler), h ≤ 2.78/100 = 0.0278 (RK4)
-def stability_test(method, h, lam=-100.0, T=1.0, y0=1.0):
-    """测试不同步长下的稳定性"""
-    n_steps = int(T / h)
-    y = y0
-    for _ in range(n_steps):
-        if method == 'euler':
-            y = y + h * lam * y
-        elif method == 'rk4':
-            k1 = h * lam * y
-            k2 = h * lam * (y + k1/2)
-            k3 = h * lam * (y + k2/2)
-            k4 = h * lam * (y + k3)
-            y = y + (k1 + 2*k2 + 2*k3 + k4) / 6
+def rk4(f, y0, T, h):
+    n = round(T / h); y = y0
+    for _ in range(n):
+        k1 = h * f(y)
+        k2 = h * f(y + k1/2)
+        k3 = h * f(y + k2/2)
+        k4 = h * f(y + k3)
+        y = y + (k1 + 2*k2 + 2*k3 + k4) / 6
     return y
 
-lams = [-100, -10, -1]
-hs = [0.001, 0.005, 0.01, 0.02, 0.03, 0.05]
+f = lambda y: -y
+T, exact = 5.0, math.exp(-5.0)
 
-print("Euler 法稳定性测试 (y' = λy, t=1):")
-for lam in lams:
-    for h in hs:
-        y_approx = stability_test('euler', h, lam=lam)
-        y_exact = np.exp(lam * 1.0)
-        stable = "✅" if abs(y_approx) < 1e3 else "❌"
-        print(f"  λ={lam:4d}, h={h:.3f}, |hλ|={abs(h*lam):5.2f}: "
-              f"y={y_approx:.4f}, 稳定={stable}")
+# 四阶验证：h 减半，误差应降到约 1/16
+e1 = abs(rk4(f, 1.0, T, 0.1) - exact)
+e2 = abs(rk4(f, 1.0, T, 0.05) - exact)
+p = math.log2(e1 / e2)                # 观测阶数 ≈ 4
+assert 3.5 &lt; p &lt; 4.5
+print(f"RK4: e(0.1)={e1:.3e}, e(0.05)={e2:.3e}, p≈{p:.2f}")
 
-print("\nRK4 稳定性测试:")
-for lam in lams:
-    for h in hs:
-        y_approx = stability_test('rk4', h, lam=lam)
-        y_exact = np.exp(lam * 1.0)
-        stable = "✅" if abs(y_approx) < 1e3 else "❌"
-        print(f"  λ={lam:4d}, h={h:.3f}, |hλ|={abs(h*lam):5.2f}: "
-              f"y={y_approx:.4f}, 稳定={stable}")</code></pre>
-
-        <p>运行这个代码你会看到：当 |hλ| 超过稳定边界时，数值解会剧烈振荡，产生完全不合理的巨大数值。这种发散<strong>不是程序 bug，而是方法本身的数学性质决定的</strong>。</p>
-
-        <p>好，这一章的内容到这里就结束了。我们从 Runge-Kutta 方法的一般框架开始，学习了 RK4 这个"工作马"方法，了解了自适应步长控制的思想，最后深入分析了数值稳定性这个关键概念。你可能会觉得稳定性那一节有点"重"——但相信我，它是所有这些方法中最值得你记住的部分。下一章，我们将进入常微分方程数值解的最后一个主题：<strong>刚性方程与线性多步法</strong>。在那里，稳定性的重要性会更加凸显。到时候见。</p>
-
-        <div class="footer-nav">
-            <a href="25.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="27.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
+# 稳定性：y'=-100y，RK4 稳定边界 |h*lambda| <= 2.78
+stab = lambda h, lam=-100.0: rk4(lambda y: lam*y, 1.0, 1.0, h)
+assert abs(stab(0.02)) &lt; 1.0          # |h*lambda|=2.0 <= 2.78：稳定
+assert abs(stab(0.03)) &gt; 1.0          # |h*lambda|=3.0 &gt; 2.78：发散
+print("stable h=0.02:", f"{stab(0.02):.3e}", "| unstable h=0.03:", f"{stab(0.03):.3e}")</code></pre>
+<p>这段实验验证了两件事：RK4 的观测阶数升至约 4（h 减半、误差约降为 1/17）；以及 <code>|hλ|</code> 一旦超过稳定边界时 RK4 发散。工业界默认的 <code>solve_ivp(method='RK45')</code> 就是 Dormand–Prince 5(4) 自适应实现。</p>
+<div class="table-scroll"><table>
+<tr><th>方法</th><th>阶数</th><th>每步 <code>f</code></th><th>实轴稳定区间</th><th>适用场景</th></tr>
+<tr><td>向前 Euler</td><td>1</td><td>1</td><td><code>[−2,0]</code></td><td>教学</td></tr>
+<tr><td>Heun</td><td>2</td><td>2</td><td><code>[−2,0]</code></td><td>一般非刚性</td></tr>
+<tr><td>RK4</td><td>4</td><td>4</td><td><code>[−2.78,0]</code></td><td>通用主力</td></tr>
+<tr><td>RK45 自适应</td><td>5(4)</td><td>6</td><td>略大于 RK4</td><td>带误差控制（默认）</td></tr>
+<tr><td>向后 Euler/梯形</td><td>1/2</td><td>解方程</td><td>整个左半平面</td><td>刚性问题</td></tr>
+</table></div>
+<aside class="callout"><p><strong>选型判断：</strong>非刚性默认 RK45 自适应；要高精度且不想调参用 RK4；刚性问题必须用隐式（下章）。表中“实轴稳定区间”是对测试方程的理论值；文中误差、步数、阶数为本文教学演示。</p></aside>
+</section>
+<section id="references" aria-labelledby="references-heading">
+<h2 id="references-heading">原始资料与延伸阅读</h2>
+<p>本章将文献结论与本文独立构造的数值示例区分：RK 格式与 Butcher 表、RK4 的四阶精度与 <code>O(h⁴)</code> 全局误差、稳定性函数 <code>R(z)</code> 与绝对稳定区域均为理论结果；图 2 的稳定域边界与实验中的误差、阶数为本文计算值或教学演示。</p>
+<ol class="sources">
+<li><a href="https://doi.org/10.1007/978-3-540-78862-1">E. Hairer, S. P. Nørsett, G. Wanner, <em>Solving Ordinary Differential Equations I</em></a>, Springer, 2nd ed., 1993。RK 方法阶数条件、稳定性函数与 A-稳定性。</li>
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html">SciPy · scipy.integrate.solve_ivp</a>：<code>RK45</code>（Dormand–Prince 5(4)）、<code>BDF</code>、<code>Radau</code> 与 <code>rtol</code>/<code>atol</code> 误差控制。</li>
+<li><a href="https://doi.org/10.1016/0021-9991(80)90033-9">J. R. Dormand &amp; P. J. Prince, <em>A family of embedded Runge–Kutta formulae</em></a>, J. Comput. Appl. Math. 6 (1980) 19–26。dopri5 嵌入对及其阶数/误差系数设计。</li>
+</ol>
+</section>
+<nav class="chapter-bottom" aria-label="前后章节"><a href="25.html">← 前一章</a><a href="27.html">下一章 →</a></nav>
+</article>
+</main>
+<footer><span>NUMERICAL ANALYSIS · 一份可独立阅读的计算笔记</span><a href="../index.html">返回课程首页</a></footer>
 </body>
 </html>
