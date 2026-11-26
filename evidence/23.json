@@ -1,0 +1,31 @@
+{
+  "chapter": "23",
+  "sources": [
+    {
+      "url": "https://jhupbooks.press.jhu.edu/title/matrix-computations",
+      "claims": [
+        "Gerschgorin disks, power method, inverse iteration, RQI and QR (Ch. 7-8)"
+      ]
+    },
+    {
+      "url": "https://numpy.org/doc/stable/reference/generated/numpy.linalg.eigvals.html",
+      "claims": [
+        "LAPACK geev reference eigenvalues for comparison"
+      ]
+    },
+    {
+      "url": "https://nhigham.com/accuracy-and-stability-of-numerical-algorithms/",
+      "claims": [
+        "Eigenvalue perturbation bounds and conditioning"
+      ]
+    }
+  ],
+  "checks": [
+    "A=[[10,0.5,0],[0.5,3,0.2],[0,0.2,1]]: row disks [9.5,10.5],[2.3,3.7],[0.8,1.2] are disjoint; eigenvalues (Jacobi) 0.979923, 2.984521, 10.035556 lie one per disk",
+    "Power method on diag(10,3,1) from (1,1,1): Rayleigh quotient reaches 10 within 1e-12 in 14 iterations",
+    "Power method on diag(10,9.5,1): 264 iterations to 1e-12 (linear rate |lambda2/lambda1|=0.95)",
+    "Power method on diag(10,9.9,1): does not reach 1e-12 within 800 iterations",
+    "Power method from x0=(0,1,0) (orthogonal to dominant eigenvector): converges to lambda2=3, never to 10",
+    "RQI is cubically convergent for symmetric A; only quadratic for general non-symmetric A"
+  ]
+}
