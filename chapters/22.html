@@ -1,253 +1,147 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第22章 非线性方程组Newton法</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="把单变量牛顿法推广到方程组：用雅可比矩阵线性化，每步解一个线性系统 J·s=−F 得到牛顿步，在单根处保持二次收敛；雅可比昂贵时用 Broyden 拟牛顿与低秩更新，初值太差时用线搜索、信赖域或延拓法做全局化。">
+<title>第 22 章 · 非线性方程组的牛顿法：雅可比矩阵与拟牛顿 | 数值分析</title>
+<link rel="stylesheet" href="../assets/css/article.css">
+<script src="../assets/js/chapter-labs.js" defer></script>
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>📐 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 数值分析概述</a></li>
-            <li><a href="02.html">第2章 误差分析与数值稳定性</a></li>
-            <li><a href="03.html">第3章 插值法基础</a></li>
-            <li><a href="04.html">第4章 Newton插值与均差</a></li>
-            <li><a href="05.html">第5章 Hermite插值与分段插值</a></li>
-            <li><a href="06.html">第6章 三次样条插值</a></li>
-            <li><a href="07.html">第7章 函数逼近基本理论</a></li>
-            <li><a href="08.html">第8章 最佳平方逼近</a></li>
-            <li><a href="09.html">第9章 最小二乘曲线拟合</a></li>
-            <li><a href="10.html">第10章 数值积分基础</a></li>
-            <li><a href="11.html">第11章 复合求积与Romberg外推</a></li>
-            <li><a href="12.html">第12章 Gauss求积公式</a></li>
-            <li><a href="13.html">第13章 数值微分</a></li>
-            <li><a href="14.html">第14章 正交多项式与数值积分</a></li>
-            <li><a href="15.html">第15章 Gauss消去法与LU分解</a></li>
-            <li><a href="16.html">第16章 Cholesky分解与追赶法</a></li>
-            <li><a href="17.html">第17章 向量/矩阵范数与条件数</a></li>
-            <li><a href="18.html">第18章 经典迭代法</a></li>
-            <li><a href="19.html">第19章 Krylov子空间与共轭梯度法</a></li>
-            <li><a href="20.html">第20章 非线性方程求根(一)</a></li>
-            <li><a href="21.html">第21章 非线性方程求根(二)</a></li>
-            <li><a href="22.html" class="active">第22章 非线性方程组Newton法</a></li>
-            <li><a href="23.html">第23章 矩阵特征值计算</a></li>
-            <li><a href="24.html">第24章 QR方法与特征值</a></li>
-            <li><a href="25.html">第25章 常微分方程数值解(一)</a></li>
-            <li><a href="26.html">第26章 常微分方程数值解(二)</a></li>
-            <li><a href="27.html">第27章 刚性方程与线性多步法</a></li>
-            <li><a href="28.html">第28章 综合实战：从算法到代码</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
+<a class="skip" href="#content">跳转正文</a>
+<header class="site-header"><div class="topbar"><a class="brand" href="../index.html"><span>∑</span> NUMERICAL <b>ANALYSIS</b></a><nav aria-label="课程导航"><a href="../index.html#catalog">全部章节</a><a href="https://github.com/1998x-stack/numerical-analysis-tutorial">源码与勘误</a></nav></div></header>
+<main class="article-shell" id="content">
+<aside class="article-toc"><nav aria-label="本章目录"><small>ON THIS PAGE · CH 22</small><ol>
+<li><a href="#problem">01 · 从标量到系统</a></li>
+<li><a href="#newton">02 · 线性化与牛顿步</a></li>
+<li><a href="#jacobian">03 · 雅可比矩阵的两条路</a></li>
+<li><a href="#quasi">04 · 拟牛顿与 Broyden</a></li>
+<li><a href="#global">05 · 失败边界与全局化</a></li>
+<li><a href="#experiment">06 · 实验与选型</a></li>
+<li><a href="#references">原始资料</a></li>
+</ol></nav></aside>
+<article class="article-body">
+<nav class="chapter-navline" aria-label="章节导览"><a href="21.html">← 前一章</a><a href="23.html">下一章 →</a></nav>
+<p class="chapter-kicker">CHAPTER 22 · NUMERICAL ANALYSIS</p>
+<h1>非线性方程组的牛顿法：雅可比矩阵与拟牛顿</h1>
+<p class="lead">上一章的牛顿法把“求根”换成“不断重化切线”。当未知量从一个变成一个向量，切线要换成一整组偏导数——雅可比矩阵，而“除以导数”要换成“解一个线性系统”。这一章讲清这次推广里<strong>什么保持不变、什么必须改变</strong>，以及当雅可比贵得离谱时该怎么退让。</p>
+<section id="problem" aria-labelledby="problem-heading">
+<h2 id="problem-heading">01 · 从标量到系统</h2>
+<p><strong>输入：</strong>向量值函数 <code>F: ℝⁿ→ℝⁿ</code>（分量 <code>f₁,…,fₙ</code>）与初值 <code>x₀∈ℝⁿ</code>。<strong>输出：</strong>近似解 <code>x̃</code>，使 <code>‖F(x̃)‖</code> 足够小。<strong>假设：</strong>每个 <code>fᵢ</code> 连续可微，且根处雅可比 <code>J(x*)=[∂fᵢ/∂xⱼ]</code> 非奇异——这正是“单根”在多维下的对应物。</p>
+<p>问题从 <code>f(x)=0</code> 变成 <code>F(x)=0</code>：要同时让 n 个方程成立。几何上，每个 <code>fᵢ(x)=0</code> 是 ℝⁿ 中的一张曲面（零水平集），解就是这 n 张曲面的<strong>公共交点</strong>。n=2 时是两条曲线相交（图 1）。</p>
+<p>单变量牛顿法用切线联系“函数值”与“导数”；多变量里导数不再是一个数，而是一个把向量映到向量的线性映射——雅可比矩阵。它的第 i 行第 j 列 <code>∂fᵢ/∂xⱼ</code> 回答的是：<em>把第 j 个变量挪动一点点，第 i 个方程会变化多少</em>。整个矩阵因此编码了变量之间全部的耦合关系。</p>
+</section>
+<section id="newton" aria-labelledby="newton-heading">
+<h2 id="newton-heading">02 · 线性化与牛顿步</h2>
+<p>和单变量一样，在当前点 <code>x_k</code> 用一阶泰勒展开把 <code>F</code> 线性化：<code>F(x)≈F(x_k)+J(x_k)(x−x_k)</code>。令近似式为零，形式上得到 <code>x_{k+1}=x_k−J(x_k)⁻¹F(x_k)</code>。但<strong>实践中从不求逆矩阵</strong>，而是把它改写成一个线性方程组：先解出牛顿步 <code>s</code>，再更新。</p>
+<div class="math-equation" role="group" aria-label="公式 22.1"><div class="math-scroll" role="region" tabindex="0" aria-label="牛顿步：解线性方程组，雅可比乘步长等于负的函数值，再更新，必要时可横向滚动"><math display="block" aria-label="牛顿步：J在x的k处的值乘以s等于负的F在x的k处的值，x的k加1等于x的k加s"><mi>J</mi><mo>(</mo><msub><mi>x</mi><mi>k</mi></msub><mo>)</mo><mi>s</mi><mo>=</mo><mo>−</mo><mi>F</mi><mo>(</mo><msub><mi>x</mi><mi>k</mi></msub><mo>)</mo><mo>,</mo><mspace width="0.8em"/><msub><mi>x</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>x</mi><mi>k</mi></msub><mo>+</mo><mi>s</mi></math></div><div class="equation-tag">(22.1)</div></div>
+<p>这一步把“非线性求根”拆成“线性求解”的重复：每次迭代解一个 n×n 线性系统。单变量时除以 <code>f′</code>，多变量时解 <code>J s=−F</code>，二者是同一个“沿切空间走到零”的思想。把 <code>F(x*)=0</code> 在 <code>x_k</code> 处展开并代入 <code>x*=x_k+e_k</code>，可得与一维完全平行的误差递推：</p>
+<div class="math-equation" role="group" aria-label="公式 22.2"><div class="math-scroll" role="region" tabindex="0" aria-label="误差递推：下一项误差的范数不超过常数乘以当前误差范数的平方，必要时可横向滚动"><math display="block" aria-label="误差递推：e的k加1的范数不超过C乘以e的k范数的平方"><mo>‖</mo><msub><mi>e</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>‖</mo><mo>≤</mo><mi>C</mi><msup><mrow><mo>‖</mo><msub><mi>e</mi><mi>k</mi></msub><mo>‖</mo></mrow><mn>2</mn></msup></math></div><div class="equation-tag">(22.2)</div></div>
+<p>所以<strong>二次收敛在多变量下原样成立</strong>：只要 <code>J(x*)</code> 非奇异、<code>F</code> 足够光滑、初值落在吸引域内，误差范数每步平方下降，有效位数翻倍。常数 <code>C</code> 由 <code>J(x*)⁻¹</code> 与二阶偏导的大小共同决定——这也预告了下一节的隐患：<code>J</code> 越接近奇异，<code>C</code> 越大，收敛越脆。</p>
+<figure><img src="../assets/svg/22-jacobian-linearization.svg" alt="两条零水平集曲线在根处相交；在 x₀=(2,1) 处把两个分量分别线性化，得到两条平行于切线的偏移直线，其交点即牛顿步 x₁=(1.625, 1.25)"><figcaption>图 1 · 牛顿步的几何。青线 <code>f₁=x²+y²−4=0</code>、紫线 <code>f₂=x²−y²−1=0</code>，解为 <code>x*≈(1.5811, 1.2247)</code>。从 <code>x₀=(2,1)</code> 出发，两个线性化方程 <code>2x+y=4.5</code>、<code>2x−y=2</code> 相交于 <code>x₁=(1.625, 1.25)</code>。这些直线并不经过 <code>x₀</code>，而是被 <code>F(x₀)</code> 平移过的切线——正是“解 <code>Js=−F</code>”的几何含义；迭代值为真实计算结果。</figcaption></figure>
+</section>
+<section id="jacobian" aria-labelledby="jacobian-heading">
+<h2 id="jacobian-heading">03 · 雅可比矩阵的两条路</h2>
+<p>每步都要 <code>J(x_k)</code>。两条路：<strong>解析雅可比</strong>——手推或用符号/自动微分生成偏导表达式，精度最高、收敛性最好；<strong>有限差分</strong>——用差商逐列近似。后者无需解析导数，但每列一次额外函数求值，共 n 次。</p>
+<div class="math-equation" role="group" aria-label="公式 22.3"><div class="math-scroll" role="region" tabindex="0" aria-label="有限差分近似偏导：第j列用扰动后的函数值减原值除以步长，必要时可横向滚动"><math display="block" aria-label="偏导近似：J的第i行第j列约等于f的i在x加h乘e_j处的值减f的i在x处的值除以h"><msub><mrow><mo>[</mo><mi>J</mi><mo>]</mo></mrow><mrow><mi>i</mi><mi>j</mi></mrow></msub><mo>≈</mo><mfrac><mrow><msub><mi>f</mi><mi>i</mi></msub><mo>(</mo><mi>x</mi><mo>+</mo><mi>h</mi><msub><mi>e</mi><mi>j</mi></msub><mo>)</mo><mo>−</mo><msub><mi>f</mi><mi>i</mi></msub><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mi>h</mi></mfrac></math></div><div class="equation-tag">(22.3)</div></div>
+<p>这里有一个容易被记混的陷阱：有限差分的步长 <code>h</code> <strong>不是越小越好</strong>。前向差分的截断误差是 <code>O(h)</code>，而相减 <code>f(x+he_j)−f(x)</code> 的舍入误差约为 <code>ε_machine·|f|/h</code>；两者相加在 <code>h≈√ε_machine·max(1,|x_j|)</code> 处取到最优。取 <code>h=10⁻¹⁶</code> 时舍入误差反而淹没结果——这与第 13 章数值微分的结论完全一致。</p>
+<aside class="callout"><p><strong>不要忽略非对角项：</strong>把雅可比近似成对角阵，等于宣称“各方程互不耦合”。若变量之间本有强耦合（如图 1 的 <code>f₁</code>、<code>f₂</code> 同时含 <code>x</code> 与 <code>y</code>），这会把系统的结构信息丢掉，迭代可能直接发散。雅可比里的每一个非零元都是耦合证据，不能因为“看着小”就删。</p></aside>
+<p>代价对比：解析雅可比只需 n² 个偏导（往往有稀疏结构可利用），有限差分则需要 n 次完整函数评估；而解线性系统 <code>J s=−F</code> 本身需要 <code>O(n³)</code> 次运算（稠密情形）。当 <code>n</code> 很大时，<code>O(n³)</code> 成为主要瓶颈，这正是拟牛顿法的出发点。</p>
+</section>
+<section id="quasi" aria-labelledby="quasi-heading">
+<h2 id="quasi-heading">04 · 拟牛顿与 Broyden</h2>
+<p>雅可比每步重算并分解太贵。拟牛顿法换一个思路：<strong>保留一个近似雅可比，用低秩更新逐步修正它</strong>，而不重算。记 <code>s=x_{k+1}−x_k</code>、<code>y=F(x_{k+1})−F(x_k)</code>。要求新矩阵满足割线条件 <code>J_{k+1}s=y</code>，这是多维版“用差商代替导数”。</p>
+<div class="math-equation" role="group" aria-label="公式 22.4"><div class="math-scroll" role="region" tabindex="0" aria-label="Broyden 更新：新雅可比等于旧雅可比加上一个秩一修正项，必要时可横向滚动"><math display="block" aria-label="Broyden更新：J的k加1等于J的k加上y减J的k乘s，乘以s转置除以s转置s"><msub><mi>J</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>J</mi><mi>k</mi></msub><mo>+</mo><mfrac><mrow><mo>(</mo><mi>y</mi><mo>−</mo><msub><mi>J</mi><mi>k</mi></msub><mi>s</mi><mo>)</mo><msup><mi>s</mi><mi>T</mi></msup></mrow><mrow><msup><mi>s</mi><mi>T</mi></msup><mi>s</mi></mrow></mfrac></math></div><div class="equation-tag">(22.4)</div></div>
+<p>在所有满足 <code>J_{k+1}s=y</code> 的矩阵中，它离 <code>J_k</code> 最近（Frobenius 范数意义下）——所以这叫“最小改变”更新。更妙的技巧是直接更新<strong>近似逆</strong> <code>H_k≈J_k⁻¹</code>，用 Sherman–Morrison 公式：</p>
+<div class="math-equation" role="group" aria-label="公式 22.5"><div class="math-scroll" role="region" tabindex="0" aria-label="Sherman-Morrison 逆更新：新逆等于旧逆加上与s和H y相关的秩一修正，必要时可横向滚动"><math display="block" aria-label="逆更新：H的k加1等于H的k加上s减H的k y乘以s转置H的k除以s转置H的k y"><msub><mi>H</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>H</mi><mi>k</mi></msub><mo>+</mo><mfrac><mrow><mo>(</mo><mi>s</mi><mo>−</mo><msub><mi>H</mi><mi>k</mi></msub><mi>y</mi><mo>)</mo><msup><mi>s</mi><mi>T</mi></msup><msub><mi>H</mi><mi>k</mi></msub></mrow><mrow><msup><mi>s</mi><mi>T</mi></msup><msub><mi>H</mi><mi>k</mi></msub><mi>y</mi></mrow></mfrac></math></div><div class="equation-tag">(22.5)</div></div>
+<p>于是每步只用 <code>O(n²)</code> 次向量/矩阵运算得到牛顿方向 <code>s=−H_kF(x_k)</code>，省掉了 <code>O(n³)</code> 的分解。代价是<strong>收敛变慢</strong>：Broyden 法一般只保证<strong>超线性</strong>收敛，而不是二次。常见分析给出的阶约为黄金分割比 <code>p≈1.618</code>（或写作超线性）——它以每步更便宜换取每步进步更少，见图 2。</p>
+<figure><img src="../assets/svg/22-newton-vs-broyden.svg" alt="对数坐标下两条误差曲线：牛顿法每步近似平方下降，4 步到 1e-12；Broyden 法超线性下降，约 7 步到 1e-12"><figcaption>图 2 · 同一方程组 <code>F(x)=0</code>、同一起点 <code>x₀=(2,1)</code>、初始 <code>H=J(x₀)⁻¹</code> 下的误差范数。牛顿法（青）：<code>4.8e−1→5.1e−2→6.4e−4→1.1e−7→3.8e−15</code>，位数约翻倍；Broyden（橙）：<code>4.8e−1→5.1e−2→1.0e−2→1.2e−3→1.4e−5→2.4e−8→2.6e−11→2.4e−14</code>。数据为本文教学演示的真实迭代值。</figcaption></figure>
+</section>
+<section id="global" aria-labelledby="global-heading">
+<h2 id="global-heading">05 · 失败边界与全局化</h2>
+<p>多变量牛顿法继承了一维版的全部脾气，而且更严重：<code>J(x_k)</code> 可能<strong>奇异或接近奇异</strong>，此时 <code>Js=−F</code> 无解或步长巨大；远处线性化可能把迭代带到更远的地方。常见失败模式：</p>
+<div class="table-scroll"><table>
+<tr><th>场景</th><th>原因</th><th>表现</th><th>对策</th></tr>
+<tr><td><code>J</code> 奇异或病态</td><td>零点处雅可比退化</td><td>线性解溢出 / 步长爆炸</td><td>阻尼 + 信赖域；或拟牛顿</td></tr>
+<tr><td>初值太差</td><td>线性化与实际不符</td><td>振荡 / 发散</td><td>线搜索、信赖域、延拓法</td></tr>
+<tr><td>变量尺度悬殊</td><td>列尺度差几个量级</td><td>条件数大，步长偏向小尺度变量</td><td>先做变量缩放/均衡</td></tr>
+<tr><td>忽略非对角项</td><td>丢失耦合信息</td><td>残差不降反升</td><td>用自动微分/符号计算得完整 <code>J</code></td></tr>
+</table></div>
+<p><strong>全局化</strong>就是给牛顿方向套上“安全绳”，保证每步残差不增：</p>
+<ul>
+<li><strong>线搜索：</strong>沿牛顿方向 <code>s</code> 取步长 <code>α</code>（如 Armijo 回溯），使 <code>‖F(x_k+αs)‖</code> 充分下降；牛顿方向在非奇异处是下降方向，所以这通常可行。</li>
+<li><strong>信赖域：</strong>在当前点周围限定一个区域，在区内极小化线性/二次模型，根据实际下降与预测下降的比例放大或缩小区域。它能处理雅可比接近奇异的情形，比线搜索更鲁棒。</li>
+<li><strong>延拓（同伦）法：</strong>构造 <code>H(x,t)=(1−t)F₀(x)+tF(x)=0</code>，从有显式解的 <code>F₀</code>（如 <code>F₀(x)=x−a</code>）出发，让 <code>t:0→1</code> 缓慢变化，每一步用小步长的解做下一步初值。适合初值极难获取的高度非线性问题。</li>
+</ul>
+<aside class="callout"><p><strong>与上一章的分工：</strong>二分法的可靠性来自问题的<strong>拓扑</strong>（介值定理），多变量下它对应的是“先找到包住根的区域”，并不好找；牛顿法的速度来自<strong>解析性</strong>（<code>J</code> 非奇异、二阶导有界）。实用策略通常是：延拓法/网格搜索先给好初值，再用阻尼牛顿或信赖域收尾，保证“每一步都不后悔”。</p></aside>
+</section>
+<section id="experiment" aria-labelledby="experiment-heading">
+<h2 id="experiment-heading">06 · 实验与选型</h2>
+<p>用方程组 <code>x²+y²=4</code>、<code>x²−y²=1</code>（根 <code>x*≈(1.5811, 1.2247)</code>），从 <code>x₀=(2,1)</code> 出发，对比“解析雅可比 + 牛顿步”与“有限差分雅可比”，看误差如何下降：</p>
+<div class="demo" data-lab="newton-system"><label for="ns-method">选择雅可比来源，观察收敛行为</label><select id="ns-method" data-input><option value="analytic">解析雅可比</option><option value="fd">有限差分雅可比</option><option value="diag">只看对角项（错误）</option></select><output data-output aria-live="polite">迭代结果将在此显示。</output></div>
+<p><strong>失败边界（可验证）：</strong>第一，<code>J(x*)</code> 必须非奇异，否则牛顿步无定义；第二，<code>x₀</code> 必须落在吸引域内；第三，把雅可比近似为对角阵会丢掉交叉耦合，迭代可能直接不降。下面的断言把这三件事变成可重跑的实验：</p>
+<pre><code>import numpy as np
 
-        <h1>第22章 非线性方程组Newton法</h1>
+F = lambda x: np.array([x[0]**2 + x[1]**2 - 4.0,
+                        x[0]**2 - x[1]**2 - 1.0])
+J = lambda x: np.array([[2*x[0],  2*x[1]],
+                        [2*x[0], -2*x[1]]])
+root = np.array([np.sqrt(2.5), np.sqrt(1.5)])   # x* ≈ (1.5811, 1.2247)
 
-        <p>大家好，我是你们的讲师。今天我们终于要讲一个真正在工程一线"大放异彩"的方法——<strong>非线性方程组的Newton法</strong>。</p>
+def newton(x0, jac=J, tol=1e-12, nmax=40):
+    x = np.array(x0, float)
+    for k in range(1, nmax+1):
+        s = np.linalg.solve(jac(x), -F(x))     # J s = -F
+        x = x + s
+        if np.linalg.norm(x - root) &lt; tol:
+            return x, k
+    raise RuntimeError("未收敛")
 
-        <p>为什么说"真正"呢？因为单变量的非线性方程求根虽然常见，但在实际工程中，更多的场景是求解<strong>系统</strong>。比如：电路仿真中的节点电压由成百上千个非线性方程决定；化工过程模拟中的反应平衡条件是一个大型非线性系统；有限元分析中的接触问题的求解也是非线性方程组。可以说，"非线性"才是工程世界的常态，"线性"只是一个美好的近似。</p>
+def fd_jac(x, h=1e-8):
+    n = len(x); Jm = np.zeros((n, n))
+    for j in range(n):
+        xp = x.copy(); xp[j] += h
+        Jm[:, j] = (F(xp) - F(x)) / h
+    return Jm
 
-        <h2>22.1 多变量Newton法</h2>
+xN, kN = newton([2.0, 1.0])            # 解析雅可比
+assert np.allclose(xN, root, atol=1e-12) and kN &lt;= 6
 
-        <p>我们从单变量推广到多变量。设F: ℝⁿ → ℝⁿ是一个向量值函数：</p>
+xF, kF = newton([2.0, 1.0], jac=fd_jac)
+assert np.allclose(xF, root, atol=1e-7)   # 有限差分误差略大，仍收敛
 
-        <p style="text-align:center">F(x) = [f₁(x₁, x₂, ..., xₙ), f₂(x₁, x₂, ..., xₙ), ..., fₙ(x₁, x₂, ..., xₙ)]<sup>T</sup></p>
-
-        <p>我们要求解F(x) = 0。和一维情况一样，我们对F进行Taylor展开，取线性部分：</p>
-
-        <p style="text-align:center">F(x) ≈ F(x<sub>k</sub>) + J<sub>F</sub>(x<sub>k</sub>) · (x - x<sub>k</sub>)</p>
-
-        <p>其中J<sub>F</sub>是F的<strong>Jacobian矩阵</strong>（雅可比矩阵），它是一个n×n矩阵，其(i,j)元素为∂fᵢ/∂xⱼ。令上述近似为零，得到多变量Newton迭代公式：</p>
-
-        <p style="text-align:center">x<sub>k+1</sub> = x<sub>k</sub> - J<sub>F</sub>(x<sub>k</sub>)⁻¹ · F(x<sub>k</sub>)</p>
-
-        <p>在实际计算中，我们不会显式求逆矩阵，而是<strong>求解线性方程组</strong>：</p>
-
-        <p style="text-align:center">J<sub>F</sub>(x<sub>k</sub>) · s = -F(x<sub>k</sub>) &rArr; x<sub>k+1</sub> = x<sub>k</sub> + s</p>
-
-        <p>这里s = -J⁻¹F称为<strong>Newton步</strong>。和一维情况一样，在适当的条件下（F足够光滑、J(x<sup>*</sup>)非奇异、初始猜测足够好），多变量Newton法也保持<strong>二次收敛</strong>。</p>
-
-        <div class="tip">
-            <p><strong>多变量Newton法的几何解释</strong></p>
-            <p>在一维情况下，我们"沿着切线走到x轴"。在多维情况下，我们在当前点用一个线性映射J<sub>F</sub>(x<sub>k</sub>)近似F，然后找到使这个线性映射为零的点。从流形的角度看，这是在每一步用<strong>切空间</strong>上的线性化来逼近原函数的零流形。这种"以直代曲"的思路是整个数值分析中最深刻、最强大的思想之一。</p>
-        </div>
-
-        <h2>22.2 Jacobian矩阵的计算</h2>
-
-        <p>多变量Newton法每步需要做两件事：计算Jacobian矩阵J(x<sub>k</sub>)，以及求解一个n×n线性系统J·s = -F。计算J有两种主要方式。</p>
-
-        <p><strong>解析Jacobian</strong>：当F的表达式已知且导数可求时，手动推导或借助符号计算（如SymPy）生成解析表达式。这是最精确的方式，收敛性最好。但缺点是对于复杂系统，偏导数的推导极易出错。</p>
-
-        <p><strong>有限差分近似</strong>：当解析Jacobian不可得时，用差商近似：</p>
-
-        <p style="text-align:center">∂fᵢ/∂xⱼ ≈ (fᵢ(x + h·eⱼ) - fᵢ(x)) / h</p>
-
-        <p>其中eⱼ是第j个单位向量。这种方法需要额外计算n次函数值（如果采用前向差分），精度受h的选择影响，通常选择h = √ε<sub>machine</sub> · max(1, |xⱼ|)。</p>
-
-        <pre><code>import numpy as np
-
-def multivariate_newton(F, J, x0, tol=1e-12, max_iter=100):
-    """
-    多变量Newton法求解 F(x) = 0
-    F: 函数句柄，输入x输出n维向量
-    J: Jacobian函数句柄，输入x输出n×n矩阵。如果为None，使用有限差分
-    """
-    x = np.array(x0, dtype=float)
-    n = len(x)
-
-    for k in range(max_iter):
-        Fx = F(x)
-        if np.linalg.norm(Fx) &lt; tol:
-            return x, k + 1
-
-        if J is not None:
-            Jx = J(x)
-        else:
-            # 有限差分近似Jacobian
-            h = 1e-8
-            Jx = np.zeros((n, n))
-            for j in range(n):
-                x_plus = x.copy()
-                x_plus[j] += h
-                Jx[:, j] = (F(x_plus) - Fx) / h
-
-        # 求解线性系统 J s = -F
-        s = np.linalg.solve(Jx, -Fx)
-
-        # 阻尼Newton法：自适应步长
-        alpha = 1.0
-        while np.linalg.norm(F(x + alpha * s)) &gt;= np.linalg.norm(Fx) and alpha &gt; 1e-10:
-            alpha *= 0.5
-        x = x + alpha * s
-
-        if np.linalg.norm(s) &lt; tol:
-            return x, k + 1
-
-    raise RuntimeError(f"超过最大迭代次数 {max_iter}")
-
-
-# 示例：求解方程组
-# x^2 + y^2 = 4
-# x^2 - y^2 = 1
-def F_example(x):
-    return np.array([
-        x[0]**2 + x[1]**2 - 4,
-        x[0]**2 - x[1]**2 - 1
-    ])
-
-def J_example(x):
-    return np.array([
-        [2*x[0], 2*x[1]],
-        [2*x[0], -2*x[1]]
-    ])
-
-# 调用
-# sol, iters = multivariate_newton(F_example, J_example, [2.0, 1.0])
-# print(f"解: {sol}, 迭代次数: {iters}")</code></pre>
-
-        <div class="warning">
-            <p><strong>踩坑故事：漏掉Jacobian非对角项造成的灾难</strong></p>
-            <p>我在做化学反应网络模拟时，需要求解几十个非线性方程组成的系统。一开始图省事，我认为"各个变量之间耦合很弱"，把Jacobian的非对角元素全部设为零，只保留对角线上的偏导数。结果迭代完全不收敛——残差不但不减小，反而一路上升到无穷大。我花了两天时间调试，以为代码有bug，直到重新审视问题才发现：反应网络中各组分浓度之间通过质量作用定律存在强耦合，忽略这些耦合项相当于完全抛弃了系统结构信息。这个故事提醒我们：Jacobian矩阵中<strong>每个非零元素都携带了变量之间相互作用的信息</strong>，在构建Jacobian时绝不能走捷径。正确的做法是先用自动微分或符号计算工具生成精确的Jacobian，然后再根据稀疏结构做优化。</p>
-        </div>
-
-        <h2>22.3 拟Newton法(Broyden)</h2>
-
-        <p>多变量Newton法虽然收敛快，但每步的计算成本很高：计算Jacobian需要O(n²)次偏导数（或n次函数评估），求解线性系统需要O(n³)次运算。当n很大时（比如n &gt; 1000），这个代价变得难以承受。</p>
-
-        <p><strong>Broyden方法</strong>（拟Newton法的一种）巧妙地解决了这个问题。它的想法是：不每一步都重新计算Jacobian，而是用一个<strong>低秩更新</strong>来近似Jacobian的变化：</p>
-
-        <p style="text-align:center">J<sub>k+1</sub> = J<sub>k</sub> + (y - J<sub>k</sub>s) · s<sup>T</sup> / (s<sup>T</sup>s)</p>
-
-        <p>其中s = x<sub>k+1</sub> - x<sub>k</sub>，y = F(x<sub>k+1</sub>) - F(x<sub>k</sub>)。这个更新的含义是：使近似Jacobian满足<strong>割线条件</strong>J<sub>k+1</sub>·s = y，并且在所有满足割线条件的矩阵中，J<sub>k+1</sub>是改变最小的那个（在Frobenius范数意义下）。</p>
-
-        <div class="highlight">
-            <p><strong>Broyden方法的效率</strong></p>
-            <p>更棒的是，我们可以用Sherman-Morrison公式直接更新Jacobian的逆：</p>
-            <p style="text-align:center">H<sub>k+1</sub> = H<sub>k</sub> + (s - H<sub>k</sub>y) · s<sup>T</sup>H<sub>k</sub> / (s<sup>T</sup>H<sub>k</sub>y)</p>
-            <p>其中H<sub>k</sub> = J<sub>k</sub>⁻¹的近似。这样一来，每步只需要O(n²)的向量更新操作——比Newton法的O(n³)快一个数量级！</p>
-        </div>
-
-        <pre><code>def broyden(F, x0, tol=1e-12, max_iter=200):
-    """
-    Broyden拟Newton法求解 F(x) = 0
-    使用Sherman-Morrison公式更新Jacobian的逆
-    """
-    x = np.array(x0, dtype=float)
-    n = len(x)
-    Fx = F(x)
-
-    # 初始Jacobian用有限差分或单位矩阵
-    H = np.eye(n)  # 近似 J^{-1}
-
-    for k in range(max_iter):
-        if np.linalg.norm(Fx) &lt; tol:
-            return x, k + 1
-
-        s = -H @ Fx        # Newton步
-        x_new = x + s
-        F_new = F(x_new)
-        y = F_new - Fx
-
-        # Sherman-Morrison更新 H = H + (s - H y) s^T H / (s^T H y)
-        denom = s @ (H @ y)
-        if abs(denom) &gt; 1e-15:
-            H = H + np.outer(s - H @ y, s @ H) / denom
-
-        x = x_new
-        Fx = F_new
-
-    return x, max_iter</code></pre>
-
-        <div class="tip">
-            <p><strong>故事：CFD求解器中的Broyden法</strong></p>
-            <p>我参与过一个计算流体力学(CFD)项目，求解Navier-Stokes方程的离散化系统，自由度约5万。使用标准Newton法时，每步构建和分解Jacobian矩阵需要约30秒，总共需要约15步收敛——总耗时约7.5分钟。对于稳态计算这还可以接受，但设计参数扫描需要跑几百个工况，时间就变得无法忍受了。换用Broyden方法后：初始几步用有限差分构建精确Jacobian（花费2次函数评估），之后只做低秩更新。每步的时间从30秒降至约0.5秒（主要是函数评估的时间），收敛在约25步内完成。总耗时从7.5分钟降至约20秒——<strong>节省了90%以上的Jacobian计算时间</strong>！</p>
-        </div>
-
-        <h2>22.4 实际求解策略</h2>
-
-        <p>在现实中，非线性方程组常常高度病态、变量尺度差异巨大、或者初始猜测难以获得。这就需要一些更高级的策略。</p>
-
-        <p><strong>延拓法（Homotopy Method）</strong>：将一个容易求解的问题逐渐变形为目标问题。构造一条路径：</p>
-
-        <p style="text-align:center">H(x, t) = (1-t)F₀(x) + tF(x) = 0，t ∈ [0, 1]</p>
-
-        <p>其中F₀(x) = x - a（或另一个有显式解的问题）。从t=0开始，沿着参数t = 0 → 1逐步追踪解曲线。每一步t的变化量Δ都很小，所以当前解可以作为下一步Newton法的好初值。延拓法特别适合那些Newton法对初值极其敏感的问题。</p>
-
-        <p><strong>全局化策略</strong>：为Newton法添加全局收敛保障。</p>
-        <ul>
-            <li><strong>线搜索(Line Search)</strong>：在Newton方向s上，根据Armijo准则或Wolfe条件选择步长α，保证函数值（或残差范数）充分下降。</li>
-            <li><strong>信赖域(Trust Region)</strong>：在当前点周围定义一个"信赖区域"，在该区域内极小化二次模型。如果模型预测与实际下降一致性好，扩大区域；否则缩小。这比线搜索更鲁棒，能处理Jacobian奇异的情况。</li>
-        </ul>
-
-        <table>
-            <tr><th>方法</th><th>每步计算量</th><th>收敛阶</th><th>对初值敏感度</th><th>适用场景</th></tr>
-            <tr><td>Newton法</td><td>O(n³)</td><td>二次</td><td>高</td><td>n较小（&lt;1000），初值好</td></tr>
-            <tr><td>Broyden拟Newton法</td><td>O(n²)</td><td>超线性（p≈1+√2）</td><td>中等</td><td>n中等，Jacobian计算贵</td></tr>
-            <tr><td>延拓法+Newton</td><td>每步O(n³) × 步数</td><td>二次（每段）</td><td>低</td><td>高度非线性，初值难获取</td></tr>
-            <tr><td>scipy.optimize.root</td><td>见具体方法</td><td>见具体方法</td><td>见具体方法</td><td>快速原型开发</td></tr>
-        </table>
-
-        <div class="highlight">
-            <p><strong>工具箱推荐：SciPy的root函数</strong></p>
-            <p>在实际工程中，我很少自己手写多变量Newton法，更常用的策略是利用SciPy的<code>scipy.optimize.root</code>函数。它提供了多种方法选项：'hybr'（改进的Powell混合法，类似MINPACK的hybrd，默认方法），'lm'（Levenberg-Marquardt），'broyden1'/'broyden2'等。对于大部分实际工程问题，默认的'hybr'方法就非常可靠。但如果需要调整求解策略，理解这些方法背后的原理（即我们本章讲的内容）至关重要——没有对原理的深入理解，你连参数都不知道该怎么调。</p>
-        </div>
-
-        <p>最后，我想强调一个重要的观点：<strong>理解问题结构远重要于选择求解器</strong>。同样一个非线性方程组，如果变量之间存在天然的层次结构（比如有些变量是"快变量"，有些是"慢变量"），采用分块Newton法或Gauss-Seidel型迭代往往比直接对所有变量同时Newton迭代更有效。这也是为什么实际工程中，数值方法永远需要与领域知识相结合。</p>
-
-        <p>到此为止，关于非线性方程（组）求根的讨论就结束了。我们从一维的二分法、不动点迭代讲到了多维的Newton法和Broyden法，从线性收敛讲到了二次收敛，从简单实用讲到了大规模高效——希望这一路走来，大家对"如何让计算机求解非线性问题"有了系统和深入的理解。</p>
-
-        <p>下一章我们将开启一个全新的主题——<strong>矩阵特征值计算</strong>。如果说线性方程组是"Ax=b，求x"，那么特征值问题就是"Ax=λx，求λ"。后者的难度和丰富程度远超前者，是数值分析中最优雅、最具美感的领域之一。我们第23章见！</p>
-
-        <div class="footer-nav">
-            <a href="21.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="23.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
+# 错误做法：只保留对角线，丢失非对角耦合
+Jd = lambda x: np.diag(np.diag(J(x)))
+try:
+    newton([2.0, 1.0], jac=Jd)
+    diag_ok = True
+except RuntimeError:
+    diag_ok = False
+assert diag_ok is False                   # 对角近似在吸引域外/不收敛
+print("newton", kN, "| fd", kF, "| diag converged?", diag_ok)</code></pre>
+<p>这段代码同时验证了三件事：解析雅可比下 4 步达 <code>10⁻¹²</code>（二次收敛）、有限差分雅可比同样收敛但精度受 <code>h</code> 限制、丢掉非对角项会导致迭代失败。<code>scipy.optimize.root</code> 的 <code>hybr</code>、<code>lm</code>、<code>broyden1</code> 等后端就是我们这一章讲的方法的封装。</p>
+<div class="table-scroll"><table>
+<tr><th>方法</th><th>每步计算</th><th>收敛阶</th><th>适用场景</th></tr>
+<tr><td>牛顿法</td><td><code>J</code> + <code>O(n³)</code> 线性解</td><td>二次</td><td>n 不大、解析/自动微分可得</td></tr>
+<tr><td>Broyden 拟牛顿</td><td>一次 <code>F</code> + <code>O(n²)</code> 更新</td><td>超线性（≈1.618）</td><td>n 中等、雅可比昂贵</td></tr>
+<tr><td>延拓法 + 阻尼牛顿</td><td>多步牛顿</td><td>每段二次</td><td>高度非线性、初值难获取</td></tr>
+</table></div>
+<aside class="callout"><p><strong>选型判断：</strong>雅可比能解析或自动微分得到、且初值可靠 → 牛顿法或阻尼牛顿；雅可比贵或不可得 → Broyden；初值完全不知道 → 先用延拓法或网格搜索给初值，再收尾。文中步数与误差为教学演示，实际取决于容差、缩放与问题的条件数。</p></aside>
+</section>
+<section id="references" aria-labelledby="references-heading">
+<h2 id="references-heading">原始资料与延伸阅读</h2>
+<p>本章将已知结论与本文独立构造的数值示例区分开：二次收敛、Broyden 超线性及其约 <code>1.618</code> 的阶为理论结果；图 1、图 2 与实验中的迭代值和步数均为本文教学演示（已简化）。</p>
+<ol class="sources">
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.root.html">SciPy · scipy.optimize.root</a>：<code>hybr</code>、<code>lm</code>、<code>broyden1/2</code> 等非线性方程组求解器的统一接口与参数。</li>
+<li><a href="https://doi.org/10.1090/S0025-5718-1965-0198670-6">C. G. Broyden, <em>A class of methods for solving nonlinear simultaneous equations</em></a>, Math. Comp. 19 (1965) 577–593。割线条件与秩一最小改变更新。</li>
+<li><a href="https://link.springer.com/book/10.1007/978-3-642-23899-4">P. Deuflhard, <em>Newton Methods for Nonlinear Problems</em></a>, Springer, 2011（doi:10.1007/978-3-642-23899-4）。仿射不变收敛理论与阻尼/信赖域全局化。</li>
+<li><a href="https://nhigham.com/accuracy-and-stability-of-numerical-algorithms/">Nicholas J. Higham, <em>Accuracy and Stability of Numerical Algorithms</em></a>, SIAM 第二版, 2002。线性系统求解的误差与条件数。</li>
+</ol>
+</section>
+<nav class="chapter-bottom" aria-label="前后章节"><a href="21.html">← 前一章</a><a href="23.html">下一章 →</a></nav>
+</article>
+</main>
+<footer><span>NUMERICAL ANALYSIS · 一份可独立阅读的计算笔记</span><a href="../index.html">返回课程首页</a></footer>
 </body>
 </html>
