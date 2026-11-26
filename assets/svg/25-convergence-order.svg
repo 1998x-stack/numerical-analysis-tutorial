@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t25b t25b-d" width="720" height="340" viewBox="0 0 720 340">
+<title id="t25b">Euler 与 Heun 的全局误差随步长的阶数</title>
+<desc id="t25b-d">双对数坐标下，Euler 误差随步长按斜率 1 下降（一阶），Heun 误差按斜率 2 下降（二阶）</desc>
+<rect width="720" height="340" rx="12" fill="#fffdf9"/>
+<rect x="80" y="80" width="290" height="220" rx="6" fill="#f5faf8" stroke="#d3e2de"/>
+<line x1="80" y1="300" x2="370" y2="300" stroke="#e3ebe8"/><text x="372" y="304" font-size="11" fill="#7c8b93">1e-6</text><line x1="80" y1="245" x2="370" y2="245" stroke="#e3ebe8"/><text x="372" y="249" font-size="11" fill="#7c8b93">1e-5</text><line x1="80" y1="190" x2="370" y2="190" stroke="#e3ebe8"/><text x="372" y="194" font-size="11" fill="#7c8b93">1e-4</text><line x1="80" y1="135" x2="370" y2="135" stroke="#e3ebe8"/><text x="372" y="139" font-size="11" fill="#7c8b93">1e-3</text><line x1="80" y1="80" x2="370" y2="80" stroke="#e3ebe8"/><text x="372" y="84" font-size="11" fill="#7c8b93">1e-2</text>
+<line x1="163" y1="80" x2="163" y2="300" stroke="#e3ebe8"/><text x="153" y="315" font-size="11" fill="#7c8b93">0.025</text><line x1="225" y1="80" x2="225" y2="300" stroke="#e3ebe8"/><text x="215" y="315" font-size="11" fill="#7c8b93">0.05</text><line x1="287" y1="80" x2="287" y2="300" stroke="#e3ebe8"/><text x="277" y="315" font-size="11" fill="#7c8b93">0.1</text><line x1="350" y1="80" x2="350" y2="300" stroke="#e3ebe8"/><text x="340" y="315" font-size="11" fill="#7c8b93">0.2</text>
+<line x1="80" y1="300" x2="370" y2="300" stroke="#9fb1ad" stroke-width="1.4"/>
+<polyline points="349.9,109.1 287.4,124.0 225.0,139.8 162.6,156.0 100.1,172.4" fill="none" stroke="#ce7152" stroke-width="2.4"/>
+<polyline points="349.9,166.6 287.4,201.9 225.0,236.0 162.6,269.6 100.1,302.9" fill="none" stroke="#147f80" stroke-width="2.4"/>
+<text x="400" y="115" font-size="14" font-weight="bold" fill="#1f2d3a">t=5 处全局误差（双对数）</text>
+<text x="400" y="150" font-size="13" fill="#ce7152">■ Euler：斜率 ≈ 1（一阶）</text>
+<text x="400" y="180" font-size="13" fill="#147f80">■ Heun：斜率 ≈ 2（二阶）</text>
+<text x="400" y="218" font-size="13" fill="#3a4a55">h 减半：Euler 误差约减半，</text>
+<text x="400" y="243" font-size="13" fill="#3a4a55">Heun 误差约降到四分之一。</text>
+<text x="80" y="332" font-size="12" fill="#7c8b93">教学示意：y'=−y, y(0)=1；数据为本文计算值</text>
+</svg>

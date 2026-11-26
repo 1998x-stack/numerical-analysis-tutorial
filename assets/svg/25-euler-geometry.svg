@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t25a t25a-d" width="720" height="330" viewBox="0 0 720 330">
+<title id="t25a">向前 Euler 单步的几何：切线近似曲线</title>
+<desc id="t25a-d">从 y(0)=1 出发，切线斜率为 −1，Euler 一步到 (1,0)，而真实解 e⁻¹≈0.368，竖直差距就是局部截断误差</desc>
+<rect width="720" height="330" rx="12" fill="#fffdf9"/>
+<rect x="70" y="70" width="300" height="230" rx="6" fill="#f5faf8" stroke="#d3e2de"/>
+<line x1="70" y1="268.2" x2="370" y2="268.2" stroke="#9fb1ad" stroke-width="1.4"/>
+<line x1="81.5" y1="70" x2="81.5" y2="300" stroke="#9fb1ad" stroke-width="1.4"/>
+<polyline points="70.0,82.2 77.2,87.9 84.4,93.4 91.6,98.8 98.8,104.0 106.1,109.1 113.3,114.0 120.5,118.7 127.7,123.3 134.9,127.8 142.1,132.1 149.3,136.3 156.5,140.3 163.8,144.3 171.0,148.1 178.2,151.8 185.4,155.3 192.6,158.8 199.8,162.2 207.0,165.4 214.2,168.6 221.4,171.7 228.7,174.6 235.9,177.5 243.1,180.3 250.3,183.0 257.5,185.6 264.7,188.2 271.9,190.6 279.1,193.0 286.3,195.3 293.6,197.6 300.8,199.7 308.0,201.8 315.2,203.9 322.4,205.9 329.6,207.8 336.8,209.6 344.0,211.4 351.2,213.2 358.5,214.9" fill="none" stroke="#147f80" stroke-width="2.4"/>
+<polyline points="70.0,82.4 370.0,312.4" fill="none" stroke="#ce7152" stroke-width="1.8" stroke-dasharray="6 4"/>
+<line x1="312.3" y1="268.2" x2="312.3" y2="203.1" stroke="#8a5cc4" stroke-width="2"/>
+<circle cx="81.5" cy="91.2" r="4.5" fill="#1f2d3a"/>
+<circle cx="312.3" cy="268.2" r="4.5" fill="#ce7152"/>
+<circle cx="312.3" cy="203.1" r="4.5" fill="#147f80"/>
+<text x="87.5" y="85.2" font-size="13" fill="#1f2d3a">y₀=1</text>
+<text x="242.3" y="286.2" font-size="13" fill="#ce7152">Euler 点 (h, 1−h)</text>
+<text x="246.3" y="195.1" font-size="13" fill="#147f80">真实 e⁻ʰ</text>
+<text x="320.3" y="236.3" font-size="12" fill="#8a5cc4">LTE=O(h²)</text>
+<text x="400" y="115" font-size="14" font-weight="bold" fill="#1f2d3a">y' = −y, y(0)=1</text>
+<text x="400" y="148" font-size="13" fill="#ce7152">虚线：切线 y = 1 − t</text>
+<text x="400" y="176" font-size="13" fill="#147f80">青线：真实解 y = e⁻ᵗ</text>
+<text x="400" y="212" font-size="13" fill="#3a4a55">Euler 沿切线走一步，丢弃了</text>
+<text x="400" y="237" font-size="13" fill="#3a4a55">曲线的曲率，产生 O(h²) 局部误差。</text>
+<text x="70" y="322" font-size="12" fill="#7c8b93">教学示意：h=1 时差距最大，便于观察</text>
+</svg>

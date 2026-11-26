@@ -1,0 +1,30 @@
+{
+  "chapter": "25",
+  "sources": [
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html",
+      "claims": [
+        "RK45/BDF/Radau adaptive IVP solvers with error control and tolerances"
+      ]
+    },
+    {
+      "url": "https://doi.org/10.1007/978-3-540-78862-1",
+      "claims": [
+        "Order, consistency and stability of IVP methods (Hairer-Norsett-Wanner)"
+      ]
+    },
+    {
+      "url": "https://nhigham.com/accuracy-and-stability-of-numerical-algorithms/",
+      "claims": [
+        "Rounding error accumulation versus truncation error"
+      ]
+    }
+  ],
+  "checks": [
+    "Forward Euler on y'=-y, y(0)=1 at t=5: error 1.58e-3 (h=0.1), 8.17e-4 (h=0.05), 4.15e-4 (h=0.025); observed order ~ 0.98",
+    "Heun on the same problem: error 6.08e-5 (h=0.1), 1.46e-5 (h=0.05), 3.58e-6 (h=0.025); observed order ~ 2.03",
+    "LTE = O(h^2) for forward Euler, global error = O(h); LTEs O(h^{p+1}) -> global O(h^p)",
+    "Forward Euler stability for y'=lambda y requires |1+h*lambda| <= 1, i.e. h <= 2/|lambda|; lambda=-100 -> h <= 0.02",
+    "At h=0.03, |1+h*lambda| = 2 > 1, so forward Euler is unstable"
+  ]
+}
