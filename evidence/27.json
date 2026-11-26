@@ -1,0 +1,33 @@
+{
+  "chapter": "27",
+  "sources": [
+    {
+      "url": "https://doi.org/10.1145/362566.362571",
+      "claims": [
+        "Gear BDF (backward differentiation) methods, 1971"
+      ]
+    },
+    {
+      "url": "https://doi.org/10.1007/978-3-540-78862-1",
+      "claims": [
+        "Stiffness, A-stability, Dahlquist barriers and BDF theory"
+      ]
+    },
+    {
+      "url": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html",
+      "claims": [
+        "BDF and Radau implicit methods for stiff problems"
+      ]
+    }
+  ],
+  "checks": [
+    "Model y1'=-1000 y1 + y2, y2'=-y2: eigenvalues -1000 and -1, stiffness ratio S = 1000",
+    "Test y'=-100y, h=0.05 -> z = h*lambda = -5",
+    "Forward Euler |R(-5)| = |1-5| = 4 > 1: unstable",
+    "Backward Euler |R(-5)| = 1/6 ~ 0.1667: A-stable and L-stable",
+    "Trapezoidal |R(-5)| = |(1-2.5)/(1+2.5)| ~ 0.4286: stable but R -> -1, non-L-stable",
+    "BDF2 |R| = sqrt(13)/13 ~ 0.2774: stable",
+    "Stability functions: Euler 1+z; backward Euler 1/(1-z); trapezoid (1+z/2)(1-z/2)^{-1}",
+    "BDF1 and BDF2 are A-stable; BDF3-BDF6 are only A(alpha)-stable (alpha decreasing with order)"
+  ]
+}
