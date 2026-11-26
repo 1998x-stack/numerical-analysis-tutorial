@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t28a t28a-d" width="720" height="300" viewBox="0 0 720 300">
+<title id="t28a">二维五点差分格式</title>
+<desc id="t28a-d">中心格点权重为 4，上下左右四个邻居权重为 −1，除以 h 平方后近似负拉普拉斯算子；四角为 0</desc>
+<rect width="720" height="300" rx="12" fill="#fffdf9"/>
+<rect x="110" y="70" width="66" height="66" rx="6" fill="#f5faf8" stroke="#c9d6d2"/><text x="145" y="111" font-size="20" text-anchor="middle" fill="#1f2d3a">0</text><rect x="180" y="70" width="66" height="66" rx="6" fill="#e9f4f1" stroke="#c9d6d2"/><text x="215" y="111" font-size="20" text-anchor="middle" fill="#1f2d3a">−1</text><rect x="250" y="70" width="66" height="66" rx="6" fill="#f5faf8" stroke="#c9d6d2"/><text x="285" y="111" font-size="20" text-anchor="middle" fill="#1f2d3a">0</text><rect x="110" y="140" width="66" height="66" rx="6" fill="#e9f4f1" stroke="#c9d6d2"/><text x="145" y="181" font-size="20" text-anchor="middle" fill="#1f2d3a">−1</text><rect x="180" y="140" width="66" height="66" rx="6" fill="#fdeee6" stroke="#c9d6d2"/><text x="215" y="181" font-size="20" text-anchor="middle" fill="#1f2d3a">4</text><rect x="250" y="140" width="66" height="66" rx="6" fill="#e9f4f1" stroke="#c9d6d2"/><text x="285" y="181" font-size="20" text-anchor="middle" fill="#1f2d3a">−1</text><rect x="110" y="210" width="66" height="66" rx="6" fill="#f5faf8" stroke="#c9d6d2"/><text x="145" y="251" font-size="20" text-anchor="middle" fill="#1f2d3a">0</text><rect x="180" y="210" width="66" height="66" rx="6" fill="#e9f4f1" stroke="#c9d6d2"/><text x="215" y="251" font-size="20" text-anchor="middle" fill="#1f2d3a">−1</text><rect x="250" y="210" width="66" height="66" rx="6" fill="#f5faf8" stroke="#c9d6d2"/><text x="285" y="251" font-size="20" text-anchor="middle" fill="#1f2d3a">0</text>
+<text x="340" y="120" font-size="14" font-weight="bold" fill="#1f2d3a">五点格式</text>
+<text x="340" y="152" font-size="13" fill="#3a4a55">−u[i−1,j] − u[i,j−1] + 4u[i,j]</text>
+<text x="340" y="176" font-size="13" fill="#3a4a55">− u[i+1,j] − u[i,j+1], 均除以 h² 后 = f[i,j]</text>
+<text x="340" y="212" font-size="13" fill="#147f80">截断误差 O(h²)：网格加密一倍，误差约降为 1/4</text>
+<text x="340" y="240" font-size="13" fill="#3a4a55">把 N² 个内部点排成向量 ⇒ 稀疏矩阵 A</text>
+<text x="110" y="288" font-size="12" fill="#7c8b93">教学示意：中心点 (i,j) 及其上下左右邻点</text>
+</svg>

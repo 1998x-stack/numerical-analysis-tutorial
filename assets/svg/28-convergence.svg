@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t28b t28b-d" width="720" height="340" viewBox="0 0 720 340">
+<title id="t28b">Poisson 五点格式的收敛阶</title>
+<desc id="t28b-d">双对数坐标下离散 L2 误差随网格 h 下降，斜率约为 2，与五点格式的 O(h²) 理论一致</desc>
+<rect width="720" height="340" rx="12" fill="#fffdf9"/>
+<rect x="80" y="80" width="290" height="220" rx="6" fill="#f5faf8" stroke="#d3e2de"/>
+<line x1="80" y1="300" x2="370" y2="300" stroke="#e3ebe8"/><text x="372" y="304" font-size="11" fill="#7c8b93">1e-5</text><line x1="80" y1="227" x2="370" y2="227" stroke="#e3ebe8"/><text x="372" y="231" font-size="11" fill="#7c8b93">1e-4</text><line x1="80" y1="153" x2="370" y2="153" stroke="#e3ebe8"/><text x="372" y="157" font-size="11" fill="#7c8b93">1e-3</text><line x1="80" y1="80" x2="370" y2="80" stroke="#e3ebe8"/><text x="372" y="84" font-size="11" fill="#7c8b93">1e-2</text>
+<line x1="80" y1="300" x2="370" y2="300" stroke="#9fb1ad" stroke-width="1.4"/>
+<polyline points="355.2,101.4 295.2,142.1 232.7,184.3 168.8,227.5 104.2,271.2" fill="none" stroke="#147f80" stroke-width="2.4"/>
+<polyline points="104.2,271.2 362.5,96.7" fill="none" stroke="#ce7152" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="400" y="115" font-size="14" font-weight="bold" fill="#1f2d3a">离散 L2 误差（双对数）</text>
+<text x="400" y="150" font-size="13" fill="#147f80">■ 实测：N=8→128</text>
+<text x="400" y="178" font-size="13" fill="#ce7152">— 参考斜率 2（O(h²)）</text>
+<text x="400" y="214" font-size="13" fill="#3a4a55">h 减半误差约降为 1/4，</text>
+<text x="400" y="239" font-size="13" fill="#3a4a55">与五点格式理论阶一致。</text>
+<text x="80" y="332" font-size="12" fill="#7c8b93">教学示意：u=sin(πx)sin(πy), f=2π²sin(πx)sin(πy)，本文计算值</text>
+</svg>
