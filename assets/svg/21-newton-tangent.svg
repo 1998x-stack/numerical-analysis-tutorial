@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t21a t21a-d" width="720" height="330" viewBox="0 0 720 330">
+<title id="t21a">牛顿法：切线逐次逼近根，误差每步近似平方</title>
+<desc id="t21a-d">左图画出 f(x)=x²−2 的曲线与在 x₀=2、x₁=1.5 处的两条切线，切线与横轴交点给出下一个迭代点；右图用对数坐标显示误差 0.586→0.086→0.0025→2.1×10⁻⁶→1.6×10⁻¹²，每步有效位数翻倍。</desc>
+<rect width="720" height="330" rx="12" fill="#fffdf9"/>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<text x="30" y="30" font-size="19" font-weight="600" fill="#24424a">切线法：用切线与横轴的交点做下一步</text>
+<text x="30" y="52" font-size="13" fill="#607477">f(x)=x²−2，根 √2≈1.41421356。切线方程 f(xₖ)+f′(xₖ)(x−xₖ)=0 解出 xₖ₊₁。</text>
+<rect x="60" y="70" width="340" height="180" rx="6" fill="#f5faf8" stroke="#d3e2de"/>
+<polyline points="60,233.9 68.5,231.1 77,228.3 85.5,225.4 94,222.5 102.5,219.5 111,216.5 119.5,213.4 128,210.2 136.5,207 145,203.7 153.5,200.4 162,197 170.5,193.6 179,190.1 187.5,186.6 196,183 204.5,179.3 213,175.6 221.5,171.8 230,168 238.5,164.1 247,160.1 255.5,156.1 264,152.1 272.5,148 281,143.8 289.5,139.6 298,135.3 306.5,130.9 315,126.6 323.5,122.1 332,117.6 340.5,113 349,108.4 357.5,103.7 366,99 374.5,94.2 383,89.4 391.5,84.5 400,79.5" fill="none" stroke="#147f80" stroke-width="2.4"/>
+<polyline points="142.3,224 185.3,200 256.8,160 328.4,120 382.1,90" fill="none" stroke="#ce7152" stroke-width="1.8"/>
+<polyline points="120.8,214.5 155.5,200 203.2,180" fill="none" stroke="#c9a227" stroke-width="1.8"/>
+<line x1="60" y1="200" x2="400" y2="200" stroke="#9fb1ad" stroke-width="1.4"/>
+<line x1="70" y1="70" x2="70" y2="250" stroke="#9fb1ad" stroke-width="1.4"/>
+<line x1="154.6" y1="200" x2="154.6" y2="232" stroke="#b9c6c2" stroke-width="1.2" stroke-dasharray="4 3"/>
+<circle cx="364.2" cy="100" r="4.5" fill="#ce7152"/><circle cx="185.3" cy="187.5" r="4.5" fill="#c9a227"/>
+<circle cx="155.4" cy="199.7" r="4.5" fill="#24424a"/><circle cx="154.6" cy="200" r="4" fill="#24424a"/>
+<text x="300" y="96" font-size="14" fill="#ce7152">x₀=2</text>
+<text x="188" y="182" font-size="14" fill="#b08d17">x₁=1.5</text>
+<text x="160" y="216" font-size="14" fill="#24424a">x₂≈1.4167</text>
+<text x="352" y="120" font-size="14" fill="#147f80">y=x²−2</text>
+<text x="150" y="248" font-size="13" fill="#607477">根 √2</text>
+<text x="420" y="52" font-size="13" fill="#607477">误差 |xₖ−√2|（对数纵轴，步数横轴）</text>
+<rect x="430" y="70" width="260" height="180" rx="6" fill="#fff6f0" stroke="#f0d8c8"/>
+<line x1="430" y1="250" x2="690" y2="250" stroke="#9fb1ad" stroke-width="1.4"/>
+<line x1="430" y1="70" x2="430" y2="250" stroke="#9fb1ad" stroke-width="1.4"/>
+<polyline points="430,73.5 495,86 560,109.2 625,155.1 690,247" fill="none" stroke="#ce7152" stroke-width="2.2"/>
+<circle cx="430" cy="73.5" r="3.6" fill="#ce7152"/><circle cx="495" cy="86" r="3.6" fill="#ce7152"/><circle cx="560" cy="109.2" r="3.6" fill="#ce7152"/><circle cx="625" cy="155.1" r="3.6" fill="#ce7152"/><circle cx="690" cy="247" r="3.6" fill="#ce7152"/>
+<text x="436" y="66" font-size="13" fill="#24424a">5.9e-1</text><text x="600" y="60" font-size="13" fill="#607477">10⁰</text>
+<text x="600" y="150" font-size="13" fill="#607477">10⁻⁶</text><text x="596" y="242" font-size="13" fill="#607477">10⁻¹²</text>
+<text x="30" y="292" font-size="13" fill="#607477">误差序列 0.586→0.086→0.0025→2.1×10⁻⁶→1.6×10⁻¹²：下一项约等于上一项的平方，故称二次收敛。</text>
+<text x="30" y="312" font-size="13" fill="#607477">左图切点为真实迭代点；右图纵轴为 log₁₀|误差|，用来说明“有效位数翻倍”，不是拟合曲线。</text>
+</g></svg>

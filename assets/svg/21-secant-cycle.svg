@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t21c t21c-d" width="720" height="330" viewBox="0 0 720 330">
+<title id="t21c">弦截法用两点割线代替切线；牛顿法也可能陷入两点循环</title>
+<desc id="t21c-d">左图在 f(x)=x²−2 上，用经过 x₀=2 与 x₁=1.5 的割线求下一个近似 1.4286，再迭代到 1.4146；右图对 f(x)=x³−2x+2，从 x=0 出发牛顿法跳到 1，再跳回 0，形成 0↔1 的循环而不收敛。</desc>
+<rect width="720" height="330" rx="12" fill="#fffdf9"/>
+<defs><marker id="ar21" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ce7152"/></marker></defs>
+<g font-family="Arial,'PingFang SC',sans-serif">
+<text x="30" y="30" font-size="19" font-weight="600" fill="#24424a">弦截法：不加导数，用割线</text>
+<text x="30" y="52" font-size="13" fill="#607477">用最近两点连线的横截距代替切线；每步只算一次 f，收敛阶 p≈1.618。</text>
+<rect x="60" y="70" width="340" height="180" rx="6" fill="#f5faf8" stroke="#d3e2de"/>
+<polyline points="60,233.9 71.3,230.2 82.7,226.4 94,222.5 105.3,218.5 116.7,214.4 128,210.2 139.3,205.9 150.7,201.5 162,197 173.3,192.4 184.7,187.7 196,183 207.3,178.1 218.7,173.1 230,168 241.3,162.8 252.7,157.5 264,152.1 275.3,146.6 286.7,141 298,135.3 309.3,129.5 320.7,123.6 332,117.6 343.3,111.5 354.7,105.3 366,99 377.3,92.6 388.7,86.1 400,79.5" fill="none" stroke="#147f80" stroke-width="2.4"/>
+<line x1="60" y1="200" x2="400" y2="200" stroke="#9fb1ad" stroke-width="1.4"/>
+<line x1="70" y1="70" x2="70" y2="250" stroke="#9fb1ad" stroke-width="1.4"/>
+<polyline points="364.2,100 185.3,187.5 164.9,200" fill="none" stroke="#ce7152" stroke-width="1.8"/>
+<polyline points="185.3,187.5 159.7,198 154.7,199.9" fill="none" stroke="#c9a227" stroke-width="1.6" stroke-dasharray="5 3"/>
+<circle cx="364.2" cy="100" r="4.5" fill="#ce7152"/><circle cx="185.3" cy="187.5" r="4.5" fill="#ce7152"/>
+<circle cx="164.9" cy="200" r="4" fill="#ce7152"/><circle cx="154.6" cy="200" r="4" fill="#24424a"/>
+<text x="298" y="96" font-size="14" fill="#ce7152">x₀=2</text><text x="188" y="182" font-size="14" fill="#ce7152">x₁=1.5</text>
+<text x="166" y="216" font-size="14" fill="#ce7152">x₂=1.4286</text><text x="140" y="248" font-size="13" fill="#607477">根 √2</text>
+<text x="352" y="120" font-size="14" fill="#147f80">y=x²−2</text>
+<text x="420" y="30" font-size="19" font-weight="600" fill="#24424a">失败边界：两点循环</text>
+<text x="420" y="52" font-size="13" fill="#607477">f(x)=x³−2x+2，从 x=0 出发：0→1→0，永不收敛。</text>
+<rect x="430" y="70" width="260" height="180" rx="6" fill="#fff6f0" stroke="#f0d8c8"/>
+<polyline points="430,91.7 438.7,94.6 447.3,98.1 456,102.1 464.7,106.7 473.3,111.5 482,116.7 490.7,122 499.3,127.4 508,132.8 516.7,138.1 525.3,143.1 534,147.9 542.7,152.3 551.3,156.1 560,159.4 568.7,162 577.3,163.8 586,164.8 594.7,164.8 603.3,163.7 612,161.4 620.7,157.9 629.3,153 638,146.7 646.7,138.8 655.3,129.4 664,118.1 672.7,105.1 681.3,90.1 690,73.1" fill="none" stroke="#147f80" stroke-width="2.4"/>
+<line x1="430" y1="197.1" x2="690" y2="197.1" stroke="#9fb1ad" stroke-width="1.4"/>
+<line x1="440" y1="70" x2="440" y2="250" stroke="#9fb1ad" stroke-width="1.4"/>
+<line x1="480.9" y1="115.9" x2="639.1" y2="214.7" stroke="#ce7152" stroke-width="1.6" marker-end="url(#ar21)"/>
+<line x1="497.8" y1="126.5" x2="610.9" y2="197.1" stroke="#c9a227" stroke-width="1.4" stroke-dasharray="5 3"/>
+<line x1="610.9" y1="161.8" x2="497.8" y2="197.1" stroke="#b08d17" stroke-width="1.6" marker-end="url(#ar21)"/>
+<circle cx="497.8" cy="126.5" r="4.5" fill="#ce7152"/><circle cx="610.9" cy="161.8" r="4.5" fill="#ce7152"/>
+<circle cx="497.8" cy="197.1" r="4" fill="#24424a"/><circle cx="610.9" cy="197.1" r="4" fill="#24424a"/>
+<text x="470" y="122" font-size="14" fill="#ce7152">x=0</text><text x="616" y="158" font-size="14" fill="#ce7152">x=1</text>
+<text x="612" y="216" font-size="14" fill="#ce7152">1</text><text x="466" y="215" font-size="14" fill="#24424a">0</text>
+<text x="500" y="90" font-size="14" fill="#147f80">y=x³−2x+2</text>
+<text x="30" y="292" font-size="13" fill="#607477">左图实线为割线、虚线为后续迭代；右图橙色箭头是一次牛顿跳跃，两点间往复即周期 2。</text>
+<text x="30" y="312" font-size="13" fill="#607477">两图坐标均为真实迭代值；循环的存在说明“收敛”依赖初值，不能无条件承诺。</text>
+</g></svg>

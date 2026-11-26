@@ -1,203 +1,140 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第21章 非线性方程求根(二)</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="牛顿法用切线线性化，在单根附近二次收敛；但导数接近零或初值太差时可能发散甚至陷入周期循环。本文给出收敛阶推导、失败边界，并用弦截法、Müller 法在无导数时折中。">
+<title>第 21 章 · 非线性方程求根（二）：牛顿法、弦截法与收敛阶 | 数值分析</title>
+<link rel="stylesheet" href="../assets/css/article.css">
+<script src="../assets/js/chapter-labs.js" defer></script>
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>📐 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 数值分析概述</a></li>
-            <li><a href="02.html">第2章 误差分析与数值稳定性</a></li>
-            <li><a href="03.html">第3章 插值法基础</a></li>
-            <li><a href="04.html">第4章 Newton插值与均差</a></li>
-            <li><a href="05.html">第5章 Hermite插值与分段插值</a></li>
-            <li><a href="06.html">第6章 三次样条插值</a></li>
-            <li><a href="07.html">第7章 函数逼近基本理论</a></li>
-            <li><a href="08.html">第8章 最佳平方逼近</a></li>
-            <li><a href="09.html">第9章 最小二乘曲线拟合</a></li>
-            <li><a href="10.html">第10章 数值积分基础</a></li>
-            <li><a href="11.html">第11章 复合求积与Romberg外推</a></li>
-            <li><a href="12.html">第12章 Gauss求积公式</a></li>
-            <li><a href="13.html">第13章 数值微分</a></li>
-            <li><a href="14.html">第14章 正交多项式与数值积分</a></li>
-            <li><a href="15.html">第15章 Gauss消去法与LU分解</a></li>
-            <li><a href="16.html">第16章 Cholesky分解与追赶法</a></li>
-            <li><a href="17.html">第17章 向量/矩阵范数与条件数</a></li>
-            <li><a href="18.html">第18章 经典迭代法</a></li>
-            <li><a href="19.html">第19章 Krylov子空间与共轭梯度法</a></li>
-            <li><a href="20.html">第20章 非线性方程求根(一)</a></li>
-            <li><a href="21.html" class="active">第21章 非线性方程求根(二)</a></li>
-            <li><a href="22.html">第22章 非线性方程组Newton法</a></li>
-            <li><a href="23.html">第23章 矩阵特征值计算</a></li>
-            <li><a href="24.html">第24章 QR方法与特征值</a></li>
-            <li><a href="25.html">第25章 常微分方程数值解(一)</a></li>
-            <li><a href="26.html">第26章 常微分方程数值解(二)</a></li>
-            <li><a href="27.html">第27章 刚性方程与线性多步法</a></li>
-            <li><a href="28.html">第28章 综合实战：从算法到代码</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
+<a class="skip" href="#content">跳转正文</a>
+<header class="site-header"><div class="topbar"><a class="brand" href="../index.html"><span>∑</span> NUMERICAL <b>ANALYSIS</b></a><nav aria-label="课程导航"><a href="../index.html#catalog">全部章节</a><a href="https://github.com/1998x-stack/numerical-analysis-tutorial">源码与勘误</a></nav></div></header>
+<main class="article-shell" id="content">
+<aside class="article-toc"><nav aria-label="本章目录"><small>ON THIS PAGE · CH 21</small><ol>
+<li><a href="#problem">01 · 从迭代到牛顿法</a></li>
+<li><a href="#newton">02 · 切线代数的二次收敛</a></li>
+<li><a href="#geometry">03 · 几何意义与收敛条件</a></li>
+<li><a href="#traps">04 · 失败边界与阻尼</a></li>
+<li><a href="#secant">05 · 弦截法与 Müller 法</a></li>
+<li><a href="#experiment">06 · 实验与选型</a></li>
+<li><a href="#references">原始资料</a></li>
+</ol></nav></aside>
+<article class="article-body">
+<nav class="chapter-navline" aria-label="章节导览"><a href="20.html">← 前一章</a><a href="22.html">下一章 →</a></nav>
+<p class="chapter-kicker">CHAPTER 21 · NUMERICAL ANALYSIS</p>
+<h1>非线性方程求根（二）：牛顿法、弦截法与收敛阶</h1>
+<p class="lead">上一章的二分法稳妥却慢、不动点迭代快慢取决于 <code>g′</code>。这一章把不动点迭代选成最好的那个 <code>g</code>：用切线线性化 <code>f</code>，就得到求根的“效率之王”——牛顿法。它会二次收敛，也会被一个坏初值彻底击溃。</p>
+<section id="problem" aria-labelledby="problem-heading">
+<h2 id="problem-heading">01 · 从迭代到牛顿法</h2>
+<p><strong>输入：</strong>连续可微的 <code>f</code> 与一个初值 <code>x₀</code>。<strong>输出：</strong>近似根 <code>x̃</code>，满足 <code>|x̃−x*|≤ε</code>。<strong>假设：</strong><code>f′(x*)≠0</code>（单根）且初值落在吸引域内——这正是本章要划清的安全边界。</p>
+<p>回顾上一章：<code>f(x)=0</code> 可改写为 <code>x=g(x)</code>，迭代 <code>x_{k+1}=g(x_k)</code> 的收敛率由 <code>|g′(x*)|</code> 决定。<strong>只要取 <code>g(x)=x−f(x)/f′(x)</code>，就能让 <code>g′(x*)=0</code></strong>，把线性收敛提升为二次收敛。这条 <code>g</code> 就是牛顿法。</p>
+<aside class="callout"><p><strong>与不动点迭代的关系：</strong>牛顿法不是新东西，而是“把 <code>g′</code> 归零”的特例。这也解释了它为什么快——<code>g′(x*)=0</code> 意味着一阶误差项消失，只剩 <code>e_{k+1}≈½g″(x*)e_k²</code>。代价是每步必须能算 <code>f′</code>，并且 <code>f′(x_k)≠0</code>。</p></aside>
+</section>
+<section id="newton" aria-labelledby="newton-heading">
+<h2 id="newton-heading">02 · 切线代数的二次收敛</h2>
+<p>在当前点 <code>x_k</code> 用一阶泰勒展开线性化 <code>f</code>：<code>f(x)≈f(x_k)+f′(x_k)(x−x_k)</code>。令近似式为零，解出下一个迭代点，就是牛顿迭代公式：</p>
+<div class="math-equation" role="group" aria-label="公式 21.1"><div class="math-scroll" role="region" tabindex="0" aria-label="牛顿迭代：下一项等于当前项减去函数值除以导数，必要时可横向滚动"><math display="block" aria-label="牛顿迭代：x的k加1等于x的k减去f在x的k处的值除以f的一阶导在x的k处的值"><msub><mi>x</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>x</mi><mi>k</mi></msub><mo>−</mo><mfrac><mrow><mi>f</mi><mo>(</mo><msub><mi>x</mi><mi>k</mi></msub><mo>)</mo></mrow><mrow><msup><mi>f</mi><mo>′</mo></msup><mo>(</mo><msub><mi>x</mi><mi>k</mi></msub><mo>)</mo></mrow></mfrac></math></div><div class="equation-tag">(21.1)</div></div>
+<p>把 <code>f(x*)=0</code> 在 <code>x_k</code> 处展开，代入 <code>x*=x_k+e_k</code>：</p>
+<p><code>0 = f(x_k) + f′(x_k)e_k + ½f″(ξ)e_k²</code>。两边除以 <code>f′(x_k)</code>，再与 (21.1) 相减，得到误差递推：</p>
+<div class="math-equation" role="group" aria-label="公式 21.2"><div class="math-scroll" role="region" tabindex="0" aria-label="误差递推：下一项误差等于负的二阶导除以两倍一阶导，再乘当前误差的平方，必要时可横向滚动"><math display="block" aria-label="误差递推：e的k加1等于负的f二阶导除以二倍f一阶导，再乘以e的k的平方"><msub><mi>e</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><mo>−</mo><mfrac><mrow><msup><mi>f</mi><mo>″</mo></msup><mo>(</mo><mi>ξ</mi><mo>)</mo></mrow><mrow><mn>2</mn><msup><mi>f</mi><mo>′</mo></msup><mo>(</mo><msub><mi>x</mi><mi>k</mi></msub><mo>)</mo></mrow></mfrac><msubsup><mi>e</mi><mi>k</mi><mn>2</mn></msubsup></math></div><div class="equation-tag">(21.2)</div></div>
+<p>误差以<strong>平方</strong>出现，这就是二次收敛的根源：只要 <code>|e_k|</code> 小于 1，下一步就小得更多，有效十进制位数大致<strong>每步翻倍</strong>。若 <code>f′(x*)≠0</code>、<code>f″</code> 连续，则存在常数 <code>C</code> 使 <code>|e_{k+1}|≤C|e_k|²</code>，其中 <code>C≈max|f″|/(2min|f′|)</code>。</p>
+<figure><img src="../assets/svg/21-newton-tangent.svg" alt="左图画出抛物线与两条切线，切线与横轴的交点依次为 1.5、1.4167；右图对数坐标显示误差序列从 0.586 降到 1.6e-12，每步位数翻倍"><figcaption>图 1 · 牛顿法的切线几何与二次收敛。左图 <code>f(x)=x²−2</code>，从 <code>x₀=2</code> 出发切线交横轴于 <code>1.5→1.4167</code>；右图误差 <code>0.586→0.086→0.0025→2.1×10⁻⁶→1.6×10⁻¹²</code>，每步位数约翻倍。数据为真实迭代值。</figcaption></figure>
+</section>
+<section id="geometry" aria-labelledby="geometry-heading">
+<h2 id="geometry-heading">03 · 几何意义与收敛条件</h2>
+<p>几何上，牛顿法就是在 <code>(x_k, f(x_k))</code> 处作切线，取切线与横轴的交点作为 <code>x_{k+1}</code>，所以又叫<strong>切线法</strong>。它把“找根”换成“不断重化切线”，每一步都用一次线性模型偷懒。</p>
+<p><strong>局部收敛定理。</strong>若 <code>f</code> 在根 <code>x*</code> 附近 C²、<code>f′(x*)≠0</code>，则存在邻域使得：① <code>x*</code> 是唯一根；② 邻域内任取初值都二次收敛。用不动点视角看，<code>g′(x*)=0</code> 正是二次收敛的充分条件。</p>
+<p><strong>Newton–Kantorovich 定理</strong>把“初值足够近”换成一个可算的判据：在 <code>f′</code> Lipschitz 连续且 <code>f′(x₀)</code> 可逆时，只要初始残差 <code>‖f(x₀)‖</code> 充分小（满足 <code>h = ‖f″‖·‖f(x₀)‖/‖f′(x₀)‖² &lt; ½</code> 形式的条件），迭代就收敛。它<strong>不要求单根</strong>，是一个较强的理论保证；但条件本身仍需 <code>f″</code> 的信息，工程中常用它估初值，而非逐次验证。</p>
+<aside class="callout"><p><strong>与上一章区分开：</strong>二分法的收敛性来自<strong>问题的拓扑</strong>（介值定理），完全不管 <code>f</code> 多光滑；牛顿法的收敛性来自<strong>函数在根附近的解析性</strong>（<code>f′</code> 不为零、<code>f″</code> 有界）。前者稳、后者快，两者不可相互替代。若只想“一定不会错”，先用二分法缩到小括根区间，再交给牛顿法收尾。</p></aside>
+</section>
+<section id="traps" aria-labelledby="traps-heading">
+<h2 id="traps-heading">04 · 失败边界与阻尼</h2>
+<p>牛顿法不是万能的。它在远离根处用切线代替曲线，线性模型可能严重失真；一旦 <code>f′(x_k)≈0</code>，切线接近水平，<code>x_{k+1}</code> 会被抛向远方。下表是四类经典失败模式：</p>
+<div class="table-scroll"><table>
+<tr><th>场景</th><th>原因</th><th>表现</th><th>对策</th></tr>
+<tr><td>初值太差</td><td>远离根处线性化失效</td><td>发散或振荡</td><td>先用二分法/网格搜索给好初值</td></tr>
+<tr><td><code>f′(x_k)≈0</code></td><td>切线近水平，步长爆炸</td><td>单步跳到巨大值</td><td>阻尼牛顿（引入步长 <code>λ</code>）</td></tr>
+<tr><td>重根 <code>f′(x*)=0</code></td><td>二次收敛降为线性</td><td>收敛极慢</td><td>修正牛顿：乘重数 <code>m</code></td></tr>
+<tr><td>周期循环</td><td>两点间往复（见图 2 右）</td><td>永不收敛</td><td>换初值或换方法</td></tr>
+</table></div>
+<p><strong>阻尼牛顿法</strong>给步长加一个因子 <code>λ∈(0,1]</code>，用线性搜索（如 Armijo 准则）保证函数值充分下降：</p>
+<div class="math-equation" role="group" aria-label="公式 21.3"><div class="math-scroll" role="region" tabindex="0" aria-label="阻尼牛顿：下一项等于当前项减去步长因子乘以函数值除以导数，必要时可横向滚动"><math display="block" aria-label="阻尼牛顿：x的k加1等于x的k减去lambda乘以f在x的k处的值除以f一阶导"><msub><mi>x</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>x</mi><mi>k</mi></msub><mo>−</mo><mi>λ</mi><mfrac><mrow><mi>f</mi><mo>(</mo><msub><mi>x</mi><mi>k</mi></msub><mo>)</mo></mrow><mrow><msup><mi>f</mi><mo>′</mo></msup><mo>(</mo><msub><mi>x</mi><mi>k</mi></msub><mo>)</mo></mrow></mfrac><mo>,</mo><mspace width="0.6em"/><mn>0</mn><mo>&lt;</mo><mi>λ</mi><mo>≤</mo><mn>1</mn></math></div><div class="equation-tag">(21.3)</div></div>
+<p>当 <code>λ=1</code> 且当前步带来充分下降时，阻尼牛顿退化为原牛顿法，仍然二次收敛；只有在危险方向上才缩短步长。<strong>重根</strong>是另一个陷阱：<code>f(x)=(x−x*)ᵐ·h(x)</code> 时，修正格式 <code>x_{k+1}=x_k−m·f(x_k)/f′(x_k)</code> 可恢复二次收敛，代价是必须知道重数。</p>
+</section>
+<section id="secant" aria-labelledby="secant-heading">
+<h2 id="secant-heading">05 · 弦截法与 Müller 法</h2>
+<p>牛顿法要求解析导数 <code>f′</code>，而很多实际问题里导数难以写出或代价很高。用最近两点的差商近似导数，就得到<strong>弦截法</strong>：</p>
+<div class="math-equation" role="group" aria-label="公式 21.4"><div class="math-scroll" role="region" tabindex="0" aria-label="弦截法迭代：下一项等于当前项减去函数值乘两点间隔除以两点函数值之差，必要时可横向滚动"><math display="block" aria-label="弦截法：x的k加1等于x的k减去f在x的k处值乘以x的k减x的k减1，再除以f的k减f的k减1"><msub><mi>x</mi><mrow><mi>k</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><msub><mi>x</mi><mi>k</mi></msub><mo>−</mo><msub><mi>f</mi><mi>k</mi></msub><mfrac><mrow><msub><mi>x</mi><mi>k</mi></msub><mo>−</mo><msub><mi>x</mi><mrow><mi>k</mi><mo>−</mo><mn>1</mn></mrow></msub></mrow><mrow><msub><mi>f</mi><mi>k</mi></msub><mo>−</mo><msub><mi>f</mi><mrow><mi>k</mi><mo>−</mo><mn>1</mn></mrow></msub></mrow></mfrac></math></div><div class="equation-tag">(21.4)</div></div>
+<p>几何上是用两点到线的割线代替切线。一个令人惊讶的结果是：它每步只算一次 <code>f</code>，收敛阶却是 <code>p=(1+√5)/2≈1.618</code>（黄金分割比）。这不是拟合，而是误差递推 <code>|e_{k+1}|≈C|e_k|·|e_{k−1}|</code> 的解。</p>
+<figure><img src="../assets/svg/21-secant-cycle.svg" alt="左图在抛物线上用两点割线代替切线，割线截距依次为 1.4286、1.4146；右图对另一函数从 0 出发牛顿法在 0 与 1 之间往复形成周期 2"><figcaption>图 2 · 左：弦截法用割线（实线）代替切线（真实迭代值，<code>x₀=2,x₁=1.5→1.4286→1.4146</code>）。右：失败边界——<code>f(x)=x³−2x+2</code> 从 <code>x=0</code> 出发，牛顿法 <code>0→1→0</code> 陷入周期 2，永不收敛。</figcaption></figure>
+<p><strong>Müller 法</strong>更进一步，用过三点 <code>x_{k−2},x_{k−1},x_k</code> 的二次插值抛物线求根，取靠近当前点的那个根。它同样不需导数，收敛阶约 <code>1.84</code>，而且因二次方程必有两个（可能为复数的）根，<strong>能自然追踪复根</strong>——这是实轴上迭代做不到的。三者对比如下：</p>
+<div class="table-scroll"><table>
+<tr><th>方法</th><th>每步计算</th><th>需要导数</th><th>收敛阶</th><th>可求复根</th></tr>
+<tr><td>牛顿法</td><td><code>f + f′</code></td><td>是</td><td>2</td><td>需复初值</td></tr>
+<tr><td>弦截法</td><td>1 次 <code>f</code></td><td>否</td><td>≈1.618</td><td>否</td></tr>
+<tr><td>Müller 法</td><td>1 次 <code>f</code></td><td>否</td><td>≈1.84</td><td>是</td></tr>
+<tr><td>二分法</td><td>1 次 <code>f</code></td><td>否</td><td>1</td><td>否</td></tr>
+</table></div>
+<aside class="callout"><p><strong>阶的比较要看每步成本：</strong>牛顿法每步需一次导数，阶为 2；弦截法每步一次函数值，阶 1.618。若以“每单位计算量”计效率，弦截法常数甚至常优于牛顿法。但弦截法的收敛阶假定根是<strong>单根</strong>，且初始两点要足够靠近根。</p></aside>
+</section>
+<section id="experiment" aria-labelledby="experiment-heading">
+<h2 id="experiment-heading">06 · 实验与选型</h2>
+<p>用 <code>f(x)=x²−2</code>（根 <code>√2</code>）对比牛顿法、弦截法与阻尼牛顿法达到 <code>10⁻¹²</code> 所需步数。选择方法查看结果：</p>
+<div class="demo" data-lab="newton-root"><label for="nr-method">选择求根方法，观察达到 1e-12 的步数</label><select id="nr-method" data-input><option value="newton">牛顿法</option><option value="secant">弦截法</option><option value="cycle">周期循环（坏初值）</option></select><output data-output aria-live="polite">迭代步数将在此显示。</output></div>
+<pre><code>import math
+f = lambda x: x*x - 2.0
+fp = lambda x: 2.0*x
+root = math.sqrt(2.0)
 
-        <h1>第21章 非线性方程求根(二)</h1>
-
-        <p>大家好，我是你们的讲师。上一章我们学习了二分法和不动点迭代法，它们分别走"稳"和"巧"两个路线。但在实际工程中，当效率成为关键瓶颈时，我们一般会祭出非线性方程求根的"王牌武器"——Newton法（也叫Newton-Raphson法）。</p>
-
-        <p>有人说Newton法就像一个天才型选手：当他状态好时（初值选得好、导数值正常），他以令人瞠目结舌的速度直捣黄龙；但一旦状态不佳（初值不理想、导数接近零），他可能会以同样惊人的速度崩溃。理解Newton法的优点和陷阱，是数值分析工程师的分水岭。</p>
-
-        <h2>21.1 Newton法（切线法）</h2>
-
-        <p>Newton法的思想非常朴素：用<strong>线性近似</strong>代替非线性函数。给定当前近似值x<sub>k</sub>，我们在这一点上用切线来近似f(x)：</p>
-
-        <p style="text-align:center">f(x) ≈ f(x<sub>k</sub>) + f'(x<sub>k</sub>)(x - x<sub>k</sub>)</p>
-
-        <p>令这个近似等于零，解出x作为下一个近似值：</p>
-
-        <p style="text-align:center">x<sub>k+1</sub> = x<sub>k</sub> - f(x<sub>k</sub>) / f'(x<sub>k</sub>)</p>
-
-        <p>这就是Newton法的迭代公式。每步需要计算一次函数值和一次导数值。实现起来极其简单：</p>
-
-        <pre><code>def newton(f, fprime, x0, tol=1e-12, max_iter=100):
-    """
-    Newton-Raphson 求根法
-    f: 目标函数
-    fprime: 导数函数
-    x0: 初始猜测
-    """
+# 1) 牛顿法：单根、导数非零 ⇒ 二次收敛，有效位数翻倍
+def newton(x0, tol=1e-12, nmax=60):
     x = x0
-    for k in range(max_iter):
-        fx = f(x)
-        fpx = fprime(x)
+    for k in range(1, nmax+1):
+        x = x - f(x)/fp(x)
+        if abs(x - root) &lt; tol:
+            return x, k
+    raise RuntimeError("未收敛")
+xN, kN = newton(2.0)
+assert abs(xN - root) &lt; 1e-12 and kN &lt;= 6
 
-        if abs(fpx) &lt; 1e-15:
-            raise ValueError("导数接近于零，Newton法失效")
+# 2) 弦截法：无极数，收敛阶 p≈1.618
+def secant(x0, x1, tol=1e-14, nmax=80):
+    f0, f1 = f(x0), f(x1)
+    for k in range(1, nmax+1):
+        x2 = x1 - f1*(x1-x0)/(f1-f0)
+        x0, f0, x1, f1 = x1, f1, x2, f(x2)
+        if abs(x1 - root) &lt; tol:
+            return x1, k
+    raise RuntimeError("未收敛")
+xS, kS = secant(2.0, 1.5)
+assert abs(xS - root) &lt; 1e-12 and kS &lt;= 8
 
-        x_new = x - fx / fpx
-
-        if abs(x_new - x) &lt; tol:
-            return x_new, k + 1
-
-        x = x_new
-
-    raise RuntimeError(f"超过最大迭代次数 {max_iter}")</code></pre>
-
-        <div class="tip">
-            <p><strong>Newton法收敛速度演示</strong></p>
-            <p>考虑求解f(x) = x² - 2 = 0（即求√2）。取x₀ = 2：</p>
-            <ul>
-                <li>第0步：x₀ = 2，误差 ≈ 5.86×10⁻¹</li>
-                <li>第1步：x₁ = 1.5，误差 ≈ 8.58×10⁻²</li>
-                <li>第2步：x₂ = 1.4166667，误差 ≈ 2.45×10⁻³</li>
-                <li>第3步：x₃ = 1.4142157，误差 ≈ 2.12×10⁻⁶</li>
-                <li>第4步：x₄ = 1.41421356，误差 ≈ 1.59×10⁻¹²</li>
-            </ul>
-            <p>注意观察误差的变化：0.586 → 0.086 → 0.0025 → 2.1×10⁻⁶ → 1.6×10⁻¹²。每一次误差大致是上一次的<strong>平方</strong>！这就是二次收敛的魅力。</p>
-        </div>
-
-        <h2>21.2 Newton法的几何意义与收敛性</h2>
-
-        <p>从几何上看，Newton法就是在当前点x<sub>k</sub>处作曲线的切线，切线与x轴的交点就是x<sub>k+1</sub>。这也就是为什么Newton法又被称为<strong>切线法</strong>。</p>
-
-        <p>为什么Newton法收敛这么快？我们来分析误差的递推关系。设x<sup>*</sup>是精确根，e<sub>k</sub> = x<sub>k</sub> - x<sup>*</sup>。将f(x<sup>*</sup>)在x<sub>k</sub>处Taylor展开：</p>
-
-        <p style="text-align:center">0 = f(x<sup>*</sup>) = f(x<sub>k</sub>) + f'(x<sub>k</sub>)(x<sup>*</sup> - x<sub>k</sub>) + ½f''(ξ)(x<sup>*</sup> - x<sub>k</sub>)²</p>
-
-        <p>代入Newton迭代公式x<sub>k+1</sub> = x<sub>k</sub> - f(x<sub>k</sub>)/f'(x<sub>k</sub>)，经过简单代数运算得到：</p>
-
-        <p style="text-align:center">e<sub>k+1</sub> = -[f''(ξ) / (2f'(x<sub>k</sub>))] · e<sub>k</sub>²</p>
-
-        <p>这正是二次收敛的数学原因：误差的平方项主导了下一步的误差。如果f'(x<sup>*</sup>) ≠ 0且f''(x<sup>*</sup>)存在，则|e<sub>k+1</sub>| ≤ C·|e<sub>k</sub>|²，其中C = max|f''|/(2·min|f'|)。</p>
-
-        <p><strong>Newton-Kantorovich定理</strong>给出了Newton法的收敛条件：在适当的假设下（f可微、f' Lipschitz连续、初始点上f'可逆），只要初始残差足够小，Newton法就收敛。该定理不要求根是单根，是一个非常强的理论保证。</p>
-
-        <h2>21.3 Newton法的陷阱</h2>
-
-        <p>虽然Newton法极其强大，但实际使用中有不少"坑"。我大学时第一次用Newton法解f(x) = arctan(x) = 0（根在x=0），选了x₀ = 1.5，结果迭代到约x ≈ 1.39时，下一跳竟然跳到了x ≈ -1.58，然后又弹回来——形成了2-cycle振荡！</p>
-
-        <div class="warning">
-            <p><strong>踩坑故事：Newton法遇到鞍点</strong></p>
-            <p>几年前我参与一个深度学习项目的优化工作。有人异想天开想用Newton法代替SGD来训练一个小型网络，认为二次收敛速度能大幅加速训练。结果损失函数完全不下降，反而卡住了。排查后发现原因：在初始化参数所在的区域，Hessian矩阵的某些特征值接近零（即出现了"鞍点"），导致Newton步长|∇²f⁻¹∇f|变得非常大，直接把参数"弹飞"到损失更大的区域。这正是Newton法在深度学习中没有成为主流的原因之一——处理鞍点时，反曲率方向会让优化器"误以为"那里是下降方向。这个故事告诉我们：算法选择要匹配问题结构，盲目追求高收敛阶可能适得其反。</p>
-        </div>
-
-        <p>Newton法常见的失败模式包括：</p>
-
-        <table>
-            <tr><th>场景</th><th>原因</th><th>表现</th><th>解决方法</th></tr>
-            <tr><td>初始猜测太差</td><td>线性近似在远离根处完全失效</td><td>发散到无穷或振荡</td><td>先用二分法或全局搜索得到好初值</td></tr>
-            <tr><td>f'(x<sub>k</sub>) ≈ 0</td><td>切线接近水平，x<sub>k+1</sub>被抛向远方</td><td>单步跳到一个巨大值</td><td>使用阻尼Newton法（加步长因子λ）</td></tr>
-            <tr><td>重根情况</td><td>f'(x<sup>*</sup>) = 0，二次收敛降为线性</td><td>收敛极慢</td><td>改用修正Newton法（乘以因子m，m为重根重数）</td></tr>
-            <tr><td>周期振荡</td><td>函数图像恰好在两个点之间形成往复</td><td>永远不会收敛</td><td>换初始猜测或换方法</td></tr>
-        </table>
-
-        <p>针对导数接近零的问题，一个实用的改进是<strong>阻尼Newton法</strong>：</p>
-
-        <p style="text-align:center">x<sub>k+1</sub> = x<sub>k</sub> - λ · f(x<sub>k</sub>)/f'(x<sub>k</sub>)，0 &lt; λ ≤ 1</p>
-
-        <p>其中λ通过线性搜索(line search)确定，比如Armijo准则保证函数值的充分下降。这提高了Newton法的全局收敛性。</p>
-
-        <h2>21.4 弦截法与抛物线法</h2>
-
-        <p>Newton法需要提供解析导数f'(x)，但很多时候导数难以计算或者计算成本太高。这时，我们可以用<strong>数值差商</strong>代替导数。</p>
-
-        <p><strong>弦截法(Secant Method)</strong>用最近两次的函数值来近似导数：</p>
-
-        <p style="text-align:center">f'(x<sub>k</sub>) ≈ (f(x<sub>k</sub>) - f(x<sub>k-1</sub>)) / (x<sub>k</sub> - x<sub>k-1</sub>)</p>
-
-        <p style="text-align:center">x<sub>k+1</sub> = x<sub>k</sub> - f(x<sub>k</sub>) · (x<sub>k</sub> - x<sub>k-1</sub>) / (f(x<sub>k</sub>) - f(x<sub>k-1</sub>))</p>
-
-        <p>几何上讲，弦截法用经过(x<sub>k-1</sub>, f(x<sub>k-1</sub>))和(x<sub>k</sub>, f(x<sub>k</sub>))两点的割线与x轴的交点作为下一个近似。有趣的是，虽然弦截法只需要计算函数值不需要导数，它的收敛阶仍然达到p ≈ 1.618（黄金分割比！）。这比线性收敛好得多，但又不及Newton法的二次收敛。</p>
-
-        <pre><code>def secant(f, x0, x1, tol=1e-12, max_iter=100):
-    x_prev = x0
-    x_curr = x1
-    f_prev = f(x_prev)
-    f_curr = f(x_curr)
-
-    for k in range(max_iter):
-        if abs(f_curr - f_prev) &lt; 1e-15:
-            raise ValueError("差商接近零，弦截法失效")
-
-        x_next = x_curr - f_curr * (x_curr - x_prev) / (f_curr - f_prev)
-
-        if abs(x_next - x_curr) &lt; tol:
-            return x_next, k + 1
-
-        x_prev, x_curr = x_curr, x_next
-        f_prev, f_curr = f_curr, f(x_next)
-
-    return x_curr, max_iter</code></pre>
-
-        <p><strong>Müller法(抛物线法)</strong>更进一步：它用过三个点(x<sub>k-2</sub>, x<sub>k-1</sub>, x<sub>k</sub>)的二次抛物线来逼近函数，然后求出抛物线与x轴的交点作为下一个近似。优点是可以处理<strong>复根</strong>——因为二次方程总有两个根（可能是复数），Müller法能自动选择离当前点较近的那个。这对于在实轴上迭代时追上复数根很有用。</p>
-
-        <table>
-            <tr><th>方法</th><th>每步计算</th><th>需要导数？</th><th>收敛阶</th><th>能求复根？</th></tr>
-            <tr><td>Newton法</td><td>f + f'</td><td>是</td><td>p = 2</td><td>否（需复数初值）</td></tr>
-            <tr><td>弦截法</td><td>1次f</td><td>否</td><td>p ≈ 1.618</td><td>否</td></tr>
-            <tr><td>Müller法</td><td>1次f</td><td>否</td><td>p ≈ 1.84</td><td>是</td></tr>
-            <tr><td>二分法</td><td>1次f</td><td>否</td><td>p = 1</td><td>否</td></tr>
-        </table>
-
-        <div class="highlight">
-            <p><strong>实际工程中的建议</strong></p>
-            <p>在实际项目中，我通常的推荐策略是一个"组合拳"：先用二分法或网格搜索得到一个粗略的根区间，然后再用Newton法（如果导数容易计算）或弦截法（如果导数不好算）进行精细迭代。如果需要高可靠性（比如金融定价引擎），我还会加上"保护逻辑"：如果Newton法的步长超过合理范围，自动降级为二分法走一步。这种"混合策略"既能保证收敛，又能利用高阶收敛的速度优势。</p>
-        </div>
-
-        <p>好了，让我们总结一下本章的核心内容。Newton法是数值求根的"效率之王"，但需要小心处理其陷阱（初始猜测差、导数接近零、周期振荡）。当导数不便计算时，弦截法和Müller法提供了良好的折中。在实际使用中，"先粗后精、混合策略"往往是工程中最可靠的选择。</p>
-
-        <p>下一章我们将把Newton法从单变量推广到多变量——<strong>非线性方程组的Newton法</strong>。当你面对一个由多个方程组成的系统时，一元Newton法中的导数f'(x)将变成什么？答案出人意料地优雅——Jacobian矩阵。我们第22章见！</p>
-
-        <div class="footer-nav">
-            <a href="20.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="22.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
+# 3) 失败边界：f(x)=x³−2x+2 从 0 出发陷入 0↔1 周期 2
+def newton_seq(x0, n):
+    xs=[x0]
+    for _ in range(n):
+        xs.append(xs[-1] - (xs[-1]**3-2*xs[-1]+2)/(3*xs[-1]**2-2))
+    return xs
+cycle = newton_seq(0.0, 6)
+assert abs(cycle[1]-1.0) &lt; 1e-12 and abs(cycle[2]-0.0) &lt; 1e-12
+print("newton", kN, "| secant", kS, "| cycle", [round(v,3) for v in cycle[:4]])</code></pre>
+<p><strong>失败边界（可验证）：</strong>第一，牛顿法要求 <code>f′(x_k)≠0</code>，否则 (21.3) 的分母为零；第二，初值必须落在吸引域内，上图右的 <code>0↔1</code> 循环就是反例；第三，重根处二次收敛退化为线性，需用修正格式；第四，代码里的循环不是“未收敛”的偶然现象，而是<strong>有确切周期</strong>的确定行为，可用断言捕获。</p>
+<aside class="callout"><p><strong>选型判断：</strong>导数易算且单根、初值可靠 → 首选牛顿法或阻尼牛顿；导数不好算 → 弦截法；需要复根 → Müller 法；对可靠性要求极高（如金融定价）→ “先二分后牛顿”的混合策略。文中步数与迭代值为教学演示，实际取决于容差与根附近导数。</p></aside>
+</section>
+<section id="references" aria-labelledby="references-heading">
+<h2 id="references-heading">原始资料与延伸阅读</h2>
+<p>本章将文献结论与本文独立构造的数值示例严格区分：收敛阶 <code>p=2</code>、<code>1.618</code>、<code>1.84</code> 为已知理论结果，而步数与迭代序列均为本文教学演示。</p>
+<ol class="sources">
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.root_scalar.html">SciPy · scipy.optimize.root_scalar</a>：<code>newton</code>、<code>secant</code>、<code>halley</code>、<code>brentq</code> 等求根方法的统一接口与终止准则。</li>
+<li><a href="https://link.springer.com/book/10.1007/978-3-642-23899-4">P. Deuflhard, <em>Newton Methods for Nonlinear Problems</em></a>, Springer, 2011（doi:10.1007/978-3-642-23899-4）。牛顿法的仿射不变收敛理论与阻尼策略。</li>
+<li><a href="https://nhigham.com/accuracy-and-stability-of-numerical-algorithms/">Nicholas J. Higham, <em>Accuracy and Stability of Numerical Algorithms</em></a>, SIAM 第二版, 2002。停止准则与误差敏感性。</li>
+</ol>
+</section>
+<nav class="chapter-bottom" aria-label="前后章节"><a href="20.html">← 前一章</a><a href="22.html">下一章 →</a></nav>
+</article>
+</main>
+<footer><span>NUMERICAL ANALYSIS · 一份可独立阅读的计算笔记</span><a href="../index.html">返回课程首页</a></footer>
 </body>
 </html>
