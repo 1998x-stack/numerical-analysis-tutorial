@@ -42,6 +42,7 @@
 <div class="math-equation" role="group" aria-label="公式 11.3"><div class="math-scroll" role="region" tabindex="0" aria-label="复合Simpson是三分之一步长乘以端点值加交替四倍和二倍内部节点值，必要时可横向滚动"><math display="block" aria-label="复合Simpson是三分之一步长乘以端点值加交替四倍和二倍内部节点值"><msub><mi>S</mi><mi>n</mi></msub><mo>=</mo><mfrac><mi>h</mi><mn>3</mn></mfrac><mrow><mo>[</mo><mi>f</mi><mo>(</mo><msub><mi>x</mi><mn>0</mn></msub><mo>)</mo><mo>+</mo><mn>4</mn><mi>f</mi><mo>(</mo><msub><mi>x</mi><mn>1</mn></msub><mo>)</mo><mo>+</mo><mn>2</mn><mi>f</mi><mo>(</mo><msub><mi>x</mi><mn>2</mn></msub><mo>)</mo><mo>+</mo><mo>⋯</mo><mo>+</mo><mn>4</mn><mi>f</mi><mo>(</mo><msub><mi>x</mi><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>)</mo><mo>+</mo><mi>f</mi><mo>(</mo><msub><mi>x</mi><mi>n</mi></msub><mo>)</mo><mo>]</mo></mrow></math></div><div class="equation-tag">(11.3)</div></div>
 <p>误差阶是这两个公式真正的分水岭。当 <code>f</code> 足够光滑时，复合梯形为 <code>O(h²)=O(n⁻²)</code>，步长减半误差降为 <code>1/4</code>；复合 Simpson 为 <code>O(h⁴)=O(n⁻⁴)</code>，步长减半误差降为 <code>1/16</code>。这里说的是<strong>截断误差</strong>，它与浮点舍入误差无关；当 <code>h</code> 小到一定程度，舍入误差会重新占主导，不会无限变小。</p>
 <aside class="callout"><p><strong>易错点：</strong>经典复合 Simpson 的“偶数个子区间”要求来自公式推导，不是随意约定。若样本数给出的子区间为奇数，不能直接套 1:4:1 权重。</p></aside>
+<figure><img src="../assets/svg/11-panel-refine.svg" alt="同一积分区间由一个梯形细分为两个、四个梯形，新采样点落在旧单元中点" loading="lazy"><figcaption>图 2 · 网格逐次细分：区间先切成 1 个、再 2 个、4 个梯形，每次加密只在旧单元中点增加采样点，旧节点全部复用——这正是 Romberg 递推每步只需少量新函数求值的原因。</figcaption></figure>
 </section>
 <section id="euler" aria-labelledby="euler-heading">
 <h2 id="euler-heading">03 · 误差只含偶次幂：Euler–Maclaurin 结构</h2>
@@ -57,8 +58,9 @@
 <p>写成复合序列的形式就是 <code>T₂ₙ+(T₂ₙ−Tₙ)/3</code>。有趣的是，这个外推结果恰好就是复合 Simpson 值：Simpson 公式可以理解为<strong>对梯形做一次 Richardson 外推</strong>，而不是一个与梯形无关的新公式。</p>
 <p>外推可以继续。若把已经消去 <code>h²</code> 的结果再用两个步长组合，就能消去 <code>h⁴</code>，依次递推得到 <strong>Romberg 表</strong>：第 0 列是复合梯形序列 <code>R(k,0)=T_{2^k}</code>，第 <code>j</code> 列用相邻两行做一次外推：</p>
 <div class="math-equation" role="group" aria-label="公式 11.6"><div class="math-scroll" role="region" tabindex="0" aria-label="Romberg递推用四的j次方乘本列上一项减去上一行同列项再除以四的j次方减一，必要时可横向滚动"><math display="block" aria-label="Romberg递推用四的j次方乘本列上一项减去上一行同列项再除以四的j次方减一"><msub><mi>R</mi><mrow><mi>k</mi><mo>,</mo><mi>j</mi></mrow></msub><mo>=</mo><mfrac><mrow><msup><mn>4</mn><mi>j</mi></msup><msub><mi>R</mi><mrow><mi>k</mi><mo>,</mo><mi>j</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>−</mo><msub><mi>R</mi><mrow><mi>k</mi><mo>−</mo><mn>1</mn><mo>,</mo><mi>j</mi><mo>−</mo><mn>1</mn></mrow></msub></mrow><mrow><msup><mn>4</mn><mi>j</mi></msup><mo>−</mo><mn>1</mn></mrow></mfrac></math></div><div class="equation-tag">(11.6)</div></div>
-<p>每增加一行只需求 <code>2^{k−1}</code> 个新节点，却能让对角线精度上升约两个阶；代价是要求函数光滑且需要存储整个三角表。图 2 给出 <code>∫₀^π sin x dx</code> 的形表：第一列从 0、1.57、2.09 一路摆动，对角线则迅速稳定到 2。</p>
-<figure><img src="../assets/svg/11-romberg-table.svg" alt="Romberg三角表，第一列为复合梯形序列，向右逐列外推，对角线误差迅速下降" loading="lazy"><figcaption>图 2 · Romberg 表利用误差的偶次幂结构逐列外推；深绿对角线为各阶最佳估计，误差从 <code>10⁰</code> 级降到 <code>10⁻⁸</code> 级（教学示意，数值由 <code>math.sin</code> 双精度计算）。</figcaption></figure>
+<p>每增加一行只需求 <code>2^{k−1}</code> 个新节点，却能让对角线精度上升约两个阶；代价是要求函数光滑且需要存储整个三角表。图 3 给出 <code>∫₀^π sin x dx</code> 的形表：第一列从 0、1.57、2.09 一路摆动，对角线则迅速稳定到 2。</p>
+<figure><img src="../assets/svg/11-romberg-table.svg" alt="Romberg三角表，第一列为复合梯形序列，向右逐列外推，对角线误差迅速下降" loading="lazy"><figcaption>图 3 · Romberg 表利用误差的偶次幂结构逐列外推；深绿对角线为各阶最佳估计，误差从 <code>10⁰</code> 级降到 <code>10⁻⁸</code> 级（教学示意，数值由 <code>math.sin</code> 双精度计算）。</figcaption></figure>
+<figure><img src="../assets/svg/11-error-cancel.svg" alt="Richardson 外推：粗网格与四倍细网格的近似相组合，消去主导的 h² 误差项" loading="lazy"><figcaption>图 4 · Richardson 外推：粗网格误差主项为 <code>c h²</code>，步长减半的细网格主项缩小为 <code>1/4</code>；组合 <code>(4T₂ₙ−Tₙ)/3</code> 即可消去该主导项，只留下更高阶误差项。</figcaption></figure>
 </section>
 <section id="experiment" aria-labelledby="experiment-heading">
 <h2 id="experiment-heading">05 · 实验：sin 收敛，√x 不收敛</h2>
