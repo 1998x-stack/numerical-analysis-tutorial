@@ -61,6 +61,7 @@
 <div class="math-equation" role="group" aria-label="公式 15.5"><div class="math-scroll" role="region" tabindex="0" aria-label="置换矩阵乘A等于单位下三角乘上三角，必要时可横向滚动"><math display="block" aria-label="置换矩阵乘A等于单位下三角乘上三角"><mi>P</mi><mi>A</mi><mo>=</mo><mi>L</mi><mi>U</mi></math></div><div class="equation-tag">(15.5)</div></div>
 <p>求解 <code>Ax=b</code> 时，先对 <code>b</code> 施加同样的行交换得 <code>Pb</code>，再解 <code>Ly=Pb</code>（前向替换）与 <code>Ux=y</code>（回代）。置换矩阵 <code>P</code> 只记录“哪一行去了哪里”，本身不引入舍入。几乎所有库函数（如 SciPy 的 <code>lu_factor</code>）默认采用部分选主元。</p>
 <aside class="callout"><p><strong>术语澄清：</strong><code>PA=LU</code> 中的 <code>P</code> 是行置换，“部分”指只在当前列的对角线以下选主元，而不是在所有行列中选（那叫全选主元，代价更高）。</p></aside>
+<figure><img src="../assets/svg/15-lu-flow.svg" alt="LU 流程图：矩阵 A 先做行置换 P，再分解为 L 与 U，随后前代解 Ly=Pb、回代解 Ux=y" loading="lazy"><figcaption>图 3 · <code>PA=LU</code> 的完整流程：先按置换 <code>P</code> 重排 <code>A</code>，再分解出 <code>L</code>、<code>U</code>，然后用前代解 <code>Ly=Pb</code>、回代解 <code>Ux=y</code>。分解只做一次，可复用于多个右端项。</figcaption></figure>
 </section>
 <section id="apps" aria-labelledby="apps-heading">
 <h2 id="apps-heading">05 · 应用：多右端项与求逆</h2>
