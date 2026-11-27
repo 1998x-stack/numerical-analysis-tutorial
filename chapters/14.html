@@ -48,6 +48,7 @@
 <tr><td>Hermite Hₖ</td><td>(−∞,∞)</td><td>e^{−x²}</td><td>0</td><td>k/2</td></tr>
 </table>
 <p>为什么不用 Rodrigues 公式或显式系数直接算？因为高阶系数的显式计算会重新引入病态的大数相消，而三项递推每步只做一次乘减，误差不累积放大。更进一步，求节点可转为一个<strong>对称三对角矩阵的特征值问题</strong>（对角元 <code>α_k</code>、次对角元 <code>√β_k</code>，即 Jacobi 矩阵），用稳定算法求解。SciPy 的 <code>roots_legendre</code> 正是基于这一思路。同一次特征分解还顺带给出权重（Golub–Welsch）：第 <code>i</code> 个节点就是 Jacobi 矩阵的第 <code>i</code> 个特征值 <code>xᵢ</code>，而对应权重等于零阶矩 <code>μ₀=∫w(x)dx</code> 乘以该特征值单位特征向量首分量的平方，即 <code>wᵢ=μ₀·(vᵢ)₁²</code>。于是节点与权重来自同一个对称特征问题，不必再单独解矩方程组。</p>
+<figure><img src="../assets/svg/14-jacobi.svg" alt="三项递推系数构成的对称三对角 Jacobi 矩阵；其特征值给出 Gauss 节点，单位特征向量首分量平方乘总质量给出权重" loading="lazy"><figcaption>图 1 · 三项递推系数 <code>α_k</code>、<code>√β_k</code> 组成对称三对角 Jacobi 矩阵 <code>J</code>：第 <code>i</code> 个特征值就是第 <code>i</code> 个 Gauss 节点 <code>xᵢ</code>，而权重 <code>wᵢ=μ₀·(vᵢ)₁²</code> 由对应单位特征向量的首分量平方乘总质量 <code>μ₀</code> 得到。</figcaption></figure>
 </section>
 <section id="zeros" aria-labelledby="zeros-heading">
 <h2 id="zeros-heading">03 · 零点的四个性质</h2>
@@ -58,14 +59,14 @@
 <li><strong>单根性：</strong>所有零点都是单重根，导数不为零。</li>
 <li><strong>交错性：</strong><code>φ_m</code> 与 <code>φ_{m+1}</code> 的零点互相交错。</li>
 </ul>
-<figure><img src="../assets/svg/14-legendre-zeros.svg" alt="四阶与五阶 Legendre 多项式曲线及其零点在区间内交替分布" loading="lazy"><figcaption>图 1 · <code>P₄</code>（青）与 <code>P₅</code>（橙）的零点都在 <code>(−1,1)</code> 内部且相互交错。零点的分布密度与权函数 <code>w</code> 有关：权大的地方零点更密。</figcaption></figure>
+<figure><img src="../assets/svg/14-legendre-zeros.svg" alt="四阶与五阶 Legendre 多项式曲线及其零点在区间内交替分布" loading="lazy"><figcaption>图 2 · <code>P₄</code>（青）与 <code>P₅</code>（橙）的零点都在 <code>(−1,1)</code> 内部且相互交错。零点的分布密度与权函数 <code>w</code> 有关：权大的地方零点更密。</figcaption></figure>
 <p>区间性排除了“节点跑到端点”的退化情形；交错性保证节点不会聚成一堆。而零点密度跟随权函数这一点，恰好解释了为什么 Chebyshev 节点在端点附近更密——那里权 <code>1/√(1−x²)</code> 最大。</p>
 </section>
 <section id="gramschmidt" aria-labelledby="gramschmidt-heading">
 <h2 id="gramschmidt-heading">04 · Gram-Schmidt：为什么要修正版本</h2>
 <p>如果手上只有一组普通基底（如 <code>1, x, x², …</code>），可以用 Gram-Schmidt 逐列正交化。做法有两种：<strong>经典 Gram-Schmidt（CGS）</strong>先算完所有投影系数再一次性相减；<strong>修正 Gram-Schmidt（MGS）</strong>每减去一个投影分量就用新向量继续算下一个系数。数学上两者等价，数值上却差很远。</p>
 <p>CGS 在算第 <code>k</code> 列的投影时，用的是“已经很脏”的前列，舍入误差被后续步骤反复引用并放大；理论分析表明它的正交性丢失约为 <code>κ²(A)·ε</code>，而 MGS 约为 <code>κ(A)·ε</code>——后者少了一个条件数因子。下面用病态的单项式基底实测。</p>
-<figure><img src="../assets/svg/14-gram-schmidt.svg" alt="CGS 与 MGS 在病态单项式基上的正交性误差柱状对比，CGS 高出多个数量级" loading="lazy"><figcaption>图 2 · 病态单项式基（40 个网格点、<code>0</code> 到 <code>15</code> 次）上，<code>‖QᵀQ−I‖</code> 的实测值：CGS 约 <code>1.1×10⁻⁵</code>，MGS 约 <code>9.7×10⁻¹²</code>（双精度教学示意）。</figcaption></figure>
+<figure><img src="../assets/svg/14-gram-schmidt.svg" alt="CGS 与 MGS 在病态单项式基上的正交性误差柱状对比，CGS 高出多个数量级" loading="lazy"><figcaption>图 3 · 病态单项式基（40 个网格点、<code>0</code> 到 <code>15</code> 次）上，<code>‖QᵀQ−I‖</code> 的实测值：CGS 约 <code>1.1×10⁻⁵</code>，MGS 约 <code>9.7×10⁻¹²</code>（双精度教学示意）。</figcaption></figure>
 <aside class="callout"><p><strong>实践建议：</strong>新代码优先用 Householder 反射或 Givens 旋转做 QR；必须手写 Gram-Schmidt 时，用 MGS 而非 CGS。</p></aside>
 </section>
 <section id="proof" aria-labelledby="proof-heading">
@@ -106,7 +107,7 @@ assert abs(r4[0] + 0.8611363116) &lt; 1e-8 and abs(r4[3] - 0.8611363116) &lt; 1e
 w = [0.3478548451374538, 0.6521451548625461, 0.6521451548625461, 0.3478548451374538]
 assert abs(sum(wi * ri**4 for wi, ri in zip(w, r4)) - 2/5) &lt; 1e-14   # 2m-1 = 7 覆盖 4 次
 print(r4)</code></pre>
-<p><strong>失败边界。</strong>正交多项式的零点性质依赖权函数 <code>w(x)≥0</code>（几乎处处）。若权函数变号，理论不再成立，零点可能超出区间甚至为复根。此外，Gram-Schmidt 本身在病态基上不稳定（图 2），因此实际构造高阶级数应优先用三项递推，QR 分解优先用 Householder。</p>
+<p><strong>失败边界。</strong>正交多项式的零点性质依赖权函数 <code>w(x)≥0</code>（几乎处处）。若权函数变号，理论不再成立，零点可能超出区间甚至为复根。此外，Gram-Schmidt 本身在病态基上不稳定（图 3），因此实际构造高阶级数应优先用三项递推，QR 分解优先用 Householder。</p>
 <aside class="callout"><p><strong>三重角色：</strong>正交多项式在逼近论里是对角化 Gram 矩阵的理想基底（第 07–08 章），在求积理论里提供最优节点（第 12 章及本章），在谱方法里提供指数收敛的展开基。</p></aside>
 </section>
 <section id="references" aria-labelledby="references-heading">
