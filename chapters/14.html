@@ -47,7 +47,7 @@
 <tr><td>Laguerre Lₖ</td><td>[0,∞)</td><td>e^{−x}</td><td>2k+1</td><td>k²</td></tr>
 <tr><td>Hermite Hₖ</td><td>(−∞,∞)</td><td>e^{−x²}</td><td>0</td><td>k/2</td></tr>
 </table>
-<p>为什么不用 Rodrigues 公式或显式系数直接算？因为高阶系数的显式计算会重新引入病态的大数相消，而三项递推每步只做一次乘减，误差不累积放大。更进一步，求节点可转为一个<strong>对称三对角矩阵的特征值问题</strong>（对角元 <code>α_k</code>、次对角元 <code>√β_k</code>，即 Jacobi 矩阵），用稳定算法求解。SciPy 的 <code>roots_legendre</code> 正是基于这一思路。</p>
+<p>为什么不用 Rodrigues 公式或显式系数直接算？因为高阶系数的显式计算会重新引入病态的大数相消，而三项递推每步只做一次乘减，误差不累积放大。更进一步，求节点可转为一个<strong>对称三对角矩阵的特征值问题</strong>（对角元 <code>α_k</code>、次对角元 <code>√β_k</code>，即 Jacobi 矩阵），用稳定算法求解。SciPy 的 <code>roots_legendre</code> 正是基于这一思路。同一次特征分解还顺带给出权重（Golub–Welsch）：第 <code>i</code> 个节点就是 Jacobi 矩阵的第 <code>i</code> 个特征值 <code>xᵢ</code>，而对应权重等于零阶矩 <code>μ₀=∫w(x)dx</code> 乘以该特征值单位特征向量首分量的平方，即 <code>wᵢ=μ₀·(vᵢ)₁²</code>。于是节点与权重来自同一个对称特征问题，不必再单独解矩方程组。</p>
 </section>
 <section id="zeros" aria-labelledby="zeros-heading">
 <h2 id="zeros-heading">03 · 零点的四个性质</h2>
