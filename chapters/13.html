@@ -57,6 +57,7 @@
 <div class="math-equation" role="group" aria-label="公式 13.6"><div class="math-scroll" role="region" tabindex="0" aria-label="复数步长的导数为虚部除以步长加二阶余项，必要时可横向滚动"><math display="block" aria-label="复数步长的导数为虚部除以步长加二阶余项"><msup><mi>f</mi><mo>′</mo></msup><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo><mfrac><mrow><mo>Im</mo><mo>(</mo><mi>f</mi><mo>(</mo><mi>x</mi><mo>+</mo><mi>i</mi><mi>h</mi><mo>)</mo><mo>)</mo></mrow><mi>h</mi></mfrac><mo>+</mo><mi>O</mi><mo>(</mo><msup><mi>h</mi><mn>2</mn></msup><mo>)</mo></math></div><div class="equation-tag">(13.6)</div></div>
 <p>关键在“虚部”二字：导数直接来自 <code>f(x+ih)</code> 的虚部除以 <code>h</code>，<strong>不需要两个大数相减</strong>。既然没有相消性损失，<code>h</code> 可以取到 <code>10⁻²⁰</code> 甚至更小，截断误差 <code>O(h²)</code> 随之趋近于零。代价是：函数必须在路径上解析（全纯），且代码需支持复数运算；含 <code>abs</code>、<code>max</code>、分支判断的函数不能直接使用。</p>
 <p>该方法由 Martins 等人在 2003 年系统提出并用于飞行器气动导数计算，之后进入工程与优化库的标准工具箱。</p>
+<figure><img src="../assets/svg/13-complex-step.svg" alt="复平面中从实轴上的点沿纯虚方向移动 i·h，解析函数输出的虚部除以 h 给出导数近似" loading="lazy"><figcaption>图 3 · 复数步长法的路径：沿纯虚方向移动 <code>x+ih</code>，取 <code>Im(f(x+ih))/h</code> 即得导数；虚部不涉及两个相近大数相减，因此没有相消损失，<code>h</code> 可取得极小。</figcaption></figure>
 </section>
 <section id="experiment" aria-labelledby="experiment-heading">
 <h2 id="experiment-heading">05 · 实验：U 形误差曲线</h2>
