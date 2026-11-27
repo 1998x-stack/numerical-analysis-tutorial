@@ -42,7 +42,8 @@
 <p>一般区间上的 Gauss–Legendre 通过线性变换归约到标准区间 <code>[−1,1]</code>：</p>
 <div class="math-equation" role="group" aria-label="公式 12.3"><div class="math-scroll" role="region" tabindex="0" aria-label="一般区间积分等于区间长度一半乘标准区间的变换积分，必要时可横向滚动"><math display="block" aria-label="一般区间积分等于区间长度一半乘标准区间的变换积分"><msubsup><mo>∫</mo><mi>a</mi><mi>b</mi></msubsup><mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>d</mi><mi>x</mi><mo>=</mo><mfrac><mrow><mi>b</mi><mo>−</mo><mi>a</mi></mrow><mn>2</mn></mfrac><msubsup><mo>∫</mo><mrow><mo>−</mo><mn>1</mn></mrow><mn>1</mn></msubsup><mi>f</mi><mo>(</mo><mfrac><mrow><mi>b</mi><mo>−</mo><mi>a</mi></mrow><mn>2</mn></mfrac><mi>t</mi><mo>+</mo><mfrac><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow><mn>2</mn></mfrac><mo>)</mo><mi>d</mi><mi>t</mi></math></div><div class="equation-tag">(12.3)</div></div>
 <p>公式里的因子 <code>(b−a)/2</code> 正是线性变换 <code>x = (b−a)t/2 + (a+b)/2</code> 的 <strong>Jacobian</strong>（即 <code>dx/dt</code>）：漏掉它会把积分整体缩放错。节点与权重在 <code>[−1,1]</code> 上取定后，必须再乘上这一因子，映射才完备。</p>
-<figure><img src="../assets/svg/12-gauss-nodes.svg" alt="四个 Gauss-Legendre 节点与四个等距节点的位置对比，Gauss 节点更靠近端点" loading="lazy"><figcaption>图 2 · 四个节点的位置对比：Gauss 节点是 Legendre 多项式 <code>P₄</code> 的零点，朝区间两端聚拢；等距节点则均匀分布。端点附近聚簇是为了压低整体加权误差。</figcaption></figure>
+<figure><img src="../assets/svg/12-mapping.svg" alt="参考区间负一到正一经仿射映射变为一般区间 a 到 b，积分权重乘以半区间长度" loading="lazy"><figcaption>图 2 · 区间映射：参考区间 <code>[−1,1]</code> 经仿射变换 <code>x=(b−a)t/2+(a+b)/2</code> 变为一般区间 <code>[a,b]</code>，权重相应乘以半区间长度 <code>(b−a)/2</code>（即 Jacobian）。</figcaption></figure>
+<figure><img src="../assets/svg/12-gauss-nodes.svg" alt="四个 Gauss-Legendre 节点与四个等距节点的位置对比，Gauss 节点更靠近端点" loading="lazy"><figcaption>图 3 · 四个节点的位置对比：Gauss 节点是 Legendre 多项式 <code>P₄</code> 的零点，朝区间两端聚拢；等距节点则均匀分布。端点附近聚簇是为了压低整体加权误差。</figcaption></figure>
 </section>
 <section id="families" aria-labelledby="families-heading">
 <h2 id="families-heading">03 · 加权公式与正交多项式族</h2>
