@@ -126,24 +126,24 @@
     },
     {
       "num": "11",
-      "title": "复合求积与Romberg外推",
+      "title": "复合求积与 Romberg",
       "topics": [
-        "复合求积公式",
-        "步长选择策略",
-        "Richardson外推",
-        "Romberg算法"
+        "复合梯形与中点复用",
+        "偶次幂误差展开",
+        "Richardson 外推",
+        "Romberg 三角表与停止条件"
       ],
       "file": "chapters/11.html",
       "status": "refined"
     },
     {
       "num": "12",
-      "title": "Gauss求积公式",
+      "title": "Gauss 求积公式",
       "topics": [
-        "Gauss求积核心思想",
-        "Gauss-Legendre",
-        "其他Gauss型求积",
-        "Gauss vs Newton-Cotes"
+        "正交多项式零点",
+        "2n−1 次代数精度",
+        "Gauss–Legendre 节点与权重",
+        "区间仿射映射与误差余项"
       ],
       "file": "chapters/12.html",
       "status": "refined"
@@ -152,34 +152,34 @@
       "num": "13",
       "title": "数值微分",
       "topics": [
-        "差商逼近方法",
-        "步长选择误差平衡",
-        "复数步长法",
-        "Richardson外推"
+        "前向、后向与中心差分",
+        "五点模板与 Richardson",
+        "截断误差和舍入误差平衡",
+        "复数步长与噪声边界"
       ],
       "file": "chapters/13.html",
       "status": "refined"
     },
     {
       "num": "14",
-      "title": "正交多项式与数值积分",
+      "title": "正交多项式与 Jacobi 矩阵",
       "topics": [
-        "三项递推公式",
-        "零点性质",
-        "Gram-Schmidt正交化",
-        "Gauss求积理论联系"
+        "带权内积与正交性",
+        "monic 三项递推",
+        "Legendre 多项式与零点",
+        "Golub–Welsch 特征值构造"
       ],
       "file": "chapters/14.html",
       "status": "refined"
     },
     {
       "num": "15",
-      "title": "Gauss消去法与LU分解",
+      "title": "Gauss 消去与 LU 分解",
       "topics": [
-        "顺序Gauss消去法",
-        "列主元消去法",
-        "Doolittle/Crout分解",
-        "LU分解应用"
+        "消去乘子与秩一更新",
+        "部分主元与行置换",
+        "PA=LU 与三角求解",
+        "残差、条件数与增长因子"
       ],
       "file": "chapters/15.html",
       "status": "refined"
