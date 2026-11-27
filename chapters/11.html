@@ -102,7 +102,7 @@ print(round(Rs[5][5], 12), round(Rq[5][5], 6))</code></pre>
 <ol class="sources">
 <li><a href="https://dlmf.nist.gov/3.5">NIST DLMF §3.5 · Quadrature</a>：复合求积、梯形与 Simpson 误差、Euler–Maclaurin 结构。</li>
 <li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.quad.html">SciPy · scipy.integrate.quad</a>：自适应求积的接口与容差语义（与固定步长的梯形/Simpson 相区分）。</li>
-<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.romberg.html">SciPy · scipy.integrate.romberg</a>：Romberg 外推实现，以及“函数需光滑”这一适用前提。</li>
+<li><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.romb.html">SciPy · scipy.integrate.romb</a>：现存基于采样值的 Romberg 积分实现。原函数型 <code>scipy.integrate.romberg</code> 已从当前 SciPy 中移除；Romberg 外推“函数需光滑”的适用前提不变。</li>
 </ol>
 </section>
 <nav class="chapter-bottom" aria-label="前后章节"><a href="10.html">← 前一章</a><a href="12.html">下一章 →</a></nav>
